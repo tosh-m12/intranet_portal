@@ -1,0 +1,40 @@
+{% extends "portal/base.html" %}
+
+{% block title %}社内ポータル - ホーム{% endblock %}
+
+{% block content %}
+<h1>社内ポータル ホーム</h1>
+
+<p style="margin-bottom: 10px;">
+    {% if user.is_authenticated %}
+        {{ user.email }} さん、ようこそ。
+    {% else %}
+        ログインしてご利用ください。
+    {% endif %}
+</p>
+
+<div class="app-grid">
+    <!-- 来客予定管理 -->
+    <div class="app-card">
+        <h2>📅 来客予定管理</h2>
+        <p>本日以降の来訪予定の一覧表示・登録・キャンセル・編集、および毎朝の予定メール送信を管理します。</p>
+        <a class="btn-link" href="{% url 'visitors:index' %}">▶ 来客予定画面を開く</a><br>
+        <a class="btn-link" href="{% url 'visitors:settings' %}">⚙ メール送信設定を開く</a>
+    </div>
+
+    <!-- 温湿度モニタ (将来 Django 化する想定でリンクだけ先に用意) -->
+    <div class="app-card">
+        <h2>🌡 温湿度モニタリング</h2>
+        <p>倉庫別の温湿度状況を表示・監視するシステムへのリンク（今後 Django 版を接続予定）。</p>
+        <span style="font-size: 12px; color:#999;">※ まだ接続されていません。</span>
+
+    </div>
+
+    <!-- 日報システム -->
+    <div class="app-card">
+        <h2>📝 日報管理システム</h2>
+        <p>各担当者の日報入力・閲覧・集計を行うシステムへのリンク（現在構築中）。</p>
+        <span style="font-size: 12px; color:#999;">※ 準備中</span>
+    </div>
+</div>
+{% endblock %}

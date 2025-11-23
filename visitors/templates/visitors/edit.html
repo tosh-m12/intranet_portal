@@ -1,0 +1,66 @@
+{% extends "portal/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "来訪予定編集" %} - 社内ポータル{% endblock %}
+
+{% block content %}
+    <h1>{% trans "来訪予定編集" %}</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        <table>
+            <tr>
+                <th>{% trans "訪問日" %}</th>
+                <td>{{ form.visit_date }}</td>
+            </tr>
+            <tr>
+                <th>{% trans "時間" %}</th>
+                <td>{{ form.visit_time }}</td>
+            </tr>
+            <tr>
+                <th>{% trans "時間未定" %}</th>
+                <td>{{ form.time_undecided }}</td>
+            </tr>
+            <tr>
+                <th>{% trans "正式会社名" %}</th>
+                <td>{{ form.company_name }}</td>
+            </tr>
+            <tr>
+                <th>{% trans "姓" %}</th>
+                <td>{{ form.last_name }}</td>
+            </tr>
+            <tr>
+                <th>{% trans "名" %}</th>
+                <td>{{ form.first_name }}</td>
+            </tr>
+            <tr>
+                <th>{% trans "役職" %}</th>
+                <td>{{ form.title }}</td>
+            </tr>
+            <tr>
+                <th>{% trans "目的" %}</th>
+                <td>{{ form.purpose }}</td>
+            </tr>
+            <tr>
+                <th>{% trans "訪問場所" %}</th>
+                <td>{{ form.location }}</td>
+            </tr>
+            <tr>
+                <th>{% trans "入力者" %}</th>
+                <td>{{ form.host_staff }}</td>
+            </tr>
+            <tr>
+                <th>{% trans "備考" %}</th>
+                <td>{{ form.notes }}</td>
+            </tr>
+        </table>
+
+        <div style="margin-top: 10px;">
+            <button type="submit">{% trans "保存" %}</button>
+        </div>
+    </form>
+
+    <p style="margin-top: 10px;">
+        <a href="{% url 'visitors:index' %}">{% trans "一覧に戻る" %}</a>
+    </p>
+{% endblock %}

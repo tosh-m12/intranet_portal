@@ -1,0 +1,48 @@
+body {
+    font-family: Arial, "Yu Gothic", "Meiryo", sans-serif;
+    margin: 0;
+    background-color: #f5f5f5;
+    font-size: 14px;
+}
+
+h1, h2 {
+    margin-top: 0;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 10px;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 4px 6px;
+    text-align: center;
+    font-size: 13px;
+}
+
+.cancelled-row td {
+    color: red;
+    text-decoration: line-through;
+}
+
+.section-help {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+button {
+    padding: 4px 10px;
+    font-size: 13px;
+}
+
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}

@@ -1,0 +1,65 @@
+{% extends "portal/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "本日以降の来訪予定" %} - 社内ポータル{% endblock %}
+
+{% block content %}
+    <div style="text-align: left; margin-bottom: 8px;">
+        <a href="{% url 'visitors:set_language' %}?language=ja">日本語</a> |
+        <a href="{% url 'visitors:set_language' %}?language=zh_Hans">简体中文</a>
+    </div>
+
+    <h1>{% trans "本日以降の来訪予定一覧" %}</h1>
+
+    {% if visitors %}
+        <table>
+            <tr>
+                <th>{% trans "来訪日" %}</th>
+                <th>{% trans "時間" %}</th>
+                <th>{% trans "未定" %}</th>
+                <th>{% trans "正式会社名" %}</th>
+                <th>{% trans "来訪者（姓）" %}</th>
+                <th>{% trans "来訪者（名）" %}</th>
+                <th>{% trans "役職" %}</th>
+                <th>{% trans "目的" %}</th>
+                <th>{% trans "訪問場所" %}</th>
+                <th>{% trans "入力者" %}</th>
+                <th>{% trans "備考" %}</th>
+                <th>{% trans "操作" %}</th>
+            </tr>
+            {% for v in visitors %}
+            <tr class="{% if v.cancelled_flag %}cancelled-row{% endif %}">
+                <td>{{ v.visit_date }}</td>
+                <td>{{ v.visit_time }}</td>
+                <td>{% if v.time_undecided_flag %}✔{% endif %}</td>
+                <td>{{ v.company_name }}</td>
+                <td>{{ v.last_name }}</td>
+                <td>{{ v.first_name }}</td>
+                <td>{{ v.title }}</td>
+                <td>{{ v.purpose }}</td>
+                <td>{{ v.location }}</td>
+                <td>{{ v.host_staff }}</td>
+                <td>{{ v.notes }}</td>
+                <td>
+                    {% if not v.cancelled_flag %}
+                    <form action="{% url 'visitors:cancel_visitor' v.id %}" method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit"
+                                onclick="return confirm('{% trans 'この来訪予定をキャンセルしますか？' %}');">
+                            {% trans "キャンセル" %}
+                        </button>
+                    </form>
+                    <a href="{% url 'visitors:edit_visitor' v.id %}">{% trans "編集" %}</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>{% trans "本日以降の来訪予定はありません。" %}</p>
+    {% endif %}
+
+    <p style="margin-top: 10px;">
+        <a href="{% url 'visitors:add_visitor' %}">▶ {% trans "来訪予定を登録する" %}</a>
+    </p>
+{% endblock %}

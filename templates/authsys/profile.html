@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}プロフィール{% endblock %}
+
+{% block content %}
+<h2>プロフィール</h2>
+<p>ログイン中のユーザー:{{ request.user.mail }}</p>
+
+<h3>メニュー</h3>
+<ul>
+    <li>（ここに）来客予定ページへのリンク</li>
+    <li>（ここに）日報ページへのリンク</li>
+    <li>（ここに）温湿度管理ページへのリンク</li>
+</ul>
+
+<p>※ ここから各アプリの画面へリンクを追加していきます。</p>
+{% endblock %}

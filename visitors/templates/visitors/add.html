@@ -1,0 +1,161 @@
+{% extends "portal/base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "来訪予定登録" %} - 社内ポータル{% endblock %}
+
+{% block content %}
+    <div style="text-align: left; margin-bottom: 8px;">
+        <a href="{% url 'visitors:set_language' %}?language=ja">日本語</a> |
+        <a href="{% url 'visitors:set_language' %}?language=zh_Hans">简体中文</a>
+    </div>
+
+    <h1>{% trans "来訪予定登録" %}</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ formset.management_form }}
+
+        <table>
+            <thead>
+                <tr>
+                    <th>{% trans "訪問日" %}</th>
+                    <th>{% trans "時間" %}</th>
+                    <th>{% trans "未定" %}</th>
+                    <th>{% trans "正式会社名" %}</th>
+                    <th>{% trans "姓" %}</th>
+                    <th>{% trans "名" %}</th>
+                    <th>{% trans "役職" %}</th>
+                    <th>{% trans "目的" %}</th>
+                    <th>{% trans "訪問場所" %}</th>
+                    <th>{% trans "入力者" %}</th>
+                    <th>{% trans "備考" %}</th>
+                </tr>
+            </thead>
+            <tbody id="formset-body">
+                {% for form in formset %}
+                <tr class="form-row">
+                    <td>
+                        {{ form.visit_date }}
+                        {% if form.visit_date.errors %}
+                            <div style="color: red;">{{ form.visit_date.errors.0 }}</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ form.visit_time }}
+                        {% if form.visit_time.errors %}
+                            <div style="color: red;">{{ form.visit_time.errors.0 }}</div>
+                        {% endif %}
+                    </td>
+                    <td>{{ form.time_undecided }}</td>
+                    <td>
+                        {{ form.company_name }}
+                        {% if form.company_name.errors %}
+                            <div style="color: red;">{{ form.company_name.errors.0 }}</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}
+                            <div style="color: red;">{{ form.last_name.errors.0 }}</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}
+                            <div style="color: red;">{{ form.first_name.errors.0 }}</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <div style="color: red;">{{ form.title.errors.0 }}</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ form.purpose }}
+                        {% if form.purpose.errors %}
+                            <div style="color: red;">{{ form.purpose.errors.0 }}</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ form.location }}
+                        {% if form.location.errors %}
+                            <div style="color: red;">{{ form.location.errors.0 }}</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ form.host_staff }}
+                        {% if form.host_staff.errors %}
+                            <div style="color: red;">{{ form.host_staff.errors.0 }}</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ form.notes }}
+                        {% if form.notes.errors %}
+                            <div style="color: red;">{{ form.notes.errors.0 }}</div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div style="margin-top: 10px;">
+            <button type="submit">{% trans "保存" %}</button>
+            <button type="button" onclick="addForm()">{% trans "行を追加" %}</button>
+        </div>
+    </form>
+
+    <p style="margin-top: 10px;">
+        <a href="{% url 'visitors:index' %}">{% trans "一覧に戻る" %}</a>
+    </p>
+
+    <script>
+        let formIdx = {{ formset.total_form_count }};
+        const timeChoices = `
+            {% for value, label in time_choices %}
+                <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+        `;
+
+        const emptyRow = `
+        <tr class="form-row">
+            <td><input type="date" name="form-__prefix__-visit_date"></td>
+            <td>
+                <select name="form-__prefix__-visit_time">
+                    ${timeChoices}
+                </select>
+            </td>
+            <td><input type="checkbox" name="form-__prefix__-time_undecided"></td>
+            <td><input type="text" name="form-__prefix__-company_name"></td>
+            <td><input type="text" name="form-__prefix__-last_name"></td>
+            <td><input type="text" name="form-__prefix__-first_name"></td>
+            <td><input type="text" name="form-__prefix__-title"></td>
+            <td><input type="text" name="form-__prefix__-purpose"></td>
+            <td><input type="text" name="form-__prefix__-location"></td>
+            <td><input type="text" name="form-__prefix__-host_staff"></td>
+            <td><input type="text" name="form-__prefix__-notes"></td>
+        </tr>`;
+
+        function addForm() {
+            const newRow = emptyRow.replace(/__prefix__/g, formIdx);
+            document.getElementById('formset-body').insertAdjacentHTML('beforeend', newRow);
+            formIdx++;
+            document.getElementById('id_form-TOTAL_FORMS').value = formIdx;
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"][name*="-time_undecided"]');
+            checkboxes.forEach((checkbox) => {
+                const index = checkbox.name.match(/\d+/)[0];
+                const timeInput = document.querySelector(`select[name="form-${index}-visit_time"]`);
+                if (timeInput) {
+                    checkbox.addEventListener('change', function () {
+                        timeInput.disabled = this.checked;
+                        if (this.checked) timeInput.value = '';
+                    });
+                }
+            });
+        });
+    </script>
+{% endblock %}

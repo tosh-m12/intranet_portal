@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}社内ポータル{% endblock %}</title>
+    </head>
+    <body>
+        <header>
+            <h1>社内ポータル</h1>
+            <nav>
+                {% if user.is_authenticated %}
+                    {{ user.email }} としてログイン中 |
+                    <a href="{% url 'home' %}">ホーム</a> |
+                    <a href="{% url 'profile' %}">プロフィール</a> |
+                    <a href="{% url 'logout' %}">ログアウト</a> |
+                {% else %}
+                    <a href="{% url 'login' %}">ログイン</a>
+                {% endif %}
+            </nav>
+        </header>
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+    </body>
+</html>
