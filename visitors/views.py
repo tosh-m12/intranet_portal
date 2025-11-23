@@ -3,11 +3,12 @@ from django.forms import formset_factory
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.utils import translation
+from django.utils import translation, timezone
 
 from .forms import VisitorForm
 from .models import Visitor, MailingAddress, HolidayDate, VisitMailConfig
-from datetime import datetime, time, date
+from datetime import datetime, date, time as dtime
+
 
 import os
 import logging
@@ -15,12 +16,6 @@ import logging
 from .email_utils import send_daily_email
 
 logger = logging.getLogger(__name__)
-
-
-CSV_FILE_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'visitor_list.csv')
-MAILING_LIST_FILE = os.path.join(settings.BASE_DIR, 'visitors', 'mailing_list.csv')
-HOLIDAYS_FILE = os.path.join(settings.BASE_DIR, 'holidays.csv')
-SEND_TIME_FILE = os.path.join(settings.BASE_DIR, 'send_time.csv')
 
 
 @login_required
@@ -48,15 +43,6 @@ def index(request):
         })
 
     return render(request, 'visitors/index.html', {'visitors': visitors})
-
-
-@login_required
-def set_language(request):
-    lang_code = request.GET.get('language', 'ja')
-    response = redirect(request.META.get('HTTP_REFERER', '/'))
-    response.set_cookie(settings.LANGUAGE_COOKIE_NAME, lang_code)
-    translation.activate(lang_code)
-    return response
 
 
 @login_required
@@ -164,134 +150,141 @@ def edit_visitor(request, id):
 
 @login_required
 def settings_view(request):
-    """
-    メール送信設定画面（SQL版）
-    - メーリングリスト: MailingAddress
-    - 休日設定: HolidayDate
-    - 送信時刻・スケジューラ方式: VisitMailConfig
-    """
-    # 設定レコードを取得（なければ作成）
+    # VisitMailConfig は1レコードだけ使う想定
     config, _ = VisitMailConfig.objects.get_or_create(pk=1)
 
     if request.method == "POST":
         # ▼ スケジューラ方式
-        scheduler_mode = request.POST.get("scheduler_mode", VisitMailConfig.MODE_WINDOWS)
-        if scheduler_mode not in [
-            VisitMailConfig.MODE_WINDOWS,
-            VisitMailConfig.MODE_DJANGO,
-            VisitMailConfig.MODE_NONE,
-        ]:
-            scheduler_mode = VisitMailConfig.MODE_WINDOWS
+        mode = request.POST.get("scheduler_mode", VisitMailConfig.MODE_WINDOWS)
+        if mode not in dict(VisitMailConfig.MODE_CHOICES):
+            mode = VisitMailConfig.MODE_WINDOWS
+        config.mode = mode
 
-        # ▼ 送信時刻（時・分）
+        # ▼ 送信時刻（時・分を別々に受け取る）
         send_hour_str = request.POST.get("send_hour", "09")
         send_minute_str = request.POST.get("send_minute", "00")
-
         try:
             send_hour = int(send_hour_str)
             send_minute = int(send_minute_str)
-            send_time_value = time(send_hour, send_minute)
+            config.send_time = dtime(send_hour, send_minute)
         except ValueError:
-            send_time_value = time(9, 0)
+            config.send_time = dtime(9, 0)
 
-        # ▼ メーリングリスト
-        emails = [
-            e.strip()
-            for e in request.POST.getlist("emails")
-            if e.strip()
-        ]
+        # ▼ SMTP 設定
+        config.smtp_host = request.POST.get("smtp_host", "").strip() or "smtp.qiye.aliyun.com"
+        try:
+            config.smtp_port = int(request.POST.get("smtp_port", "587"))
+        except ValueError:
+            config.smtp_port = 587
+
+        config.use_tls = bool(request.POST.get("use_tls"))
+        config.use_ssl = bool(request.POST.get("use_ssl"))
+
+        config.smtp_user = request.POST.get("smtp_user", "").strip()
+
+        new_password = request.POST.get("smtp_password", "").strip()
+        # パスワード欄が空なら「変更なし」
+        if new_password:
+            config.smtp_password = new_password
+
+        config.from_name = request.POST.get("from_name", "").strip() or config.from_name
+
+        # ▼ メーリングリスト再保存
         MailingAddress.objects.all().delete()
+        emails = request.POST.getlist("emails")
         for e in emails:
-            MailingAddress.objects.create(email=e)
+            e = e.strip()
+            if e:
+                MailingAddress.objects.create(email=e)
 
-        # ▼ 休日設定
-        holidays_input = [
-            d.strip()
-            for d in request.POST.getlist("holidays")
-            if d.strip()
-        ]
+        # ▼ 休日再保存
         HolidayDate.objects.all().delete()
-        for d in holidays_input:
-            try:
-                # YYYY-MM-DD 形式としてパース
-                dt = datetime.strptime(d, "%Y-%m-%d").date()
-                HolidayDate.objects.create(date=dt)
-            except ValueError:
-                # 形式がおかしい行は無視
-                continue
+        dates = request.POST.getlist("holidays")
+        for d in dates:
+            d = d.strip()
+            if d:
+                # "YYYY-MM-DD" 文字列をそのまま入れてOK（DateFieldが解釈）
+                HolidayDate.objects.create(date=d)
 
-        # ▼ VisitMailConfig 保存
-        config.send_time = send_time_value
-        config.mode = scheduler_mode
         config.save()
-
         messages.success(request, "設定を保存しました。")
         return redirect("visitors:settings")
 
-    # ====== GET 時の表示用データ ======
+    # ===== GET（画面表示） =====
+    mailing_list = list(MailingAddress.objects.values_list("email", flat=True))
+    holidays = list(HolidayDate.objects.values_list("date", flat=True))
 
-    # メーリングリスト
-    mailing_list = list(
-        MailingAddress.objects.values_list("email", flat=True)
-    )
+    # 時刻を分解
+    send_hour = config.send_time.hour if config.send_time else 9
+    send_minute = config.send_time.minute if config.send_time else 0
 
-    # 休日一覧（文字列 YYYY-MM-DD）
-    holidays = [
-        h.date.strftime("%Y-%m-%d")
-        for h in HolidayDate.objects.all().order_by("date")
-    ]
-
-    # 送信時刻
-    if config.send_time:
-        send_hour = f"{config.send_time.hour:02d}"
-        send_minute = f"{config.send_time.minute:02d}"
-    else:
-        send_hour = "09"
-        send_minute = "00"
-
-    scheduler_mode = config.mode or VisitMailConfig.MODE_WINDOWS
-
-    # ドロップダウン用の候補（0〜23時、00/15/30/45分）
+    # 時・分の候補（テンプレートの hours / minutes 用）
     hours = [f"{h:02d}" for h in range(0, 24)]
-    minutes = ["00", "15", "30", "45"]
+    minutes = [f"{m:02d}" for m in (0, 15, 30, 45)]
 
     context = {
         "mailing_list": mailing_list,
-        "holidays": holidays,
-        "send_hour": send_hour,
-        "send_minute": send_minute,
-        "scheduler_mode": scheduler_mode,
+        "holidays": [d.strftime("%Y-%m-%d") for d in holidays],
+        "scheduler_mode": config.mode,
+        "send_hour": f"{send_hour:02d}",
+        "send_minute": f"{send_minute:02d}",
         "hours": hours,
         "minutes": minutes,
+        "config": config,  # smtp_host 等をテンプレートから参照
     }
     return render(request, "visitors/settings.html", context)
 
 
 @login_required
 def run_email(request):
-    """
-    「今すぐ送信」ボタンから呼ばれるビュー。
-    email_utils.send_daily_email() を呼び出し、
-    結果をメッセージ & ログに出す。
-    """
     try:
+        # 1) メール送信実行
         result = send_daily_email()
 
-        if result["sent"]:
-            msg = f"📨 来訪予定メールを送信しました。（宛先: {len(result['recipients'])}件, 来訪件数: {result['visitor_count']}件）"
-            messages.success(request, msg)
-            logger.info(f"[VISITOR_MAIL_VIEW] {msg} recipients={result['recipients']}")
+        today = timezone.localdate()
+        config, _ = VisitMailConfig.objects.get_or_create(pk=1)
+
+        # 2) result の形式を吸収（dict でも str でも動くように）
+        sent = False
+        detail = ""
+
+        if isinstance(result, dict):
+            # 新仕様: {"sent": True/False, "reason": "...", "recipients": [...], ...}
+            sent = result.get("sent", False)
+            detail = result.get("reason", "")
         else:
-            msg = f"⚠ メールは送信されませんでした：{result['reason']}"
-            messages.warning(request, msg)
-            logger.warning(
-                f"[VISITOR_MAIL_VIEW] {msg} "
-                f"recipients={result['recipients']}, visitor_count={result['visitor_count']}"
+            # 旧仕様: "ok" / "error: xxx"
+            sent = (result == "ok")
+            if not sent:
+                detail = str(result)
+
+        # 3) 成功・失敗で分岐
+        if sent:
+            # ★ 成功したときだけ「今日送った」と記録
+            config.last_sent_date = today
+            config.save(update_fields=["last_sent_date"])
+
+            # 宛先表示（dict のときだけ）
+            recipients_str = ""
+            if isinstance(result, dict):
+                recipients = result.get("recipients") or []
+                if recipients:
+                    recipients_str = " 宛先: " + ", ".join(recipients)
+
+            messages.success(
+                request,
+                f"📨 メールを送信しました。{recipients_str}"
             )
+            print(f"[VISITOR_MAIL_VIEW] manual send ok, last_sent_date={today}, result={result}")
+        else:
+            messages.error(
+                request,
+                f"⚠ メール送信に失敗しました。{detail}"
+            )
+            print(f"[VISITOR_MAIL_VIEW] manual send failed: {detail} (raw result={result})")
 
     except Exception as e:
-        err_msg = f"⚠ メール送信中にエラーが発生しました：{e}"
-        messages.error(request, err_msg)
-        logger.error(f"[VISITOR_MAIL_VIEW] EXCEPTION: {e}", exc_info=True)
+        messages.error(request, f"⚠ メール送信中に例外が発生しました：{e}")
+        print(f"[VISITOR_MAIL_VIEW] EXCEPTION: {e}")
 
     return redirect('visitors:settings')

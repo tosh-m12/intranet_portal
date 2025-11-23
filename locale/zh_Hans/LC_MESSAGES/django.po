@@ -1,0 +1,156 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-07-23 23:23+0800\n"
+"PO-Revision-Date: 2025-07-23 23:45+0800\n"
+"Last-Translator: TMurayama <example@example.com>\n"
+"Language-Team: Chinese Simplified\n"
+"Language: zh_Hans\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: .\visitors\templates\visitors\add.html:6
+#: .\visitors\templates\visitors\add.html:11
+msgid "来訪予定登録"
+msgstr "来访预定登记"
+
+#: .\visitors\templates\visitors\add.html:20
+msgid "訪問日"
+msgstr "访问日期"
+
+#: .\visitors\templates\visitors\add.html:21
+#: .\visitors\templates\visitors\edit.html:30
+#: .\visitors\templates\visitors\index.html:21
+msgid "時間"
+msgstr "时间"
+
+#: .\visitors\templates\visitors\add.html:22
+#: .\visitors\templates\visitors\edit.html:31
+#: .\visitors\templates\visitors\index.html:22
+msgid "未定"
+msgstr "未定"
+
+#: .\visitors\templates\visitors\add.html:23
+#: .\visitors\templates\visitors\edit.html:32
+#: .\visitors\templates\visitors\index.html:23
+msgid "正式会社名"
+msgstr "公司全称"
+
+#: .\visitors\templates\visitors\add.html:24
+#: .\visitors\templates\visitors\edit.html:33
+msgid "姓"
+msgstr "姓"
+
+#: .\visitors\templates\visitors\add.html:25
+#: .\visitors\templates\visitors\edit.html:34
+msgid "名"
+msgstr "名"
+
+#: .\visitors\templates\visitors\add.html:26
+#: .\visitors\templates\visitors\edit.html:35
+#: .\visitors\templates\visitors\index.html:26
+msgid "役職"
+msgstr "职位"
+
+#: .\visitors\templates\visitors\add.html:27
+#: .\visitors\templates\visitors\edit.html:36
+#: .\visitors\templates\visitors\index.html:27
+msgid "目的"
+msgstr "目的"
+
+#: .\visitors\templates\visitors\add.html:28
+#: .\visitors\templates\visitors\edit.html:37
+#: .\visitors\templates\visitors\index.html:28
+msgid "訪問場所"
+msgstr "访问地点"
+
+#: .\visitors\templates\visitors\add.html:29
+#: .\visitors\templates\visitors\edit.html:38
+#: .\visitors\templates\visitors\index.html:29
+msgid "入力者"
+msgstr "填写人"
+
+#: .\visitors\templates\visitors\add.html:30
+#: .\visitors\templates\visitors\edit.html:39
+#: .\visitors\templates\visitors\index.html:30
+msgid "備考"
+msgstr "备注"
+
+#: .\visitors\templates\visitors\add.html:52
+#: .\visitors\templates\visitors\edit.html:58
+msgid "保存"
+msgstr "保存"
+
+#: .\visitors\templates\visitors\add.html:53
+msgid "行を追加"
+msgstr "添加行"
+
+#: .\visitors\templates\visitors\add.html:56
+msgid "一覧に戻る"
+msgstr "返回列表"
+
+#: .\visitors\templates\visitors\edit.html:6
+msgid "来訪予定の編集"
+msgstr "编辑来访预定"
+
+#: .\visitors\templates\visitors\edit.html:22
+msgid "編集ページ"
+msgstr "编辑页面"
+
+#: .\visitors\templates\visitors\edit.html:29
+#: .\visitors\templates\visitors\index.html:20
+msgid "来訪日"
+msgstr "来访日期"
+
+#: .\visitors\templates\visitors\edit.html:61
+msgid "戻る"
+msgstr "返回"
+
+#: .\visitors\templates\visitors\index.html:6
+msgid "本日以降の来訪予定"
+msgstr "今天以后的来访预定"
+
+#: .\visitors\templates\visitors\index.html:15
+msgid "本日以降の来訪予定一覧"
+msgstr "今天以后的来访预定一览"
+
+#: .\visitors\templates\visitors\index.html:24
+msgid "来訪者（姓）"
+msgstr "来访者（姓）"
+
+#: .\visitors\templates\visitors\index.html:25
+msgid "来訪者（名）"
+msgstr "来访者（名）"
+
+#: .\visitors\templates\visitors\index.html:31
+msgid "操作"
+msgstr "操作"
+
+#: .\visitors\templates\visitors\index.html:50
+msgid "この来訪予定をキャンセルしますか？"
+msgstr "是否取消该来访预定？"
+
+#: .\visitors\templates\visitors\index.html:51
+msgid "キャンセル"
+msgstr "取消"
+
+#: .\visitors\templates\visitors\index.html:54
+msgid "編集"
+msgstr "编辑"
+
+#: .\visitors\templates\visitors\index.html:61
+msgid "本日以降の来訪予定はありません。"
+msgstr "今天以后没有来访预定。"
+
+#: .\visitors\templates\visitors\index.html:64
+msgid "来訪予定を登録する"
+msgstr "登记来访预定"

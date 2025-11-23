@@ -57,5 +57,46 @@ class VisitMailConfig(models.Model):
         verbose_name="スケジューラ方式",
     )
 
+    # ★ これを追加
+    last_sent_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="最終送信日",
+    )
+
+    # ★ ここから追加：SMTP 設定
+    smtp_host = models.CharField(
+        max_length=255,
+        verbose_name="SMTPサーバー",
+        default="smtp.qiye.aliyun.com",
+    )
+    smtp_port = models.IntegerField(
+        verbose_name="ポート番号",
+        default=587,
+    )
+    use_tls = models.BooleanField(
+        verbose_name="TLS を使用",
+        default=True,
+    )
+    use_ssl = models.BooleanField(
+        verbose_name="SSL を使用",
+        default=False,
+    )
+    smtp_user = models.EmailField(
+        verbose_name="SMTPユーザー（ログインID / From）",
+        blank=True,
+    )
+    smtp_password = models.CharField(
+        verbose_name="SMTPパスワード",
+        max_length=255,
+        blank=True,
+    )
+    from_name = models.CharField(
+        verbose_name="送信者名（表示名）",
+        max_length=255,
+        blank=True,
+        default="NGLS-CS-INFO",
+    )
+
     def __str__(self):
         return f"毎日 {self.send_time.strftime('%H:%M')} / mode={self.mode}"

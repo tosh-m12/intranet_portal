@@ -1,10 +1,9 @@
-# visitors/email_utils.py
-
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from datetime import date
 import logging
 
-from django.conf import settings
-from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 
 from .models import Visitor, MailingAddress, HolidayDate, VisitMailConfig
@@ -56,14 +55,10 @@ def send_daily_email():
     """
     本日以降の来訪予定一覧を、メーリングリスト宛にHTMLメールで送信する。
 
-    - 休日なら送信しない
-    - メーリングリストが空なら送信しない
-    - 戻り値で送信有無・件数・理由を返す
-
     戻り値: dict
         {
             "sent": True/False,
-            "reason": "送らなかった理由" or "",
+            "reason": "送らなかった理由 or エラー内容",
             "recipients": [...],
             "visitor_count": int,
         }
@@ -100,35 +95,73 @@ def send_daily_email():
 
     logger.info(f"[VISITOR_MAIL] visitor_count={len(visitors)}, recipients={recipients}")
 
-    # 4) HTML本文生成（旧 email_template.html を利用）
+    # 4) HTML本文生成
     context = {
         'visitors': visitors,
         'today': today,
     }
     html_content = render_to_string('visitors/email_template.html', context)
 
-    # 5) 送信時刻設定（VisitMailConfig は「何時に送るか」の設定テーブル）
+    # 5) VisitMailConfig から SMTP 設定を取得
     config, _ = VisitMailConfig.objects.get_or_create(pk=1)
-    send_time_str = config.send_time.strftime('%H:%M')
+    smtp_host = config.smtp_host or "smtp.qiye.aliyun.com"
+    smtp_port = config.smtp_port or 587
+    use_tls = config.use_tls
+    use_ssl = config.use_ssl
+    smtp_user = (config.smtp_user or "").strip()
+    smtp_password = (config.smtp_password or "").strip()
+    from_name = config.from_name or "NGLS-CS-INFO"
 
-    subject = f'【来訪予定通知】本日以降の来訪一覧（送信時刻設定: {send_time_str}）'
-    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None) or settings.EMAIL_HOST_USER
+    # From ヘッダ（表示名 <メールアドレス>）
+    if not smtp_user or not smtp_password:
+        msg = "SMTPユーザーまたはパスワードが未設定のため送信しません。"
+        logger.warning(f"[VISITOR_MAIL] {msg}")
+        result["reason"] = msg
+        return result
 
-    # 6) EmailMessage で HTML 送信
-    msg = EmailMessage(
-        subject=subject,
-        body=html_content,
-        from_email=from_email,
-        to=recipients,
-    )
-    msg.content_subtype = 'html'  # HTMLメールとして送信
+    # From ヘッダ（表示名 <メールアドレス>）
+    from_addr = f"{from_name} <{smtp_user}>"
+    # ★ エンベロープFrom（SMTPレベルの送信元）
+    envelope_from = smtp_user
 
-    logger.info(f"[VISITOR_MAIL] sending mail: subject={subject}, from={from_email}, to={recipients}")
-    sent_count = msg.send(fail_silently=False)
-    logger.info(f"[VISITOR_MAIL] send finished: sent_count={sent_count}")
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = '【来訪予定通知】本日以降の来訪一覧'
+    msg['From'] = from_addr
+    msg['To'] = ", ".join(recipients)
 
-    result["sent"] = sent_count > 0
-    if not result["sent"]:
-        result["reason"] = "メール送信はエラーなく終了しましたが、sent_count=0 でした。"
+    part = MIMEText(html_content, 'html', 'utf-8')
+    msg.attach(part)
 
-    return result
+    # 6) SMTP 送信
+    try:
+        logger.info(
+            f"[VISITOR_MAIL] SMTP 接続開始 host={smtp_host} port={smtp_port} "
+            f"tls={use_tls} ssl={use_ssl}"
+        )
+
+        if use_ssl:
+            server = smtplib.SMTP_SSL(smtp_host, smtp_port)
+        else:
+            server = smtplib.SMTP(smtp_host, smtp_port)
+
+        server.ehlo()
+        if use_tls and not use_ssl:
+            server.starttls()
+            server.ehlo()
+
+        # ★ ここは必須（すでにOK）
+        server.login(smtp_user, smtp_password)
+
+        # ★ 修正ポイント: envelope_from を使う
+        server.sendmail(envelope_from, recipients, msg.as_string())
+        server.quit()
+
+        logger.info(f"[VISITOR_MAIL] メール送信完了: {len(recipients)}件 → {recipients}")
+        result["sent"] = True
+        return result
+
+    except Exception as e:
+        logger.error(f"[VISITOR_MAIL] メール送信エラー: {e}", exc_info=True)
+        result["reason"] = f"SMTPエラー: {e}"
+        return result
+    

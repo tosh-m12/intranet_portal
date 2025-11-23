@@ -16,11 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from .views import home
+from . import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('authsys.urls')),    # 認証アプリ
     path('visitors/', include('visitors.urls')),   # 来客予定アプリ
-    path('', home, name='home'),                  # ポータルトップ
+    path('lang/<str:lang_code>/', views.switch_language, name='switch_language'),
+    path('', views.home, name='home'),                  # ポータルトップ
 ]

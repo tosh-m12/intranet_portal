@@ -17,41 +17,62 @@ def scheduler_loop():
     """
     1分ごとに現在時刻と設定時刻を比較し、
     VisitMailConfig.mode が 'django' の場合に1日1回だけ send_daily_email() を実行する。
+
+    判定は DB 上の VisitMailConfig.last_sent_date を使用するので、
+    再起動しても「今日すでに送ったかどうか」を正しく判定できる。
     """
     logger.info("[VISITOR_MAIL_SCHED] scheduler_loop started")
-    print("[DEBUG] scheduler_loop started")  # ← 追加
-    last_run_date = None
+    print("[DEBUG] scheduler_loop started")
 
     while True:
         try:
             now = timezone.localtime()
+            today = now.date()
+
+            # 設定レコードを取得（なければ作成）
             config, _ = VisitMailConfig.objects.get_or_create(pk=1)
+
             send_time = config.send_time or dtime(9, 0)
             mode = config.mode or VisitMailConfig.MODE_WINDOWS
 
             # デバッグ表示
-            print(f"[DEBUG] scheduler tick now={now}, mode={mode}, send_time={send_time}")
+            print(
+                f"[DEBUG] scheduler tick now={now}, mode={mode}, "
+                f"send_time={send_time}, last_sent_date={config.last_sent_date}"
+            )
 
+            # Django内部スケジューラ以外のモードなら何もしない
             if mode != VisitMailConfig.MODE_DJANGO:
-                last_run_date = None
-            else:
-                target = now.replace(
-                    hour=send_time.hour,
-                    minute=send_time.minute,
-                    second=0,
-                    microsecond=0,
-                )
+                # ここで last_sent_date をリセットしないのがポイント
+                time.sleep(60)
+                continue
 
-                if now >= target and (last_run_date is None or last_run_date != now.date()):
-                    logger.info(
-                        f"[VISITOR_MAIL_SCHED] time reached: now={now}, send_time={send_time}, "
-                        "calling send_daily_email()"
-                    )
-                    print("[DEBUG] calling send_daily_email() from scheduler_loop")
-                    result = send_daily_email()
-                    last_run_date = now.date()
-                    logger.info(f"[VISITOR_MAIL_SCHED] result={result}")
-                    print(f"[DEBUG] send_daily_email() result={result}")
+            # 今日の send_time を表す datetime
+            target = now.replace(
+                hour=send_time.hour,
+                minute=send_time.minute,
+                second=0,
+                microsecond=0,
+            )
+
+            # 条件:
+            # 1. 現在時刻が send_time を過ぎている（>=）
+            # 2. DB 上で今日まだ自動送信していない（last_sent_date != today）
+            if now >= target and config.last_sent_date != today:
+                logger.info(
+                    f"[VISITOR_MAIL_SCHED] time reached: now={now}, "
+                    f"send_time={send_time}, calling send_daily_email()"
+                )
+                print("[DEBUG] calling send_daily_email() from scheduler_loop")
+
+                result = send_daily_email()
+
+                # 今日送ったことを DB に記録
+                config.last_sent_date = today
+                config.save(update_fields=["last_sent_date"])
+
+                logger.info(f"[VISITOR_MAIL_SCHED] result={result}")
+                print(f"[DEBUG] send_daily_email() result={result}")
 
         except Exception as e:
             logger.error(f"[VISITOR_MAIL_SCHED] error in scheduler_loop: {e}", exc_info=True)

@@ -75,6 +75,41 @@
 
     <hr>
 
+    <!-- ★ SMTP 設定 -->
+    <fieldset style="margin-bottom: 16px;">
+        <legend>SMTP 設定</legend>
+
+        <label>SMTPサーバー:
+            <input type="text" name="smtp_host" value="{{ config.smtp_host }}">
+        </label><br>
+
+        <label>ポート番号:
+            <input type="number" name="smtp_port" value="{{ config.smtp_port }}">
+        </label><br>
+
+        <label>
+            <input type="checkbox" name="use_tls" {% if config.use_tls %}checked{% endif %}>
+            TLS を使用
+        </label><br>
+
+        <label>
+            <input type="checkbox" name="use_ssl" {% if config.use_ssl %}checked{% endif %}>
+            SSL を使用
+        </label><br>
+
+        <label>SMTPユーザー（ログインID / From）:
+            <input type="email" name="smtp_user" value="{{ config.smtp_user }}" placeholder="cs_info@ngls.sh.cn">
+        </label><br>
+
+        <label>SMTPパスワード:
+            <input type="password" name="smtp_password" value="" placeholder="※変更する場合のみ入力">
+        </label><br>
+
+        <label>送信者名（表示名）:
+            <input type="text" name="from_name" value="{{ config.from_name }}">
+        </label>
+    </fieldset>
+
     <!-- ▼ メーリングリスト -->
     <h2>{% trans "メーリングリスト" %}</h2>
     <p>メール送信先を 1 行ずつ追加してください。</p>
