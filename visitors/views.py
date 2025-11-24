@@ -4,12 +4,14 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils import translation, timezone
+from django.http import JsonResponse, HttpResponseBadRequest
+from django.views.decorators.http import require_POST
 
 from .forms import VisitorForm
 from .models import Visitor, MailingAddress, HolidayDate, VisitMailConfig
 from datetime import datetime, date, time as dtime
 
-
+import json
 import os
 import logging
 
@@ -22,13 +24,15 @@ logger = logging.getLogger(__name__)
 def index(request):
     today = date.today()
 
-    visitors_qs = Visitor.objects.filter(visit_date__gte=today).order_by("visit_date", "visit_time", "id")
+    visitors_qs = Visitor.objects.filter(
+        visit_date__gte=today
+    ).order_by("visit_date", "visit_time", "id")
 
     visitors = []
     for v in visitors_qs:
         visitors.append({
             "id": v.id,
-            "visit_date": v.visit_date,
+            "visit_date": v.visit_date,  # そのまま表示（YYYY-MM-DD）
             "visit_time": v.visit_time.strftime("%H:%M") if v.visit_time else "",
             "time_undecided_flag": v.time_undecided,
             "company_name": v.company_name,
@@ -100,7 +104,8 @@ def add_visitor(request):
 def cancel_visitor(request, id):
     if request.method == 'POST':
         visitor = get_object_or_404(Visitor, pk=id)
-        visitor.cancelled = True
+        # 現在のフラグを反転させる（True→False, False→True）
+        visitor.cancelled = not visitor.cancelled
         visitor.save()
 
     return redirect('visitors:index')
@@ -233,6 +238,74 @@ def settings_view(request):
         "config": config,  # smtp_host 等をテンプレートから参照
     }
     return render(request, "visitors/settings.html", context)
+
+
+@login_required
+@require_POST
+def inline_update(request):
+    """
+    一覧画面からのインライン編集用エンドポイント
+    JSON: { "id": 123, "field": "company_name", "value": "..." }
+    """
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+    except json.JSONDecodeError:
+        return HttpResponseBadRequest("invalid json")
+
+    visitor_id = data.get("id")
+    field = data.get("field")
+    value = data.get("value", "").strip()
+
+    if not visitor_id or not field:
+        return HttpResponseBadRequest("missing id or field")
+
+    # セキュリティのため、編集可能フィールドを限定
+    allowed_fields = {
+        "visit_date",
+        "visit_time",
+        "company_name",
+        "last_name",
+        "first_name",
+        "title",
+        "purpose",
+        "location",
+        "host_staff",
+        "notes",
+    }
+    if field not in allowed_fields:
+        return HttpResponseBadRequest("field not allowed")
+
+    visitor = get_object_or_404(Visitor, pk=visitor_id)
+
+    try:
+        if field == "visit_date":
+            # "YYYY-MM-DD" 前提
+            if not value:
+                return HttpResponseBadRequest("visit_date is required")
+            visitor.visit_date = datetime.strptime(value, "%Y-%m-%d").date()
+            display_value = visitor.visit_date.strftime("%Y-%m-%d")
+
+        elif field == "visit_time":
+            # 空なら None
+            if value:
+                visitor.visit_time = datetime.strptime(value, "%H:%M").time()
+                display_value = visitor.visit_time.strftime("%H:%M")
+            else:
+                visitor.visit_time = None
+                display_value = ""
+
+        else:
+            # 文字列フィールド
+            setattr(visitor, field, value)
+            display_value = value
+
+        visitor.save()
+
+    except Exception as e:
+        logger.error(f"[VISITOR_INLINE] update error: {e}", exc_info=True)
+        return JsonResponse({"ok": False, "error": str(e)}, status=400)
+
+    return JsonResponse({"ok": True, "value": display_value})
 
 
 @login_required

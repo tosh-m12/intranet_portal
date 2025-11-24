@@ -3,6 +3,20 @@
 
 {% block title %}{% trans "来客予定メール設定" %}{% endblock %}
 
+{% block subnav %}
+<div class="subnav">
+    <a href="{% url 'visitors:index' %}">
+        📋 {% trans "一覧" %}
+    </a>
+    <a href="{% url 'visitors:add_visitor' %}">
+        ➕ {% trans "新規登録" %}
+    </a>
+    <a href="{% url 'visitors:settings' %}" class="active">
+        ⚙ {% trans "メール設定" %}
+    </a>
+</div>
+{% endblock %}
+
 {% block content %}
 <h1>{% trans "来客予定メール設定" %}</h1>
 

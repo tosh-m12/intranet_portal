@@ -3,122 +3,308 @@
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}社内ポータル{% endblock %}</title>
+    <title>{% block title %}NGLS-CS Portal{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'visitors/style.css' %}">
     <style>
         body {
             font-family: Arial, "Yu Gothic", "Meiryo", sans-serif;
             margin: 0;
             background-color: #f5f5f5;
-            font-size: 14px;
+            display: flex;
+            height: 100vh;
         }
-        header {
+
+        /* ------------ サイドバー ------------ */
+        .sidebar {
+            width: 250px;
             background-color: #003366;
             color: white;
-            padding: 10px 20px;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .sidebar .title {
+            font-size: 18px;
+            font-weight: bold;
+            padding: 0 10px;
+            margin-bottom: 10px;
+        }
+
+        .sidebar .user-info {
+            font-size: 12px;
+            margin-bottom: 20px;
+            padding: 0 10px;
+            line-height: 1.4;
+        }
+
+        .sidebar nav {
+            display: flex;
+            flex-direction: column;
+            padding: 0 10px;
+            gap: 6px;
+        }
+
+        .sidebar nav a {
+            color: #cce0ff;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+        .sidebar nav a:hover {
+            background-color: #004080;
+        }
+
+        /* ------------ サブナビ ------------ */
+        .subnav {
+            margin-bottom: 12px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 2px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .subnav a {
+            display: inline-block;
+            padding: 6px 12px;
+            margin-right: 6px;
+            text-decoration: none;
+            font-size: 13px;
+            color: #333;
+            background-color: #f0f0f0;
+            border-radius: 4px 4px 0 0;
+            border: 1px solid #ddd;
+            border-bottom: none;
+        }
+        .subnav a:hover {
+            background-color: #e0e0e0;
+        }
+        .subnav a.active {
+            background-color: #ffffff;
+            font-weight: bold;
+        }
+
+        /* ページ見出し */
+        .page-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 8px;
         }
-        header .title {
-            font-size: 18px;
-            font-weight: bold;
+
+        /* テーブル */
+        .table-wrapper {
+            overflow-x: auto;
         }
-        header .user-info {
+        .visit-table {
+            width: 100%;
+            border-collapse: collapse;
             font-size: 13px;
+            background-color: #fff;
         }
-        nav a {
-            color: #cce0ff;
-            margin-right: 15px;
-            text-decoration: none;
-        }
-        nav a:hover {
-            text-decoration: underline;
-        }
-        .container {
-            max-width: 960px;
-            margin: 20px auto;
-            background-color: white;
-            padding: 20px;
-            border-radius: 6px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .app-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 16px;
-            margin-top: 10px;
-        }
-        .app-card {
+        .visit-table th,
+        .visit-table td {
             border: 1px solid #ddd;
-            border-radius: 6px;
-            padding: 12px 14px;
-            background-color: #fafafa;
+            padding: 6px 4px;
+            text-align: center;
+            vertical-align: middle;
         }
-        .app-card h2 {
-            font-size: 16px;
-            margin: 0 0 4px 0;
+        .visit-table th {
+            background-color: #f1f3f5;
+            white-space: nowrap;
         }
-        .app-card p {
-            margin: 0 0 8px 0;
-            color: #555;
-            font-size: 13px;
+        .notes-cell {
+            text-align: left;
         }
-        .btn-link {
-            color: #007bff;
+
+        /* キャンセル行 */
+        .visit-table tr.is-cancelled td {
+            background-color: #ffe6e6;
+            color: #c00;
+            text-decoration: line-through !important;
+        }
+
+        /* ボタン系 */
+        .btn {
+            display: inline-block;
+            padding: 2px 8px;
+            font-size: 12px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
             text-decoration: none;
-            font-size: 13px;
+            cursor: pointer;
+            background-color: #fff;
         }
-        .btn-link:hover {
-            text-decoration: underline;
+        .btn-xs {
+            padding: 1px 6px;
+            font-size: 11px;
         }
+        .btn-danger {
+            color: #fff;
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        .btn-outline {
+            color: #007bff;
+            border-color: #007bff;
+        }
+        .btn-outline:hover {
+            background-color: #e7f1ff;
+        }
+
+        /* バッジ */
+        .badge {
+            display: inline-block;
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+        }
+        .badge-muted {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+
+        .empty-message {
+            margin-top: 10px;
+            color: #666;
+        }
+
+        /* ------------ メインコンテンツ ------------ */
+        .main-content {
+            flex: 1;
+            padding: 20px 30px;
+            overflow-y: auto;
+        }
+
         footer {
             text-align: center;
             font-size: 11px;
             color: #777;
-            margin: 10px 0 15px;
+            margin: 20px 0 15px;
         }
+
+        /* スライドスイッチ */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .3s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        .switch input:checked + .slider {
+            background-color: #e66;  /* 赤系 */
+        }
+
+        .switch input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        .slider.round {
+            border-radius: 24px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        /* インライン編集用入力 */
+        .inline-edit-input {
+            width: 95%;
+            box-sizing: border-box;
+            padding: 2px 4px;
+            font-size: 13px;
+            font-family: inherit;
+            border: 1px solid #4d90fe;
+            border-radius: 4px;
+            background-color: #fffef2;
+            outline: none;
+            box-shadow: 0 0 0 1px rgba(77,144,254,0.2);
+        }
+
+        /* 編集可能セル */
+        .visit-table td.editable {
+            cursor: pointer;
+        }
+        .visit-table td.editable:hover {
+            background-color: #fff9e6;
+        }
+
     </style>
+
     {% block extra_head %}{% endblock %}
 </head>
+
 <body>
 
-<header>
-    <div>
-        <div class="title">
-            {% trans "社内ポータル" %}
-        </div>
-        <!-- ★ 共通：言語切替 -->
-        <div class="lang-switch">
-            {% trans "表示言語" %}：
-            <a href="{% url 'switch_language' 'ja' %}">日本語</a> |
-            <a href="{% url 'switch_language' 'zh-hans' %}">简体中文</a>
-        </div>
-    </div>
+<!-- ======== サイドバー ======== -->
+<div class="sidebar">
+    <div class="title">NGLS-CS Portal</div>
 
     <div class="user-info">
         {% if user.is_authenticated %}
-            {% trans "ログイン中" %}: {{ user.email }} /
-            <a href="{% url 'logout' %}" style="color:#ffddaa;">{% trans "ログアウト" %}</a>
+            {{ user.email }}<br>
+            <a href="{% url 'logout' %}" style="color:#ffddaa;">ログアウト</a>
         {% else %}
-            <a href="{% url 'login' %}" style="color:#ffddaa;">{% trans "ログイン" %}</a>
+            <a href="{% url 'login' %}" style="color:#ffddaa;">ログイン</a>
         {% endif %}
     </div>
-</header>
 
-<nav style="background-color:#004080; padding:4px 20px;">
-    <a href="{% url 'home' %}">🏠 ホーム</a>
-    <a href="{% url 'visitors:index' %}">📅 来客予定</a>
-    <!-- 将来: 温湿度, 日報 などをここに追加 -->
-</nav>
-
-<div class="container">
-    {% block content %}{% endblock %}
+    <nav>
+        <a href="{% url 'home' %}">🏠 ホーム</a>
+        <a href="{% url 'visitors:index' %}">📅 来客予定管理</a>
+        <a href="#">📅 訪問予定管理<br>（準備中）</a>
+        <a href="#">🌡 温湿度モニター<br>（準備中）</a>
+        <a href="#">📝 日報<br>（準備中）</a>
+    </nav>
 </div>
 
-<footer>
-    &copy; {{ now|date:"Y" }} Intranet Portal
-</footer>
+<!-- ======== メインコンテンツ ======== -->
+<div class="main-content">
+    <div class="container">
+        {% block app_name %}{% endblock %}
+        {% block subnav %}{% endblock %}
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer>
+        &copy; {{ now|date:"Y" }} Intranet Portal
+    </footer>
+</div>
 
 </body>
 </html>
