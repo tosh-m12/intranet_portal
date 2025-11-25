@@ -126,6 +126,49 @@
             text-decoration: line-through !important;
         }
 
+        /* キャンセル行の時間セレクトも赤字＋取り消し線風にする */
+        .visit-table tr.is-cancelled td .time-editor,
+        .visit-table tr.is-cancelled td .time-select {
+            color: #c00;
+            text-decoration: line-through;
+        }
+
+        /* 一部ブラウザ向け：select 自体の背景も薄赤に */
+        .visit-table tr.is-cancelled td .time-select {
+            background-color: #ffe6e6;
+        }
+
+        /* 時間セル内のレイアウト */
+        .time-editor {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        /* 時・分セレクト：枠を薄くして表に溶け込ませる */
+        .time-select {
+            border: 1px solid transparent;
+            background: transparent;
+            font: inherit;
+            padding: 0 2px;
+            outline: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            text-align-last: center;
+            min-width: 2.2em;
+        }
+
+        /* ホバー時だけ少し「押せそう」な雰囲気を出す */
+        .time-select:hover {
+            border-color: #ccc;
+            background-color: #fffdf5;
+            border-radius: 4px;
+        }
+
+
+
+
         /* ボタン系 */
         .btn {
             display: inline-block;
@@ -258,7 +301,7 @@
 
         /* 編集可能セル */
         .visit-table td.editable {
-            cursor: pointer;
+            cursor: default;
         }
         .visit-table td.editable:hover {
             background-color: #fff9e6;

@@ -166,23 +166,112 @@
         const table = document.querySelector('.visit-table');
         if (!table) return;
 
-        // 今編集中のセル情報
         let editing = null;  // {td, oldText, id, field}
 
+        // ① 時間セルをセレクトボックスに変換（常にドロップダウン表示）
+        function setupTimeDropdowns() {
+            const tds = table.querySelectorAll('td[data-field="visit_time"]');
+
+            tds.forEach(td => {
+                const id = td.dataset.id;
+                // もともとの表示値（"HH:MM" or ""）から初期値を作る
+                const text = (td.textContent || '').trim();
+                let hh = '09';
+                let mm = '00';
+                if (text && text.includes(':')) {
+                    const parts = text.split(':');
+                    if (parts.length === 2) {
+                        hh = parts[0].padStart(2, '0');
+                        mm = parts[1].padStart(2, '0');
+                    }
+                }
+
+                const wrapper = document.createElement('span');
+                wrapper.className = 'time-editor';
+
+                const hourSel = document.createElement('select');
+                const minuteSel = document.createElement('select');
+                hourSel.classList.add('time-select', 'time-hour');
+                minuteSel.classList.add('time-select', 'time-minute');
+
+                // 時（00〜23）
+                for (let h = 0; h < 24; h++) {
+                    const opt = document.createElement('option');
+                    const s = String(h).padStart(2, '0');
+                    opt.value = s;
+                    opt.textContent = s;
+                    if (s === hh) opt.selected = true;
+                    hourSel.appendChild(opt);
+                }
+
+                // 分（00,15,30,45）
+                [0, 15, 30, 45].forEach(m => {
+                    const opt = document.createElement('option');
+                    const s = String(m).padStart(2, '0');
+                    opt.value = s;
+                    opt.textContent = s;
+                    if (s === mm) opt.selected = true;
+                    minuteSel.appendChild(opt);
+                });
+
+                wrapper.appendChild(hourSel);
+                wrapper.appendChild(document.createTextNode(' : '));
+                wrapper.appendChild(minuteSel);
+
+                // セルの中身を差し替え
+                td.innerHTML = '';
+                td.appendChild(wrapper);
+
+                function sendUpdate() {
+                    const value = `${hourSel.value}:${minuteSel.value}`;
+
+                    fetch("{% url 'visitors:inline_update' %}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken'),
+                        },
+                        body: JSON.stringify({
+                            id: id,
+                            field: 'visit_time',
+                            value: value,
+                        }),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.ok) {
+                            alert('時間の保存に失敗しました: ' + (data.error || ''));
+                        }
+                        // 成功時も画面上はセレクトの値そのまま
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert('時間の保存中に通信エラーが発生しました。');
+                    });
+                }
+
+                hourSel.addEventListener('change', sendUpdate);
+                minuteSel.addEventListener('change', sendUpdate);
+            });
+        }
+
+        // ② 汎用のインライン編集（時間以外のセル）
         function startEdit(td) {
-            // すでに編集中なら何もしない
             if (editing) return;
 
             const id = td.dataset.id;
             const field = td.dataset.field;
             const oldText = td.textContent.trim();
+            if (!id || !field) return;
 
-            // 編集対象セルを contentEditable に
+            // 時間セルはここでは扱わない（常にドロップダウンのため）
+            if (field === 'visit_time') return;
+
             td.classList.add('is-editing');
             td.setAttribute('contenteditable', 'true');
             td.focus();
 
-            // キャレットを文末に移動（お好み）
+            // キャレットを末尾に
             const range = document.createRange();
             range.selectNodeContents(td);
             range.collapse(false);
@@ -192,7 +281,6 @@
 
             editing = {td, oldText, id, field};
 
-            // キー操作
             td.addEventListener('keydown', onKeyDown);
             td.addEventListener('blur', onBlur);
         }
@@ -209,11 +297,8 @@
             }
         }
 
-        // フォーカスアウトしたら保存
         function onBlur(e) {
             if (!editing) return;
-
-            // すぐ呼ぶと別セルクリック時などで競合することがあるので少し待つ
             setTimeout(function () {
                 if (editing) {
                     saveEdit();
@@ -283,16 +368,21 @@
             });
         }
 
-        // テーブルクリック → editable セルなら編集開始
+        // ③ テーブルクリック → editable セルなら編集開始（時間セルは除外）
         table.addEventListener('click', function (e) {
             const td = e.target.closest('td.editable');
             if (!td) return;
-            // スイッチ(label.switch)クリックは無視
+            if (td.dataset.field === 'visit_time') return;  // 時間セルはクリック編集しない
+            // スイッチクリックは無視
             if (e.target.closest('label.switch')) return;
             startEdit(td);
         });
+
+        // ページ表示時に時間セルをドロップダウン化
+        setupTimeDropdowns();
     });
 </script>
+
 
 
 {% endblock %}

@@ -279,16 +279,45 @@ def inline_update(request):
 
     try:
         if field == "visit_date":
-            # "YYYY-MM-DD" 前提
+            # いろいろな書き方を許容する:
+            # 例) "2025-11-29" / "2025/11/29" / "2025 - 11 - 29" / "2025年11月29日"
             if not value:
                 return HttpResponseBadRequest("visit_date is required")
-            visitor.visit_date = datetime.strptime(value, "%Y-%m-%d").date()
+
+            clean = value.strip()
+            # 全角スペースや半角スペースを削る
+            clean = clean.replace(" ", "")
+            # 和暦風の区切りをハイフンに
+            clean = clean.replace("年", "-").replace("月", "-").replace("日", "")
+            # スラッシュもハイフンに
+            clean = clean.replace("/", "-")
+
+            # ここまでで "2025-11-29" の形になっている想定
+            visitor.visit_date = datetime.strptime(clean, "%Y-%m-%d").date()
             display_value = visitor.visit_date.strftime("%Y-%m-%d")
 
         elif field == "visit_time":
-            # 空なら None
+            # いろいろな書き方を許容する:
+            # 例) "09:00" / "9:0" / "09 : 00" / "09時00分"
             if value:
-                visitor.visit_time = datetime.strptime(value, "%H:%M").time()
+                clean = value.strip()
+                clean = clean.replace(" ", "")
+                # 全角コロンを半角に
+                clean = clean.replace("：", ":")
+                # "09時00分" → "09:00"
+                clean = clean.replace("時", ":").replace("分", "")
+
+                # "H:M" → "HH:MM" になるように分解して補正
+                if ":" in clean:
+                    h_str, m_str = clean.split(":", 1)
+                    h = int(h_str)
+                    m = int(m_str)
+                    norm = f"{h:02d}:{m:02d}"
+                else:
+                    # "900" みたいな謎の値は一旦エラーにしてしまう
+                    raise ValueError(f"invalid time format: {value}")
+
+                visitor.visit_time = datetime.strptime(norm, "%H:%M").time()
                 display_value = visitor.visit_time.strftime("%H:%M")
             else:
                 visitor.visit_time = None
@@ -306,6 +335,7 @@ def inline_update(request):
         return JsonResponse({"ok": False, "error": str(e)}, status=400)
 
     return JsonResponse({"ok": True, "value": display_value})
+
 
 
 @login_required
