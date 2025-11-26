@@ -141,6 +141,8 @@
         </table>
     </div>
     <div id="calendar-popup" class="calendar-popup" style="display:none;"></div>
+    <div id="hour-popup" class="time-popup" style="display:none;"></div>
+    <div id="minute-popup" class="time-popup" style="display:none;"></div>
 
 {% else %}
     <p class="empty-message">
@@ -169,184 +171,9 @@
         const table = document.querySelector('.visit-table');
         if (!table) return;
 
-        let editing = null;  // {td, oldText, id, field, input}
+        let editing = null;  // {td, oldText, id, field}（テキストセル用）
 
-        // ① 時間セルをセレクトボックスに変換（常にドロップダウン表示）
-        function setupTimeDropdowns() {
-            const tds = table.querySelectorAll('td[data-field="visit_time"]');
-
-            tds.forEach(td => {
-                const id = td.dataset.id;
-                // もともとの表示値（"HH:MM" or ""）から初期値を作る
-                const text = (td.textContent || '').trim();
-                let hh = '09';
-                let mm = '00';
-                if (text && text.includes(':')) {
-                    const parts = text.split(':');
-                    if (parts.length === 2) {
-                        hh = parts[0].padStart(2, '0');
-                        mm = parts[1].padStart(2, '0');
-                    }
-                }
-
-                const wrapper = document.createElement('span');
-                wrapper.className = 'time-editor';
-
-                const hourSel = document.createElement('select');
-                const minuteSel = document.createElement('select');
-                hourSel.classList.add('time-select', 'time-hour');
-                minuteSel.classList.add('time-select', 'time-minute');
-
-                // 時（00〜23）
-                for (let h = 0; h < 24; h++) {
-                    const opt = document.createElement('option');
-                    const s = String(h).padStart(2, '0');
-                    opt.value = s;
-                    opt.textContent = s;
-                    if (s === hh) opt.selected = true;
-                    hourSel.appendChild(opt);
-                }
-
-                // 分（00,15,30,45）
-                [0, 15, 30, 45].forEach(m => {
-                    const opt = document.createElement('option');
-                    const s = String(m).padStart(2, '0');
-                    opt.value = s;
-                    opt.textContent = s;
-                    if (s === mm) opt.selected = true;
-                    minuteSel.appendChild(opt);
-                });
-
-                wrapper.appendChild(hourSel);
-                wrapper.appendChild(document.createTextNode(' : '));
-                wrapper.appendChild(minuteSel);
-
-                // セルの中身を差し替え
-                td.innerHTML = '';
-                td.appendChild(wrapper);
-
-                function sendUpdate() {
-                    const value = `${hourSel.value}:${minuteSel.value}`;
-
-                    fetch("{% url 'visitors:inline_update' %}", {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': getCookie('csrftoken'),
-                        },
-                        body: JSON.stringify({
-                            id: id,
-                            field: 'visit_time',
-                            value: value,
-                        }),
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (!data.ok) {
-                            alert('時間の保存に失敗しました: ' + (data.error || ''));
-                        }
-                        // 成功時も画面上はセレクトの値そのまま
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        alert('時間の保存中に通信エラーが発生しました。');
-                    });
-                }
-
-                hourSel.addEventListener('change', sendUpdate);
-                minuteSel.addEventListener('change', sendUpdate);
-            });
-        }
-
-        // ② 日付セル用：クリックすると <input type="date"> に差し替え
-        function enableDatePicker(td) {
-            if (editing) return;  // 他セル編集中なら無視
-
-            const id = td.dataset.id;
-            const raw = td.dataset.date;  // "YYYY-MM-DD"
-            const oldText = td.textContent.trim();
-            if (!id) return;
-
-            const input = document.createElement('input');
-            input.type = 'date';
-            input.classList.add('date-editor-input');
-            input.style.width = '120px';
-            input.style.font = 'inherit';
-            input.style.textAlign = 'center';
-
-            if (raw) {
-                input.value = raw;
-            }
-
-            td.innerHTML = '';
-            td.appendChild(input);
-            input.focus();
-
-            editing = { td, id, field: 'visit_date', oldText, input };
-
-            function saveDate() {
-                const newValue = input.value;  // "YYYY-MM-DD"
-                if (!newValue) {
-                    // 空は許さないなら元に戻す
-                    td.textContent = oldText;
-                    editing = null;
-                    return;
-                }
-
-                fetch("{% url 'visitors:inline_update' %}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken'),
-                    },
-                    body: JSON.stringify({
-                        id: id,
-                        field: 'visit_date',
-                        value: newValue,
-                    }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.ok) {
-                        // サーバ側の表示値（2025年11月04日）で更新
-                        td.textContent = data.value || '';
-                        td.dataset.date = newValue;   // 次回の初期値
-                    } else {
-                        alert('日付の保存に失敗しました: ' + (data.error || ''));
-                        td.textContent = oldText;
-                    }
-                    editing = null;
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert('通信エラーが発生しました。');
-                    td.textContent = oldText;
-                    editing = null;
-                });
-            }
-
-            // カレンダーから選択されたとき
-            input.addEventListener('change', saveDate);
-
-            // フォーカスが外れたら保存（必要ないなら外してもOK）
-            input.addEventListener('blur', function () {
-                setTimeout(function () {
-                    if (editing) {
-                        saveDate();
-                    }
-                }, 50);
-            });
-
-            // Esc でキャンセル
-            input.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape') {
-                    td.textContent = oldText;
-                    editing = null;
-                }
-            });
-        }
-
-        // ③ 汎用のインライン編集（時間・日付以外のセル）
+        // ① 汎用のインライン編集（時間・日付以外のセル）
         function startEdit(td) {
             if (editing) return;
 
@@ -459,7 +286,59 @@
             });
         }
 
-        // ④ テーブルクリック → セルごとに処理を分岐
+        // ② 時間セル表示を「HH : MM」のクリック可能な表示にする
+        function setupTimeDisplays() {
+            const tds = table.querySelectorAll('td[data-field="visit_time"]');
+
+            tds.forEach(td => {
+                const id = td.dataset.id;
+                const text = (td.textContent || '').trim();
+                let hh = '09';
+                let mm = '00';
+
+                if (text && text.includes(':')) {
+                    const parts = text.split(':');
+                    if (parts.length === 2) {
+                        hh = parts[0].padStart(2, '0');
+                        mm = parts[1].padStart(2, '0');
+                    }
+                }
+
+                const wrapper = document.createElement('span');
+                wrapper.className = 'time-display';
+
+                const hourSpan = document.createElement('span');
+                hourSpan.className = 'time-part time-hour';
+                hourSpan.textContent = hh;
+
+                const colon = document.createTextNode(' : ');
+
+                const minuteSpan = document.createElement('span');
+                minuteSpan.className = 'time-part time-minute';
+                minuteSpan.textContent = mm;
+
+                wrapper.appendChild(hourSpan);
+                wrapper.appendChild(colon);
+                wrapper.appendChild(minuteSpan);
+
+                td.innerHTML = '';
+                td.appendChild(wrapper);
+
+                // 時クリック → 時ポップアップ
+                hourSpan.addEventListener('click', function (e) {
+                    e.stopPropagation();  // テーブルの click ハンドラに行かないように
+                    showHourPopup(hourSpan, td, id, hourSpan.textContent, minuteSpan.textContent);
+                });
+
+                // 分クリック → 分ポップアップ
+                minuteSpan.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    showMinutePopup(minuteSpan, td, id, hourSpan.textContent, minuteSpan.textContent);
+                });
+            });
+        }
+
+        // ③ テーブルクリック → セルごとに処理を分岐
         table.addEventListener('click', function (e) {
             const td = e.target.closest('td.editable');
             if (!td) return;
@@ -469,12 +348,12 @@
             const field = td.dataset.field;
 
             if (field === 'visit_time') {
-                // 時間セルはセレクトなので何もしない
+                // 時間セルは、内部の span のクリックで処理するので何もしない
                 return;
             } else if (field === 'visit_date') {
                 // 日付セル：カレンダー入力
                 const id = td.dataset.id;
-                const current = td.textContent.trim(); // 2025年11月04日
+                const current = td.textContent.trim(); // 2025年11月04日 など
                 showCalendar(td, id, current);
                 return;
             } else {
@@ -483,17 +362,167 @@
             }
         });
 
-        // ページ表示時に時間セルをドロップダウン化
-        setupTimeDropdowns();
+        // ページ表示時に時間セルの表示をセットアップ
+        setupTimeDisplays();
     });
 
+    //-----------------------------
+    // 時ポップアップ（時だけの縦リスト）
+    //-----------------------------
+    function showHourPopup(targetSpan, td, id, currentHour, currentMinute) {
+        const popup = document.getElementById("hour-popup");
+        if (!popup) return;
+
+        const cal = document.getElementById("calendar-popup");
+        const minutePopup = document.getElementById("minute-popup");
+        if (cal) cal.style.display = "none";
+        if (minutePopup) minutePopup.style.display = "none";
+
+        const rect = targetSpan.getBoundingClientRect();
+        popup.style.left = rect.left + window.scrollX + "px";
+        popup.style.top = rect.bottom + window.scrollY + "px";
+        popup.style.display = "block";
+
+        const curH = (currentHour || "00").padStart(2, "0");
+        const curM = (currentMinute || "00").padStart(2, "0");
+
+        let html = "";
+        for (let h = 0; h < 24; h++) {
+            const hh = String(h).padStart(2, "0");
+            const selected = (hh === curH) ? " time-selected" : "";
+            html += `
+                <div class="time-item${selected}" data-hour="${hh}">
+                    ${hh}
+                </div>`;
+        }
+        popup.innerHTML = html;
+
+        popup.querySelectorAll(".time-item").forEach(item => {
+            item.addEventListener("click", () => {
+                const hh = item.dataset.hour;
+                const mm = curM;
+                const saveValue = `${hh}:${mm}`;
+
+                fetch("{% url 'visitors:inline_update' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie("csrftoken"),
+                    },
+                    body: JSON.stringify({
+                        id: id,
+                        field: "visit_time",
+                        value: saveValue,
+                    }),
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.ok) {
+                        const value = data.value || saveValue;
+                        const [newH, newM] = value.split(":");
+                        const hourSpan = td.querySelector(".time-hour");
+                        const minuteSpan = td.querySelector(".time-minute");
+                        if (hourSpan && newH) hourSpan.textContent = newH;
+                        if (minuteSpan && newM) minuteSpan.textContent = newM;
+                    } else {
+                        alert("保存に失敗しました：" + (data.error || ""));
+                    }
+                    popup.style.display = "none";
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("通信エラーが発生しました。");
+                    popup.style.display = "none";
+                });
+            });
+        });
+    }
+
+    //-----------------------------
+    // 分ポップアップ（分だけの縦リスト）
+    //-----------------------------
+    function showMinutePopup(targetSpan, td, id, currentHour, currentMinute) {
+        const popup = document.getElementById("minute-popup");
+        if (!popup) return;
+
+        // ★ 他のポップアップを閉じる
+        const cal = document.getElementById("calendar-popup");
+        const hourPopup = document.getElementById("hour-popup");
+        if (cal) cal.style.display = "none";
+        if (hourPopup) hourPopup.style.display = "none";
+
+        const rect = targetSpan.getBoundingClientRect();
+        popup.style.left = rect.left + window.scrollX + "px";
+        popup.style.top = rect.bottom + window.scrollY + "px";
+        popup.style.display = "block";
+
+        const curH = (currentHour || "00").padStart(2, "0");
+        const curM = (currentMinute || "00").padStart(2, "0");
+
+        const minuteList = ["00", "15", "30", "45"];
+        let html = "";
+        minuteList.forEach(mm => {
+            const selected = (mm === curM) ? " time-selected" : "";
+            html += `
+                <div class="time-item${selected}" data-minute="${mm}">
+                    ${mm}
+                </div>`;
+        });
+        popup.innerHTML = html;
+
+        popup.querySelectorAll(".time-item").forEach(item => {
+            item.addEventListener("click", () => {
+                const hh = curH;
+                const mm = item.dataset.minute;
+                const saveValue = `${hh}:${mm}`;
+
+                fetch("{% url 'visitors:inline_update' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie("csrftoken"),
+                    },
+                    body: JSON.stringify({
+                        id: id,
+                        field: "visit_time",
+                        value: saveValue,
+                    }),
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.ok) {
+                        const value = data.value || saveValue;
+                        const [newH, newM] = value.split(":");
+                        const hourSpan = td.querySelector(".time-hour");
+                        const minuteSpan = td.querySelector(".time-minute");
+                        if (hourSpan && newH) hourSpan.textContent = newH;
+                        if (minuteSpan && newM) minuteSpan.textContent = newM;
+                    } else {
+                        alert("保存に失敗しました：" + (data.error || ""));
+                    }
+                    popup.style.display = "none";
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("通信エラーが発生しました。");
+                    popup.style.display = "none";
+                });
+            });
+        });
+    }
+
     //--------------------------------------
-    // 小型カレンダーを表示
+    // 小型カレンダーを表示（既存ロジックベース）
     //--------------------------------------
     function showCalendar(td, id, currentDateStr) {
         const popup = document.getElementById("calendar-popup");
 
-        // 現在の位置にポップアップを配置
+        // ★ 他のポップアップを閉じる
+        const hourPopup = document.getElementById("hour-popup");
+        const minutePopup = document.getElementById("minute-popup");
+        if (hourPopup) hourPopup.style.display = "none";
+        if (minutePopup) minutePopup.style.display = "none";
+
         const rect = td.getBoundingClientRect();
         popup.style.left = rect.left + window.scrollX + "px";
         popup.style.top = rect.bottom + window.scrollY + "px";
@@ -501,15 +530,13 @@
 
         let current = new Date(currentDateStr.replace(/年|月|日/g, "/"));
 
-        // 現在選択されている日付（初期値）
         let selectedYear = current.getFullYear();
-        let selectedMonth = current.getMonth() + 1; // 1–12
+        let selectedMonth = current.getMonth() + 1;
         let selectedDay = current.getDate();
-
 
         function renderCalendar() {
             const year = current.getFullYear();
-            const month = current.getMonth(); // 0-11
+            const month = current.getMonth();
 
             const firstDay = new Date(year, month, 1).getDay();
             const lastDate = new Date(year, month + 1, 0).getDate();
@@ -521,16 +548,14 @@
                     <button id="cal-next">→</button>
                 </div>
                 <div class="calendar-grid">
-                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                    <div>Sun</div><div>Mon</div><div>Tue</div>
+                    <div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
             `;
 
-            // 前空白
             for (let i=0; i<firstDay; i++) {
                 html += `<div class="calendar-day-disabled"></div>`;
             }
 
-            // 日付
-            // 今日の日付
             const today = new Date();
 
             for (let day = 1; day <= lastDate; day++) {
@@ -553,14 +578,9 @@
                     </div>`;
             }
 
-
-
             html += `</div>`;
             popup.innerHTML = html;
 
-            //--------------------------------------
-            // 前月・翌月 移動
-            //--------------------------------------
             document.getElementById("cal-prev").onclick = () => {
                 current = new Date(year, month - 1, 1);
                 renderCalendar();
@@ -570,9 +590,6 @@
                 renderCalendar();
             };
 
-            //--------------------------------------
-            // 日付クリック → 保存して閉じる
-            //--------------------------------------
             popup.querySelectorAll(".cal-day").forEach(d => {
                 d.addEventListener("click", () => {
                     const yyyy = year;
@@ -582,7 +599,6 @@
                     const saveValue = `${yyyy}-${mm}-${dd}`;
                     const displayValue = `${yyyy}年${mm}月${dd}日`;
 
-                    // 保存
                     fetch("{% url 'visitors:inline_update' %}", {
                         method: 'POST',
                         headers: {
@@ -612,31 +628,43 @@
     }
 
     // ----------------------
-    // カレンダー外クリックで閉じる（修正版）
+    // カレンダー・時間ポップアップ外クリックで閉じる
     // ----------------------
     document.addEventListener("click", function (e) {
-        const popup = document.getElementById("calendar-popup");
-        if (!popup) return;
+        const cal = document.getElementById("calendar-popup");
+        const hourPopup = document.getElementById("hour-popup");
+        const minutePopup = document.getElementById("minute-popup");
 
-        if (popup.style.display === "none") return;
+        const isDateCell = e.target.closest("td.editable[data-field='visit_date']");
+        const isHourSpan = e.target.closest(".time-hour");
+        const isMinuteSpan = e.target.closest(".time-minute");
 
-        // ① カレンダー内部のクリック → 閉じない
-        if (popup.contains(e.target)) return;
+        // カレンダー
+        if (cal && cal.style.display !== "none") {
+            if (
+                !cal.contains(e.target) &&
+                !isDateCell &&
+                e.target.id !== "cal-prev" &&
+                e.target.id !== "cal-next"
+            ) {
+                cal.style.display = "none";
+            }
+        }
 
-        // ② 日付セルのクリック（新たに開くため）→ 閉じない
-        if (e.target.closest("td.editable[data-field='visit_date']")) return;
+        // 時ポップアップ
+        if (hourPopup && hourPopup.style.display !== "none") {
+            if (!hourPopup.contains(e.target) && !isHourSpan) {
+                hourPopup.style.display = "none";
+            }
+        }
 
-        // ③ 月移動ボタン（← →）→ 閉じない
-        if (e.target.id === "cal-prev" || e.target.id === "cal-next") return;
-
-        // ④ 上記以外 → 閉じる
-        popup.style.display = "none";
+        // 分ポップアップ
+        if (minutePopup && minutePopup.style.display !== "none") {
+            if (!minutePopup.contains(e.target) && !isMinuteSpan) {
+                minutePopup.style.display = "none";
+            }
+        }
     });
-
-
 </script>
-
-
-
 
 {% endblock %}

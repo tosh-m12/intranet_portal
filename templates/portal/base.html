@@ -133,6 +133,14 @@
             text-decoration: line-through;
         }
 
+        /* キャンセル行：時間表示も赤＋取り消し線 */
+        .visit-table tr.is-cancelled td .time-display,
+        .visit-table tr.is-cancelled td .time-part {
+            color: #c00 !important;
+            text-decoration: line-through !important;
+        }
+
+
         /* 一部ブラウザ向け：select 自体の背景も薄赤に */
         .visit-table tr.is-cancelled td .time-select {
             background-color: #ffe6e6;
@@ -156,28 +164,6 @@
             background-color: #fffdf5;
         }
 
-
-        /* 時間セル内のレイアウト */
-        .time-editor {
-            display: inline-flex;
-            align-items: center;
-            gap: 2px;
-        }
-
-        /* 時・分セレクト：枠を薄くして表に溶け込ませる */
-        .time-select {
-            border: 1px solid transparent;
-            background: transparent;
-            font: inherit;
-            padding: 0 2px;
-            outline: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            text-align-last: center;
-            min-width: 2.2em;
-        }
-
         /* ホバー時だけ少し「押せそう」な雰囲気を出す */
         .time-select:hover {
             border-color: #ccc;
@@ -185,7 +171,40 @@
             border-radius: 4px;
         }
 
+        /* リストアイテム部分 */
+        .time-item {
+            padding: 6px 8px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background 0.15s;
+        }
 
+        /* ホバー時 */
+        .time-item:hover {
+            background: #f0f4ff;
+        }
+
+        /* 選択状態 */
+        .time-selected {
+            background: #1e90ff;
+            color: #fff;
+        }
+
+        /* セル内の表示（09 : 00 のところ） */
+        .time-display {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .time-part {
+            padding: 1px 4px;
+            border-radius: 4px;
+        }
+
+        .time-part:hover {
+            background-color: #fff9e6;
+        }
 
 
         /* ボタン系 */
@@ -395,6 +414,61 @@
             color: #0074d9;
         }
 
+        /* 時間ポップアップ（時・分）共通 */
+        .time-popup {
+            position: absolute;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 8px;
+            z-index: 1000;
+            font-size: 12px;
+
+            width: 30px;      /* ★ 幅を狭くする */
+            min-width: 0;     /* ★ 140pxを無効化 */
+        }
+
+        /* 時間・分を横並びにするコンテナ */
+        .time-list {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* 片側の列（時間 / 分） */
+        .time-col {
+            display: flex;
+            flex-direction: column;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+
+        /* 列のタイトル */
+        .time-col-title {
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 4px;
+            text-align: center;
+        }
+
+        /* 各候補 */
+        .time-item {
+            padding: 3px 8px;
+            cursor: pointer;
+            border-radius: 4px;
+            white-space: nowrap;
+            text-align: center;
+        }
+
+        .time-item:hover {
+            background-color: #f0f4ff;
+        }
+
+        /* 選択中の値 */
+        .time-item.time-selected {
+            background-color: #003366;
+            color: #fff;
+        }
 
     </style>
 
