@@ -419,14 +419,15 @@
             position: absolute;
             background-color: #fff;
             border: 1px solid #ccc;
-            border-radius: 10px;
+            border-radius: 6px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            padding: 8px;
+            padding: 6px 4px;
             z-index: 1000;
             font-size: 12px;
 
-            width: 30px;      /* ★ 幅を狭くする */
-            min-width: 0;     /* ★ 140pxを無効化 */
+            width: 50px;           /* ← 幅（お好みで 60〜80px くらい） */
+            max-height: 220px;     /* ← ここで縦の最大高さを決める */
+            overflow-y: auto;      /* ← はみ出した分をスクロール */
         }
 
         /* 時間・分を横並びにするコンテナ */
