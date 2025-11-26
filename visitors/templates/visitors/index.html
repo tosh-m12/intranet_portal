@@ -53,10 +53,11 @@
 
                     <td class="editable"
                         data-id="{{ v.id }}"
-                        data-field="visit_date">
+                        data-field="visit_date"
+                        data-date="{{ v.visit_date_raw }}">
                         {{ v.visit_date }}
                     </td>
-
+                    
                     <td class="editable"
                         data-id="{{ v.id }}"
                         data-field="visit_time">
@@ -139,6 +140,8 @@
             </tbody>
         </table>
     </div>
+    <div id="calendar-popup" class="calendar-popup" style="display:none;"></div>
+
 {% else %}
     <p class="empty-message">
         {% trans "本日以降の来訪予定はありません。" %}
@@ -166,7 +169,7 @@
         const table = document.querySelector('.visit-table');
         if (!table) return;
 
-        let editing = null;  // {td, oldText, id, field}
+        let editing = null;  // {td, oldText, id, field, input}
 
         // ① 時間セルをセレクトボックスに変換（常にドロップダウン表示）
         function setupTimeDropdowns() {
@@ -255,7 +258,95 @@
             });
         }
 
-        // ② 汎用のインライン編集（時間以外のセル）
+        // ② 日付セル用：クリックすると <input type="date"> に差し替え
+        function enableDatePicker(td) {
+            if (editing) return;  // 他セル編集中なら無視
+
+            const id = td.dataset.id;
+            const raw = td.dataset.date;  // "YYYY-MM-DD"
+            const oldText = td.textContent.trim();
+            if (!id) return;
+
+            const input = document.createElement('input');
+            input.type = 'date';
+            input.classList.add('date-editor-input');
+            input.style.width = '120px';
+            input.style.font = 'inherit';
+            input.style.textAlign = 'center';
+
+            if (raw) {
+                input.value = raw;
+            }
+
+            td.innerHTML = '';
+            td.appendChild(input);
+            input.focus();
+
+            editing = { td, id, field: 'visit_date', oldText, input };
+
+            function saveDate() {
+                const newValue = input.value;  // "YYYY-MM-DD"
+                if (!newValue) {
+                    // 空は許さないなら元に戻す
+                    td.textContent = oldText;
+                    editing = null;
+                    return;
+                }
+
+                fetch("{% url 'visitors:inline_update' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                    body: JSON.stringify({
+                        id: id,
+                        field: 'visit_date',
+                        value: newValue,
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.ok) {
+                        // サーバ側の表示値（2025年11月04日）で更新
+                        td.textContent = data.value || '';
+                        td.dataset.date = newValue;   // 次回の初期値
+                    } else {
+                        alert('日付の保存に失敗しました: ' + (data.error || ''));
+                        td.textContent = oldText;
+                    }
+                    editing = null;
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('通信エラーが発生しました。');
+                    td.textContent = oldText;
+                    editing = null;
+                });
+            }
+
+            // カレンダーから選択されたとき
+            input.addEventListener('change', saveDate);
+
+            // フォーカスが外れたら保存（必要ないなら外してもOK）
+            input.addEventListener('blur', function () {
+                setTimeout(function () {
+                    if (editing) {
+                        saveDate();
+                    }
+                }, 50);
+            });
+
+            // Esc でキャンセル
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    td.textContent = oldText;
+                    editing = null;
+                }
+            });
+        }
+
+        // ③ 汎用のインライン編集（時間・日付以外のセル）
         function startEdit(td) {
             if (editing) return;
 
@@ -264,8 +355,8 @@
             const oldText = td.textContent.trim();
             if (!id || !field) return;
 
-            // 時間セルはここでは扱わない（常にドロップダウンのため）
-            if (field === 'visit_time') return;
+            // 時間・日付はここでは扱わない
+            if (field === 'visit_time' || field === 'visit_date') return;
 
             td.classList.add('is-editing');
             td.setAttribute('contenteditable', 'true');
@@ -297,7 +388,7 @@
             }
         }
 
-        function onBlur(e) {
+        function onBlur() {
             if (!editing) return;
             setTimeout(function () {
                 if (editing) {
@@ -368,20 +459,183 @@
             });
         }
 
-        // ③ テーブルクリック → editable セルなら編集開始（時間セルは除外）
+        // ④ テーブルクリック → セルごとに処理を分岐
         table.addEventListener('click', function (e) {
             const td = e.target.closest('td.editable');
             if (!td) return;
-            if (td.dataset.field === 'visit_time') return;  // 時間セルはクリック編集しない
             // スイッチクリックは無視
             if (e.target.closest('label.switch')) return;
-            startEdit(td);
+
+            const field = td.dataset.field;
+
+            if (field === 'visit_time') {
+                // 時間セルはセレクトなので何もしない
+                return;
+            } else if (field === 'visit_date') {
+                // 日付セル：カレンダー入力
+                const id = td.dataset.id;
+                const current = td.textContent.trim(); // 2025年11月04日
+                showCalendar(td, id, current);
+                return;
+            } else {
+                // その他：テキストインライン編集
+                startEdit(td);
+            }
         });
 
         // ページ表示時に時間セルをドロップダウン化
         setupTimeDropdowns();
     });
+
+    //--------------------------------------
+    // 小型カレンダーを表示
+    //--------------------------------------
+    function showCalendar(td, id, currentDateStr) {
+        const popup = document.getElementById("calendar-popup");
+
+        // 現在の位置にポップアップを配置
+        const rect = td.getBoundingClientRect();
+        popup.style.left = rect.left + window.scrollX + "px";
+        popup.style.top = rect.bottom + window.scrollY + "px";
+        popup.style.display = "block";
+
+        let current = new Date(currentDateStr.replace(/年|月|日/g, "/"));
+
+        // 現在選択されている日付（初期値）
+        let selectedYear = current.getFullYear();
+        let selectedMonth = current.getMonth() + 1; // 1–12
+        let selectedDay = current.getDate();
+
+
+        function renderCalendar() {
+            const year = current.getFullYear();
+            const month = current.getMonth(); // 0-11
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+
+            let html = `
+                <div class="calendar-header">
+                    <button id="cal-prev">←</button>
+                    <span>${year}年${String(month+1).padStart(2,"0")}月</span>
+                    <button id="cal-next">→</button>
+                </div>
+                <div class="calendar-grid">
+                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+            `;
+
+            // 前空白
+            for (let i=0; i<firstDay; i++) {
+                html += `<div class="calendar-day-disabled"></div>`;
+            }
+
+            // 日付
+            // 今日の日付
+            const today = new Date();
+
+            for (let day = 1; day <= lastDate; day++) {
+                const isSelected =
+                    year === selectedYear &&
+                    month === (selectedMonth - 1) &&
+                    day === selectedDay;
+
+                const isToday =
+                    year === today.getFullYear() &&
+                    month === today.getMonth() &&
+                    day === today.getDate();
+
+                html += `
+                    <div class="cal-day
+                        ${isSelected ? "cal-selected" : ""}
+                        ${isToday ? "cal-today" : ""}"
+                        data-day="${day}">
+                        ${day}
+                    </div>`;
+            }
+
+
+
+            html += `</div>`;
+            popup.innerHTML = html;
+
+            //--------------------------------------
+            // 前月・翌月 移動
+            //--------------------------------------
+            document.getElementById("cal-prev").onclick = () => {
+                current = new Date(year, month - 1, 1);
+                renderCalendar();
+            };
+            document.getElementById("cal-next").onclick = () => {
+                current = new Date(year, month + 1, 1);
+                renderCalendar();
+            };
+
+            //--------------------------------------
+            // 日付クリック → 保存して閉じる
+            //--------------------------------------
+            popup.querySelectorAll(".cal-day").forEach(d => {
+                d.addEventListener("click", () => {
+                    const yyyy = year;
+                    const mm = String(month + 1).padStart(2, "0");
+                    const dd = String(d.dataset.day).padStart(2, "0");
+
+                    const saveValue = `${yyyy}-${mm}-${dd}`;
+                    const displayValue = `${yyyy}年${mm}月${dd}日`;
+
+                    // 保存
+                    fetch("{% url 'visitors:inline_update' %}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken'),
+                        },
+                        body: JSON.stringify({
+                            id: id,
+                            field: 'visit_date',
+                            value: saveValue,
+                        }),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.ok) {
+                            td.textContent = displayValue;
+                        } else {
+                            alert("保存に失敗しました: " + data.error);
+                        }
+                        popup.style.display = "none";
+                    });
+                });
+            });
+        }
+
+        renderCalendar();
+    }
+
+    // ----------------------
+    // カレンダー外クリックで閉じる（修正版）
+    // ----------------------
+    document.addEventListener("click", function (e) {
+        const popup = document.getElementById("calendar-popup");
+        if (!popup) return;
+
+        if (popup.style.display === "none") return;
+
+        // ① カレンダー内部のクリック → 閉じない
+        if (popup.contains(e.target)) return;
+
+        // ② 日付セルのクリック（新たに開くため）→ 閉じない
+        if (e.target.closest("td.editable[data-field='visit_date']")) return;
+
+        // ③ 月移動ボタン（← →）→ 閉じない
+        if (e.target.id === "cal-prev" || e.target.id === "cal-next") return;
+
+        // ④ 上記以外 → 閉じる
+        popup.style.display = "none";
+    });
+
+
 </script>
+
 
 
 

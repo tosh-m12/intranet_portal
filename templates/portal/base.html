@@ -138,6 +138,25 @@
             background-color: #ffe6e6;
         }
 
+        /* 日付入力（インライン編集用） */
+        .date-editor-input {
+            border: 1px solid transparent;
+            background: transparent;
+            font: inherit;
+            padding: 2px 4px;
+            outline: none;
+            text-align: center;
+            border-radius: 4px;
+        }
+
+        /* ホバー or フォーカス時に枠が浮き上がる */
+        .date-editor-input:hover,
+        .date-editor-input:focus {
+            border-color: #ccc;
+            background-color: #fffdf5;
+        }
+
+
         /* 時間セル内のレイアウト */
         .time-editor {
             display: inline-flex;
@@ -306,6 +325,76 @@
         .visit-table td.editable:hover {
             background-color: #fff9e6;
         }
+
+        .calendar-popup {
+            position: absolute;
+            z-index: 2000;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            font-size: 12px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .calendar-header button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+        }
+
+        .calendar-grid div {
+            padding: 4px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .calendar-grid div:hover {
+            background: #fff4cc;
+        }
+
+        .calendar-day-disabled {
+            color: #ccc;
+            pointer-events: none;
+        }
+
+        .calendar-selected {
+            background: #007bff;
+            color: white;
+        }
+
+        .cal-selected {
+            background-color: #cce5ff;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #003366;
+            box-shadow: 0 0 3px rgba(0, 80, 160, 0.4);
+        }
+
+        /* 今日の日付を薄く表示 */
+        .cal-today {
+            background-color: #f0f8ff;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #0074d9;
+        }
+
 
     </style>
 

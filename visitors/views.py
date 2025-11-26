@@ -32,7 +32,10 @@ def index(request):
     for v in visitors_qs:
         visitors.append({
             "id": v.id,
-            "visit_date": v.visit_date,  # そのまま表示（YYYY-MM-DD）
+            # 表示用: 2025年11月04日
+            "visit_date": v.visit_date.strftime("%Y年%m月%d日") if v.visit_date else "",
+            # 編集用: 2025-11-04
+            "visit_date_raw": v.visit_date.strftime("%Y-%m-%d") if v.visit_date else "",
             "visit_time": v.visit_time.strftime("%H:%M") if v.visit_time else "",
             "time_undecided_flag": v.time_undecided,
             "company_name": v.company_name,
@@ -285,16 +288,13 @@ def inline_update(request):
                 return HttpResponseBadRequest("visit_date is required")
 
             clean = value.strip()
-            # 全角スペースや半角スペースを削る
             clean = clean.replace(" ", "")
-            # 和暦風の区切りをハイフンに
             clean = clean.replace("年", "-").replace("月", "-").replace("日", "")
-            # スラッシュもハイフンに
             clean = clean.replace("/", "-")
 
-            # ここまでで "2025-11-29" の形になっている想定
             visitor.visit_date = datetime.strptime(clean, "%Y-%m-%d").date()
-            display_value = visitor.visit_date.strftime("%Y-%m-%d")
+            # ★表示用は「2025年11月04日」形式
+            display_value = visitor.visit_date.strftime("%Y年%m月%d日")
 
         elif field == "visit_time":
             # いろいろな書き方を許容する:
