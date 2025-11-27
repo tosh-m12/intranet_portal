@@ -11,4 +11,5 @@ urlpatterns = [
     path('settings/', views.settings_view, name='settings'),
     path('run-email/', views.run_email, name='run_email'),
     path('inline-update/', views.inline_update, name='inline_update'),
+    path('<int:id>/toggle-undecided/', views.toggle_undecided, name='toggle_undecided'),
 ]

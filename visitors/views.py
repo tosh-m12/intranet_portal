@@ -246,10 +246,6 @@ def settings_view(request):
 @login_required
 @require_POST
 def inline_update(request):
-    """
-    一覧画面からのインライン編集用エンドポイント
-    JSON: { "id": 123, "field": "company_name", "value": "..." }
-    """
     try:
         data = json.loads(request.body.decode('utf-8'))
     except json.JSONDecodeError:
@@ -262,7 +258,7 @@ def inline_update(request):
     if not visitor_id or not field:
         return HttpResponseBadRequest("missing id or field")
 
-    # セキュリティのため、編集可能フィールドを限定
+    # time_undecided はここから外す
     allowed_fields = {
         "visit_date",
         "visit_time",
@@ -282,39 +278,20 @@ def inline_update(request):
 
     try:
         if field == "visit_date":
-            # いろいろな書き方を許容する:
-            # 例) "2025-11-29" / "2025/11/29" / "2025 - 11 - 29" / "2025年11月29日"
-            if not value:
-                return HttpResponseBadRequest("visit_date is required")
-
-            clean = value.strip()
-            clean = clean.replace(" ", "")
-            clean = clean.replace("年", "-").replace("月", "-").replace("日", "")
-            clean = clean.replace("/", "-")
-
-            visitor.visit_date = datetime.strptime(clean, "%Y-%m-%d").date()
-            # ★表示用は「2025年11月04日」形式
-            display_value = visitor.visit_date.strftime("%Y年%m月%d日")
-
+            ...
         elif field == "visit_time":
-            # いろいろな書き方を許容する:
-            # 例) "09:00" / "9:0" / "09 : 00" / "09時00分"
             if value:
                 clean = value.strip()
                 clean = clean.replace(" ", "")
-                # 全角コロンを半角に
                 clean = clean.replace("：", ":")
-                # "09時00分" → "09:00"
                 clean = clean.replace("時", ":").replace("分", "")
 
-                # "H:M" → "HH:MM" になるように分解して補正
                 if ":" in clean:
                     h_str, m_str = clean.split(":", 1)
                     h = int(h_str)
                     m = int(m_str)
                     norm = f"{h:02d}:{m:02d}"
                 else:
-                    # "900" みたいな謎の値は一旦エラーにしてしまう
                     raise ValueError(f"invalid time format: {value}")
 
                 visitor.visit_time = datetime.strptime(norm, "%H:%M").time()
@@ -322,9 +299,7 @@ def inline_update(request):
             else:
                 visitor.visit_time = None
                 display_value = ""
-
         else:
-            # 文字列フィールド
             setattr(visitor, field, value)
             display_value = value
 
@@ -335,6 +310,21 @@ def inline_update(request):
         return JsonResponse({"ok": False, "error": str(e)}, status=400)
 
     return JsonResponse({"ok": True, "value": display_value})
+
+
+@login_required
+def toggle_undecided(request, id):
+    if request.method == 'POST':
+        visitor = get_object_or_404(Visitor, pk=id)
+        visitor.time_undecided = not visitor.time_undecided
+
+        # 未定になったら時間をクリア
+        if visitor.time_undecided:
+            visitor.visit_time = None
+
+        visitor.save()
+
+    return redirect('visitors:index')
 
 
 

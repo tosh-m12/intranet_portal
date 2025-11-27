@@ -115,6 +115,64 @@
             background-color: #f1f3f5;
             white-space: nowrap;
         }
+
+        /* 時間が未入力(--:--)のセルを強調表示 */
+        .visit-table td.time-error {
+            box-shadow: 0 0 0 2px red inset;  /* 内側に赤い太枠 */
+        }
+
+        /* 時間未入力エラー用の赤枠 */
+        td.time-error {
+            border: 2px solid #d9534f !important;
+            background-color: #fff5f5;
+            position: relative;
+        }
+
+        /* エラーメッセージ（ホバー表示） */
+        td.time-error:hover::after {
+            content: attr(data-error-msg);
+            position: absolute;
+            top: -24px;
+            left: 0;
+            background: #d9534f;
+            color: white;
+            padding: 3px 6px;
+            font-size: 11px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .action-cell input[type="checkbox"] {
+            transform: scale(1.1);
+        }
+
+        /* 来訪日（1列目）を固定幅 */
+        .visit-table th:nth-child(1),
+        .visit-table td:nth-child(1) {
+            width: 115px;
+            min-width: 115px;
+            max-width: 115px;
+            white-space: nowrap;
+        }
+
+        /* 時間（2列目）を固定幅 */
+        .visit-table th:nth-child(2),
+        .visit-table td:nth-child(2) {
+            width: 55px;
+            min-width: 55px;
+            max-width: 55px;
+            white-space: nowrap;
+        }
+
+        /* 未定（3列目）を固定幅 */
+        .visit-table th:nth-child(3),
+        .visit-table td:nth-child(3) {
+            width: 30px;
+            min-width: 30px;
+            max-width: 30px;
+            white-space: nowrap;
+        }
+
         .notes-cell {
             text-align: left;
         }
