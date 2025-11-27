@@ -34,8 +34,8 @@
             <thead>
                 <tr>
                     <th>{% trans "来訪日" %}</th>
-                    <th>{% trans "時間" %}</th>
                     <th>{% trans "未定" %}</th>
+                    <th>{% trans "時間" %}</th>
                     <th>{% trans "正式会社名" %}</th>
                     <th>{% trans "来訪者（姓）" %}</th>
                     <th>{% trans "来訪者（名）" %}</th>
@@ -59,13 +59,6 @@
                         {{ v.visit_date }}
                     </td>
 
-                    <!-- 時間 -->
-                    <td class="editable"
-                        data-id="{{ v.id }}"
-                        data-field="visit_time"
-                        data-undecided="{% if v.time_undecided_flag %}1{% else %}0{% endif %}">
-                        {{ v.visit_time }}
-                    </td>
 
                     <!-- 未定チェック：キャンセル行は非表示 -->
                     <td class="action-cell">
@@ -83,6 +76,15 @@
                         {% else %}
                             &nbsp;
                         {% endif %}
+                    </td>
+
+
+                    <!-- 時間 -->
+                    <td class="editable"
+                        data-id="{{ v.id }}"
+                        data-field="visit_time"
+                        data-undecided="{% if v.time_undecided_flag %}1{% else %}0{% endif %}">
+                        {{ v.visit_time }}
                     </td>
 
                     <!-- 各種テキスト項目（インライン編集対象） -->
@@ -315,7 +317,7 @@
 
                 // 未定フラグ ON のときは「未定」バッジのみ表示
                 if (isUndecided) {
-                    td.innerHTML = '<span class="badge badge-muted">未定</span>';
+                    td.innerHTML = '<span class="undecided-label">未定</span>';
                     return;
                 }
 
@@ -744,7 +746,6 @@
         // キャンセル行 / 未定はエラー扱いにしない
         if (isCancelled || isUndecided) {
             td.classList.remove("time-error");
-            td.removeAttribute("data-error-msg");
             return;
         }
 
@@ -755,10 +756,8 @@
 
         if (isError) {
             td.classList.add("time-error");
-            td.setAttribute("data-error-msg", "時間を記入してください");
         } else {
             td.classList.remove("time-error");
-            td.removeAttribute("data-error-msg");
         }
     }
 

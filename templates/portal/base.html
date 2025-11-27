@@ -128,20 +128,6 @@
             position: relative;
         }
 
-        /* エラーメッセージ（ホバー表示） */
-        td.time-error:hover::after {
-            content: attr(data-error-msg);
-            position: absolute;
-            top: -24px;
-            left: 0;
-            background: #d9534f;
-            color: white;
-            padding: 3px 6px;
-            font-size: 11px;
-            border-radius: 4px;
-            white-space: nowrap;
-        }
-
         .action-cell input[type="checkbox"] {
             transform: scale(1.1);
         }
@@ -155,21 +141,23 @@
             white-space: nowrap;
         }
 
-        /* 時間（2列目）を固定幅 */
-        .visit-table th:nth-child(2),
-        .visit-table td:nth-child(2) {
-            width: 55px;
-            min-width: 55px;
-            max-width: 55px;
-            white-space: nowrap;
-        }
+
 
         /* 未定（3列目）を固定幅 */
-        .visit-table th:nth-child(3),
-        .visit-table td:nth-child(3) {
+        .visit-table th:nth-child(2),
+        .visit-table td:nth-child(2) {
             width: 30px;
             min-width: 30px;
             max-width: 30px;
+            white-space: nowrap;
+        }
+
+        /* 時間（2列目）を固定幅 */
+        .visit-table th:nth-child(3),
+        .visit-table td:nth-child(3) {
+            width: 55px;
+            min-width: 55px;
+            max-width: 55px;
             white-space: nowrap;
         }
 
@@ -303,10 +291,20 @@
             border-radius: 10px;
             font-size: 11px;
         }
-        .badge-muted {
-            background-color: #e9ecef;
-            color: #495057;
+        
+        .undecided-label {
+            font-weight: bold;
+            color: #000;
+            font-size: 15px;  /* ここで大きさ調整 */
         }
+
+
+        .badge.badge-muted {
+            font-size: 13px !important;   /* ← 大きめの文字に */
+            /* padding: 4px 8px !important;  ← 余白を増やしてバッジを大きく */
+            border-radius: 6px !important;
+        }
+
 
         .empty-message {
             margin-top: 10px;
