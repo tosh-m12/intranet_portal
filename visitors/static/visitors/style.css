@@ -1,0 +1,536 @@
+/* =========================================================
+   共通レイアウト（portal/base.html 用）
+   ========================================================= */
+
+/* ページ全体 */
+body {
+    font-family: Arial, "Yu Gothic", "Meiryo", sans-serif;
+    margin: 0;
+    background-color: #f5f5f5;
+    display: flex;
+    height: 100vh;
+}
+
+/* ------------ サイドバー ------------ */
+.sidebar {
+    width: 250px;
+    background-color: #003366;
+    color: white;
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.sidebar .title {
+    font-size: 18px;
+    font-weight: bold;
+    padding: 0 10px;
+    margin-bottom: 10px;
+}
+
+.sidebar .user-info {
+    font-size: 12px;
+    margin-bottom: 20px;
+    padding: 0 10px;
+    line-height: 1.4;
+}
+
+.sidebar nav {
+    display: flex;
+    flex-direction: column;
+    padding: 0 10px;
+    gap: 6px;
+}
+
+.sidebar nav a {
+    color: #cce0ff;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+}
+.sidebar nav a:hover {
+    background-color: #004080;
+}
+
+/* ------------ メインコンテンツ ------------ */
+.main-content {
+    flex: 1;
+    padding: 20px 30px;
+    overflow-y: auto;
+}
+
+footer {
+    text-align: center;
+    font-size: 11px;
+    color: #777;
+    margin: 20px 0 15px;
+}
+
+/* ------------ サブナビ ------------ */
+.subnav {
+    margin-bottom: 12px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 2px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.subnav a {
+    display: inline-block;
+    padding: 6px 12px;
+    margin-right: 6px;
+    text-decoration: none;
+    font-size: 13px;
+    color: #333;
+    background-color: #f0f0f0;
+    border-radius: 4px 4px 0 0;
+    border: 1px solid #ddd;
+    border-bottom: none;
+}
+.subnav a:hover {
+    background-color: #e0e0e0;
+}
+.subnav a.active {
+    background-color: #ffffff;
+    font-weight: bold;
+}
+
+/* =========================================================
+   ボタン共通
+   ========================================================= */
+.btn {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 13px;
+    text-decoration: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    line-height: 1.3;
+    background-color: #fff;
+    color: #333;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: #fff;
+}
+
+.btn-secondary {
+    background-color: #f5f5f5;
+    border-color: #ccc;
+    color: #333;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: #fff;
+}
+
+.btn-outline {
+    background-color: #fff;
+    border-color: #999;
+    color: #333;
+}
+
+.btn-xs {
+    padding: 3px 6px;
+    font-size: 11px;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+/* =========================================================
+   ページヘッダ
+   ========================================================= */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+/* サブタイトルなどを使う場合用 */
+.page-header-sub {
+    margin-top: 2px;
+    font-size: 12px;
+    color: #666;
+}
+
+/* =========================================================
+   テーブル共通（一覧／新規登録）
+   ========================================================= */
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.visit-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 4px;
+    font-size: 13px;
+    background-color: #fff;
+}
+
+.visit-table th,
+.visit-table td {
+    border: 1px solid #ddd;
+    padding: 6px 4px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.visit-table th {
+    background-color: #f1f3f5;
+    white-space: nowrap;
+}
+
+/* 備考列は左寄せ */
+.notes-cell {
+    text-align: left;
+}
+
+/* 操作列（チェックボックスなど） */
+.action-cell {
+    white-space: nowrap;
+}
+
+/* チェックボックス少し拡大 */
+.action-cell input[type="checkbox"] {
+    transform: scale(1.1);
+}
+
+/* 来訪日（1列目）を固定幅 */
+.visit-table th:nth-child(1),
+.visit-table td:nth-child(1) {
+    width: 115px;
+    min-width: 115px;
+    max-width: 115px;
+    white-space: nowrap;
+}
+
+/* 未定（2列目）を固定幅 */
+.visit-table th:nth-child(2),
+.visit-table td:nth-child(2) {
+    width: 30px;
+    min-width: 30px;
+    max-width: 30px;
+    white-space: nowrap;
+}
+
+/* 時間（3列目）を固定幅 */
+.visit-table th:nth-child(3),
+.visit-table td:nth-child(3) {
+    width: 55px;
+    min-width: 55px;
+    max-width: 55px;
+    white-space: nowrap;
+}
+
+/* 新規登録フォームの input / select を「枠なし」に統一 */
+.visit-table input[type="text"],
+.visit-table input[type="date"],
+.visit-table select {
+    border: none;
+    background: transparent;
+    padding: 2px 4px;
+    font-size: 13px;
+    font-family: inherit;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* フォーカス時も枠や背景を出さない */
+.visit-table input[type="text"]:focus,
+.visit-table input[type="date"]:focus,
+.visit-table select:focus {
+    outline: none;
+    border: none;
+    background: transparent;
+}
+
+/* 日付 input を隠して span だけ見せる用途 */
+.hidden-date-input {
+    display: none;
+}
+
+/* =========================================================
+   インライン編集（一覧画面）
+   ========================================================= */
+/* 編集可能セル */
+.visit-table td.editable {
+    cursor: default;
+}
+
+/* =========================================================
+   取消（キャンセル）行
+   ========================================================= */
+.visit-table tr.is-cancelled td {
+    background-color: #ffe6e6;   /* 薄い赤背景 */
+    color: #c00;                 /* 赤字 */
+    text-decoration: line-through !important;
+}
+
+/* キャンセル行：時間表示も赤＋取り消し線 */
+.visit-table tr.is-cancelled td .time-display,
+.visit-table tr.is-cancelled td .time-part {
+    color: #c00 !important;
+    text-decoration: line-through !important;
+}
+
+/* =========================================================
+   時間未入力エラー（--:-- のまま）
+   ========================================================= */
+.visit-table td.time-error {
+    border: 2px solid #d9534f !important;
+    background-color: #fff5f5;
+    box-shadow: 0 0 0 2px red inset;  /* 内側に赤枠を強調 */
+    position: relative;
+}
+
+/* =========================================================
+   バッジ / 未定ラベル
+   ========================================================= */
+.badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 11px;
+}
+
+.badge-muted {
+    background-color: #eee;
+    color: #555;
+}
+
+.undecided-label {
+    font-weight: bold;
+    color: #000;
+    font-size: 15px;
+}
+
+/* 「未定」バッジの見た目 */
+.badge.badge-muted {
+    font-size: 13px !important;
+    border-radius: 6px !important;
+}
+
+/* 空表示メッセージ */
+.empty-message {
+    margin-top: 10px;
+    color: #666;
+}
+
+/* =========================================================
+   スライドスイッチ（キャンセル用）
+   ========================================================= */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .3s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+}
+
+/* ON（キャンセル状態） */
+.switch input:checked + .slider {
+    background-color: #e66;  /* 赤系 */
+}
+
+.switch input:checked + .slider:before {
+    transform: translateX(24px);
+}
+
+.slider.round {
+    border-radius: 24px;
+}
+.slider.round:before {
+    border-radius: 50%;
+}
+
+/* =========================================================
+   カレンダー（一覧／新規登録 共通ポップアップ）
+   ========================================================= */
+.calendar-popup {
+    position: absolute;
+    z-index: 2000;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    font-size: 12px;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.calendar-header button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+}
+
+.calendar-grid div {
+    padding: 4px;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.calendar-grid div:hover {
+    background: #fff4cc;
+}
+
+.calendar-day-disabled {
+    color: #ccc;
+    pointer-events: none;
+}
+
+.cal-selected {
+    background-color: #cce5ff;
+    border-radius: 4px;
+    font-weight: bold;
+    color: #003366;
+    box-shadow: 0 0 3px rgba(0, 80, 160, 0.4);
+}
+
+/* 今日の日付 */
+.cal-today {
+    background-color: #f0f8ff;
+    border-radius: 4px;
+    font-weight: bold;
+    color: #0074d9;
+}
+
+/* =========================================================
+   時間ポップアップ（時・分 共通）
+   ========================================================= */
+.time-popup {
+    position: absolute;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: 6px 4px;
+    z-index: 1000;
+    font-size: 12px;
+
+    width: 50px;           /* 幅 */
+    max-height: 220px;     /* 縦の最大高さ */
+    overflow-y: auto;      /* スクロール */
+}
+
+/* 時間・分のリスト（使う場合用） */
+.time-list {
+    display: flex;
+    gap: 12px;
+}
+
+.time-col {
+    display: flex;
+    flex-direction: column;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.time-col-title {
+    font-weight: bold;
+    font-size: 11px;
+    margin-bottom: 4px;
+    text-align: center;
+}
+
+/* 候補 */
+.time-item {
+    padding: 3px 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.time-item:hover {
+    background-color: #f0f4ff;
+}
+
+/* 選択中 */
+.time-item.time-selected {
+    background-color: #003366;
+    color: #fff;
+}
+
+/* セル内の表示「09 : 00」 */
+.time-display {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.time-part {
+    padding: 1px 4px;
+    border-radius: 4px;
+}
+
+/* index.html と同じホバー効果（add.html も含めて）
+   ※キャンセル行・エラーセルは除外 */
+.visit-table tr:not(.is-cancelled) td.editable:not(.time-error):hover,
+.visit-table tr:not(.is-cancelled) td.date-cell:not(.time-error):hover,
+.visit-table tr:not(.is-cancelled) td.time-cell:not(.time-error):hover,
+.visit-table tr:not(.is-cancelled) td.company-cell:not(.time-error):hover {
+    background-color: #fff9e6;
+}
+
+/* add.html / index.html 共通：必須未入力の赤枠 */
+.visit-table td.input-error {
+    border: 2px solid #d9534f !important;
+    background-color: #fff5f5;
+    box-shadow: 0 0 0 2px red inset;
+}
