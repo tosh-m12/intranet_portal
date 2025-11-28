@@ -12,6 +12,9 @@
     <a href="{% url 'visitors:index' %}">
         📋 {% trans "一覧" %}
     </a>
+    <a href="{% url 'visitors:history' %}" class="active">
+        🕒 {% trans "過去一覧" %}
+    </a>
     <a href="{% url 'visitors:add_visitor' %}" class="active">
         ➕ {% trans "新規登録" %}
     </a>

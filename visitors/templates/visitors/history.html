@@ -1,7 +1,8 @@
+{# visitors/history.html #}
 {% extends "portal/base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "本日以降の来訪予定" %} - 社内ポータル{% endblock %}
+{% block title %}{% trans "過去の来訪者一覧" %} - 社内ポータル{% endblock %}
 
 {% block app_name %}
 <h1>📅 来客予定管理</h1>
@@ -9,10 +10,10 @@
 
 {% block subnav %}
 <div class="subnav">
-    <a href="{% url 'visitors:index' %}" class="active">
+    <a href="{% url 'visitors:index' %}">
         📋 {% trans "一覧" %}
     </a>
-    <a href="{% url 'visitors:history' %}">
+    <a href="{% url 'visitors:history' %}" class="active">
         🕒 {% trans "過去一覧" %}
     </a>
     <a href="{% url 'visitors:add_visitor' %}">
@@ -21,14 +22,13 @@
     <a href="{% url 'visitors:settings' %}">
         ⚙ {% trans "メール設定" %}
     </a>
-
 </div>
 {% endblock %}
 
 {% block content %}
 <div class="page-header">
     <div>
-        <h2>{% trans "本日以降の来訪予定一覧" %}</h2>
+        <h2>{% trans "過去の来訪者一覧" %}</h2>
     </div>
 </div>
 
@@ -63,7 +63,6 @@
                         {{ v.visit_date }}
                     </td>
 
-
                     <!-- 未定チェック：キャンセル行は非表示 -->
                     <td class="action-cell">
                         {% if not v.cancelled_flag %}
@@ -81,7 +80,6 @@
                             &nbsp;
                         {% endif %}
                     </td>
-
 
                     <!-- 時間 -->
                     <td class="editable"
@@ -163,14 +161,14 @@
         </table>
     </div>
 
-    <!-- ポップアップ用要素 -->
+    <!-- ポップアップ用要素（index.html と同じ） -->
     <div id="calendar-popup" class="calendar-popup" style="display:none;"></div>
     <div id="hour-popup" class="time-popup" style="display:none;"></div>
     <div id="minute-popup" class="time-popup" style="display:none;"></div>
 
 {% else %}
     <p class="empty-message">
-        {% trans "本日以降の来訪予定はありません。" %}
+        {% trans "該当する過去の来訪者はありません。" %}
     </p>
 {% endif %}
 

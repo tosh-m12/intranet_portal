@@ -9,6 +9,7 @@ urlpatterns = [
     path('cancel/<int:id>/', views.cancel_visitor, name='cancel_visitor'),
     path('edit/<int:id>/', views.edit_visitor, name='edit_visitor'),
     path('settings/', views.settings_view, name='settings'),
+    path("history/", views.history, name="history"),
     path('run-email/', views.run_email, name='run_email'),
     path('inline-update/', views.inline_update, name='inline_update'),
     path('<int:id>/toggle-undecided/', views.toggle_undecided, name='toggle_undecided'),

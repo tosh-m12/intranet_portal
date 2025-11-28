@@ -53,6 +53,17 @@ def index(request):
 
 
 @login_required
+def history(request):
+    """過去の来訪者一覧（本日より前）"""
+    today = timezone.localdate()
+    visitors = (
+        Visitor.objects
+        .filter(visit_date__lt=today)
+        .order_by('-visit_date', '-visit_time', 'company_name')  # 過去なので日付降順
+    )
+    return render(request, "visitors/history.html", {"visitors": visitors})
+
+@login_required
 def add_visitor(request):
     VisitorFormSet = formset_factory(VisitorForm, extra=3)
     formset = VisitorFormSet(request.POST or None)
