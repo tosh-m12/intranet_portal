@@ -191,6 +191,15 @@
         const table = document.querySelector('.visit-table');
         if (!table) return;
 
+        const REQUIRED_FIELDS = [
+            'company_name',
+            'last_name',
+            'first_name',
+            'purpose',
+            'location',
+            'host_staff',
+        ];
+
         let editing = null;  // {td, oldText, id, field}
 
         // ===== ① 汎用インライン編集（visit_time / visit_date 以外） =====
@@ -203,6 +212,8 @@
             if (!id || !field) return;
 
             if (field === 'visit_time' || field === 'visit_date') return;
+
+            td.classList.remove('input-error');
 
             td.classList.add('is-editing');
             td.setAttribute('contenteditable', 'true');
@@ -261,6 +272,24 @@
             const {td, oldText, id, field} = editing;
             const newValue = td.textContent.trim();
 
+            if (REQUIRED_FIELDS.includes(field) && newValue === '') {
+                // エラー枠を付ける
+                td.classList.add('input-error');
+
+                // テキストは元に戻す（サーバーと不整合にならないように）
+                td.textContent = oldText;
+
+                alert('この項目は必須です。空欄にはできません。');
+
+                td.classList.remove('is-editing');
+                td.removeAttribute('contenteditable');
+                td.removeEventListener('keydown', onKeyDown);
+                td.removeEventListener('blur', onBlur);
+
+                editing = null;
+                return;
+            }
+
             fetch("{% url 'visitors:inline_update' %}", {
                 method: 'POST',
                 headers: {
@@ -277,6 +306,7 @@
             .then(data => {
                 if (data.ok) {
                     td.textContent = data.value || '';
+                    td.classList.remove('input-error');
                 } else {
                     alert('保存に失敗しました: ' + (data.error || ''));
                     td.textContent = oldText;
@@ -749,10 +779,14 @@
             return;
         }
 
-        const hour = td.querySelector(".time-hour")?.textContent;
-        const minute = td.querySelector(".time-minute")?.textContent;
+        var hourElem = td.querySelector(".time-hour");
+        var minuteElem = td.querySelector(".time-minute");
+        var hour = hourElem ? hourElem.textContent : null;
+        var minute = minuteElem ? minuteElem.textContent : null;
 
-        const isError = (!hour || hour === "--" || !minute || minute === "--");
+        var isError =
+            (!hour || hour === "--" || hour === "") ||
+            (!minute || minute === "--" || minute === "");
 
         if (isError) {
             td.classList.add("time-error");
@@ -761,22 +795,27 @@
         }
     }
 
+
     // ===== 時・分のテキスト変化を監視して赤枠自動解除 =====
     function attachTimeErrorAutoClear() {
-        const tds = document.querySelectorAll('td[data-field="visit_time"]');
+        var tds = document.querySelectorAll('td[data-field="visit_time"]');
 
-        tds.forEach(td => {
+        tds.forEach(function (td) {
             updateTimeErrorState(td);
 
-            const observer = new MutationObserver(() => {
+            var observer = new MutationObserver(function () {
                 updateTimeErrorState(td);
             });
 
-            const hour = td.querySelector(".time-hour");
-            const minute = td.querySelector(".time-minute");
+            var hour = td.querySelector(".time-hour");
+            var minute = td.querySelector(".time-minute");
 
-            if (hour) observer.observe(hour, { childList: true });
-            if (minute) observer.observe(minute, { childList: true });
+            if (hour) {
+                observer.observe(hour, { childList: true, characterData: true, subtree: true });
+            }
+            if (minute) {
+                observer.observe(minute, { childList: true, characterData: true, subtree: true });
+            }
         });
     }
 

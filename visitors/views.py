@@ -243,73 +243,65 @@ def settings_view(request):
     return render(request, "visitors/settings.html", context)
 
 
-@login_required
 @require_POST
+@login_required
 def inline_update(request):
-    try:
-        data = json.loads(request.body.decode('utf-8'))
-    except json.JSONDecodeError:
-        return HttpResponseBadRequest("invalid json")
-
-    visitor_id = data.get("id")
-    field = data.get("field")
-    value = data.get("value", "").strip()
-
-    if not visitor_id or not field:
-        return HttpResponseBadRequest("missing id or field")
-
-    # time_undecided はここから外す
-    allowed_fields = {
-        "visit_date",
-        "visit_time",
-        "company_name",
-        "last_name",
-        "first_name",
-        "title",
-        "purpose",
-        "location",
-        "host_staff",
-        "notes",
-    }
-    if field not in allowed_fields:
-        return HttpResponseBadRequest("field not allowed")
-
-    visitor = get_object_or_404(Visitor, pk=visitor_id)
+    import datetime
+    import json
+    from django.http import JsonResponse
+    from .models import Visitor
 
     try:
+        data = json.loads(request.body)
+        visitor_id = data.get("id")
+        field = data.get("field")
+        value = data.get("value", "").strip()
+
+        v = Visitor.objects.get(id=visitor_id)
+
+        # ------------------------------------
+        # 来訪日（YYYY-MM-DD）
+        # ------------------------------------
         if field == "visit_date":
-            ...
+            try:
+                dt = datetime.datetime.strptime(value, "%Y-%m-%d")
+                v.visit_date = dt.date()
+                v.save()
+                display_value = f"{dt.year}年{dt.month:02}月{dt.day:02}日"
+                return JsonResponse({"ok": True, "value": display_value})
+            except Exception as e:
+                return JsonResponse({"ok": False, "error": str(e)})
+
+        # ------------------------------------
+        # 来訪時間（HH:MM）
+        # ------------------------------------
         elif field == "visit_time":
-            if value:
-                clean = value.strip()
-                clean = clean.replace(" ", "")
-                clean = clean.replace("：", ":")
-                clean = clean.replace("時", ":").replace("分", "")
-
-                if ":" in clean:
-                    h_str, m_str = clean.split(":", 1)
-                    h = int(h_str)
-                    m = int(m_str)
-                    norm = f"{h:02d}:{m:02d}"
+            try:
+                # 空の場合（--:-- など）はエラーにしない
+                if value == "":
+                    v.visit_time = None
                 else:
-                    raise ValueError(f"invalid time format: {value}")
+                    t = datetime.datetime.strptime(value, "%H:%M").time()
+                    v.visit_time = t
 
-                visitor.visit_time = datetime.strptime(norm, "%H:%M").time()
-                display_value = visitor.visit_time.strftime("%H:%M")
-            else:
-                visitor.visit_time = None
-                display_value = ""
+                v.save()
+                return JsonResponse({"ok": True, "value": value})
+            except Exception as e:
+                return JsonResponse({"ok": False, "error": str(e)})
+
+        # ------------------------------------
+        # 上記以外のフィールド（会社名・名前・目的など）
+        # ------------------------------------
         else:
-            setattr(visitor, field, value)
-            display_value = value
+            setattr(v, field, value)
+            v.save()
 
-        visitor.save()
+            display_value = value if value is not None else ""
+            return JsonResponse({"ok": True, "value": display_value})
 
     except Exception as e:
-        logger.error(f"[VISITOR_INLINE] update error: {e}", exc_info=True)
-        return JsonResponse({"ok": False, "error": str(e)}, status=400)
+        return JsonResponse({"ok": False, "error": str(e)})
 
-    return JsonResponse({"ok": True, "value": display_value})
 
 
 @login_required
