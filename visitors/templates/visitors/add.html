@@ -24,7 +24,11 @@
 
 {% block content %}
 
-<h2>{% trans "来訪予定登録" %}</h2>
+<div class="page-header">
+    <div>
+        <h2>{% trans "来訪予定新規登録" %}</h2>
+    </div>
+</div>
 
 <form method="post">
     {% csrf_token %}
@@ -34,9 +38,9 @@
         <table class="visit-table visit">
             <thead>
             <tr>
-                <th>{% trans "訪問日" %}</th>
-                <th>{% trans "時間" %}</th>
+                <th>{% trans "来訪日" %}</th>
                 <th>{% trans "未定" %}</th>
+                <th>{% trans "時間" %}</th>
                 <th>{% trans "正式会社名" %}</th>
                 <th>{% trans "姓" %}</th>
                 <th>{% trans "名" %}</th>
@@ -50,42 +54,34 @@
             <tbody id="formset-body">
             {% for form in formset %}
                 <tr class="form-row">
-                    {# --- 日付 --- #}
                     <td class="date-cell">
                         <span class="date-display"></span>
-                        {# 本物の input は隠しておく #}
                         {{ form.visit_date }}
                         {% if form.visit_date.errors %}
                             <div style="color: red;">{{ form.visit_date.errors.0 }}</div>
                         {% endif %}
                     </td>
 
-                    {# --- 時間 --- #}
+                    <td class="undecided-cell action-cell">
+                        <label class="undecided-label">
+                            {{ form.time_undecided }}
+                        </label>
+                    </td>
+
                     <td class="time-cell">
                         <span class="time-display">
                             <span class="time-part time-hour">--</span>
                             <span> : </span>
                             <span class="time-part time-minute">--</span>
                         </span>
-                        <span class="badge badge-muted undecided-badge" style="display:none;">未定</span>
-
-                        {# 本物の select は隠しておく #}
+                        <span class="undecided-label undecided-badge" style="display:none;">未定</span>
                         {{ form.visit_time }}
                         {% if form.visit_time.errors %}
                             <div style="color: red;">{{ form.visit_time.errors.0 }}</div>
                         {% endif %}
                     </td>
 
-                    {# --- 未定 --- #}
-                    <td class="undecided-cell action-cell">
-                        <label class="undecided-label">
-                            {{ form.time_undecided }}
-                            <span>未定</span>
-                        </label>
-                    </td>
-
-                    {# --- 以降の項目はそのまま input 表示 --- #}
-                    <td>
+                    <td class="company-cell">
                         {{ form.company_name }}
                         {% if form.company_name.errors %}
                             <div style="color: red;">{{ form.company_name.errors.0 }}</div>
@@ -173,23 +169,22 @@
         <input type="date" name="form-__prefix__-visit_date"
                class="hidden-date-input" style="display:none;">
     </td>
+    <td class="undecided-cell action-cell">
+        <label class="undecided-label">
+            <input type="checkbox" name="form-__prefix__-time_undecided">
+        </label>
+    </td>
     <td class="time-cell">
         <span class="time-display">
             <span class="time-part time-hour">--</span>
             <span> : </span>
             <span class="time-part time-minute">--</span>
         </span>
-        <span class="badge badge-muted undecided-badge" style="display:none;">未定</span>
+        <span class="undecided-label undecided-badge" style="display:none;">未定</span>
         <select name="form-__prefix__-visit_time"
                 class="hidden-time-input" style="display:none;">
             ${timeChoicesHtml}
         </select>
-    </td>
-    <td class="undecided-cell action-cell">
-        <label class="undecided-label">
-            <input type="checkbox" name="form-__prefix__-time_undecided">
-            <span>未定</span>
-        </label>
     </td>
     <td><input type="text" name="form-__prefix__-company_name"></td>
     <td><input type="text" name="form-__prefix__-last_name"></td>

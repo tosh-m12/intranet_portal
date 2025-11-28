@@ -116,6 +116,15 @@
             white-space: nowrap;
         }
 
+        .visit-table .company-cell .company-input {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .hidden-date-input {
+            display: none;
+        }
+
         /* 時間が未入力(--:--)のセルを強調表示 */
         .visit-table td.time-error {
             box-shadow: 0 0 0 2px red inset;  /* 内側に赤い太枠 */
@@ -204,18 +213,18 @@
         }
 
         /* ホバー or フォーカス時に枠が浮き上がる */
-        .date-editor-input:hover,
+        /* .date-editor-input:hover,
         .date-editor-input:focus {
             border-color: #ccc;
             background-color: #fffdf5;
-        }
+        } */
 
         /* ホバー時だけ少し「押せそう」な雰囲気を出す */
-        .time-select:hover {
+        /* .time-select:hover {
             border-color: #ccc;
             background-color: #fffdf5;
             border-radius: 4px;
-        }
+        } */
 
         /* リストアイテム部分 */
         .time-item {
@@ -248,9 +257,9 @@
             border-radius: 4px;
         }
 
-        .time-part:hover {
+        /* .time-part:hover {
             background-color: #fff9e6;
-        }
+        } */
 
 
         /* ボタン系 */
@@ -379,24 +388,11 @@
             border-radius: 50%;
         }
 
-        /* インライン編集用入力 */
-        .inline-edit-input {
-            width: 95%;
-            box-sizing: border-box;
-            padding: 2px 4px;
-            font-size: 13px;
-            font-family: inherit;
-            border: 1px solid #4d90fe;
-            border-radius: 4px;
-            background-color: #fffef2;
-            outline: none;
-            box-shadow: 0 0 0 1px rgba(77,144,254,0.2);
-        }
-
         /* 編集可能セル */
         .visit-table td.editable {
             cursor: default;
         }
+
         .visit-table td.editable:hover {
             background-color: #fff9e6;
         }
@@ -517,15 +513,38 @@
             text-align: center;
         }
 
-        .time-item:hover {
+        /* .time-item:hover {
             background-color: #f0f4ff;
-        }
+        } */
 
         /* 選択中の値 */
         .time-item.time-selected {
             background-color: #003366;
             color: #fff;
         }
+
+        /* add.html の入力欄を index.html と同じ「枠なし」デザインに統一 */
+        .visit-table input[type="text"],
+        .visit-table input[type="date"],
+        .visit-table select {
+            border: none;
+            background: transparent;
+            padding: 2px 4px;
+            font-size: 13px;
+            font-family: inherit;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* フォーカス時も枠を出さない */
+        .visit-table input[type="text"]:focus,
+        .visit-table input[type="date"]:focus,
+        .visit-table select:focus {
+            outline: none;
+            border: none;
+            background: transparent;
+        }
+
 
     </style>
 
