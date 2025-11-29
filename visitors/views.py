@@ -73,8 +73,26 @@ def history(request):
         visit_date__lte=today
     ).order_by("-visit_date", "visit_time", "id")
 
-    # index と同じ形式の dict に揃える
-    visitors = [_serialize_visitor(v) for v in visitors_qs]
+    visitors = []
+    for v in visitors_qs:
+        visitors.append({
+            "id": v.id,
+            # 表示用: 2025年11月04日
+            "visit_date": v.visit_date.strftime("%Y年%m月%d日") if v.visit_date else "",
+            # 編集用: 2025-11-04
+            "visit_date_raw": v.visit_date.strftime("%Y-%m-%d") if v.visit_date else "",
+            "visit_time": v.visit_time.strftime("%H:%M") if v.visit_time else "",
+            "time_undecided_flag": v.time_undecided,
+            "company_name": v.company_name,
+            "last_name": v.last_name,
+            "first_name": v.first_name,
+            "title": v.title,
+            "purpose": v.purpose,
+            "location": v.location,
+            "host_staff": v.host_staff,
+            "notes": v.notes,
+            "cancelled_flag": v.cancelled,
+        })
 
     return render(request, "visitors/history.html", {
         "visitors": visitors,
@@ -140,15 +158,23 @@ def add_visitor(request):
 # =========================================================
 @login_required
 def cancel_visitor(request, id):
-    if request.method == 'POST':
-        visitor = get_object_or_404(Visitor, pk=id)
-        # 現在のフラグを反転させる（True→False, False→True）
-        visitor.cancelled = not visitor.cancelled
-        visitor.save()
+    if request.method != 'POST':
+        return HttpResponseBadRequest("POST only")
 
-    # ★ 戻り先を「直前のページ(Referer)」、なければ index
-    next_url = request.META.get("HTTP_REFERER") or reverse('visitors:index')
-    return redirect(next_url)
+    visitor = get_object_or_404(Visitor, pk=id)
+    visitor.cancelled = not visitor.cancelled
+    visitor.save()
+
+    # Ajax の場合は JSON で返す
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            "ok": True,
+            "cancelled": visitor.cancelled,
+        })
+
+    # 通常遷移（保険）
+    next_page = request.GET.get("next", "index")
+    return redirect(f'visitors:{next_page}')
 
 # =========================================================
 # 個別編集（今後あまり使わないかも）
@@ -348,19 +374,31 @@ def inline_update(request):
 # =========================================================
 @login_required
 def toggle_undecided(request, id):
-    if request.method == 'POST':
-        visitor = get_object_or_404(Visitor, pk=id)
-        visitor.time_undecided = not visitor.time_undecided
+    if request.method != 'POST':
+        return HttpResponseBadRequest("POST only")
 
-        # 未定になったら時間をクリア
-        if visitor.time_undecided:
-            visitor.visit_time = None
+    visitor = get_object_or_404(Visitor, pk=id)
 
-        visitor.save()
+    # フラグを反転
+    visitor.time_undecided = not visitor.time_undecided
 
-    # ★ 戻り先を「直前のページ(Referer)」、なければ index
-    next_url = request.META.get("HTTP_REFERER") or reverse('visitors:index')
-    return redirect(next_url)
+    # 未定になったら時間をクリア
+    if visitor.time_undecided:
+        visitor.visit_time = None
+
+    visitor.save()
+
+    # Ajax の場合は JSON で返す
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            "ok": True,
+            "time_undecided": visitor.time_undecided,
+            "visit_time": visitor.visit_time.strftime("%H:%M") if visitor.visit_time else "",
+        })
+
+    # 通常遷移（保険）
+    next_page = request.GET.get("next", "index")
+    return redirect(f'visitors:{next_page}')
 
 
 # =========================================================

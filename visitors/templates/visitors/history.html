@@ -67,14 +67,14 @@
                     <td class="action-cell">
                         {% if not v.cancelled_flag %}
                             <form method="post"
-                                  action="{% url 'visitors:toggle_undecided' v.id %}"
+                                  action="{% url 'visitors:toggle_undecided' v.id %}?next=history"
+                                  class="inline-action-form"
                                   style="display:inline;">
                                 {% csrf_token %}
                                 <input type="checkbox"
                                        name="time_undecided"
                                        value="1"
-                                       {% if v.time_undecided_flag %}checked{% endif %}
-                                       onchange="this.form.submit()">
+                                       {% if v.time_undecided_flag %}checked{% endif %}>
                             </form>
                         {% else %}
                             &nbsp;
@@ -141,15 +141,15 @@
                     <!-- キャンセルスイッチ -->
                     <td class="action-cell">
                         <form method="post"
-                              action="{% url 'visitors:cancel_visitor' v.id %}"
+                              action="{% url 'visitors:cancel_visitor' v.id %}?next=history"
+                              class="inline-action-form"
                               style="display:inline;">
                             {% csrf_token %}
                             <label class="switch">
                                 <input type="checkbox"
                                        name="cancelled"
                                        value="1"
-                                       {% if v.cancelled_flag %}checked{% endif %}
-                                       onchange="this.form.submit()">
+                                       {% if v.cancelled_flag %}checked{% endif %}>
                                 <span class="slider round"></span>
                             </label>
                         </form>
@@ -854,6 +854,138 @@
             }
         }
     });
+
+    document.addEventListener('change', function (e) {
+        const checkbox = e.target;
+        // inline-action-form 内のチェックボックスだけ対象
+        const form = checkbox.closest('form.inline-action-form');
+        if (!form) return;
+
+        // ここで「通常の submit イベント」を発火させる
+        if (typeof form.requestSubmit === 'function') {
+            // requestSubmit は submit イベントをちゃんと飛ばしてくれる
+            form.requestSubmit();
+        } else {
+            // 古いブラウザ用フォールバック
+            const event = new Event('submit', { cancelable: true, bubbles: true });
+            form.dispatchEvent(event);
+        }
+    }, true);
+
+    (function () {
+        // 「取消」「未定」用フォームを Ajax で処理して、ページリロードを防ぐ
+        document.addEventListener('submit', function (e) {
+            const form = e.target;
+            if (!form.classList || !form.classList.contains('inline-action-form')) {
+                return;
+            }
+
+            e.preventDefault();  // 通常の submit（＝ページリロード）を止める
+
+            const url = form.action;
+            const formData = new FormData(form);
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest',   // ← views 側で Ajax 判定に使用
+                },
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.ok) {
+                    alert('更新に失敗しました。');
+                    return;
+                }
+
+                const row = form.closest('tr');
+                if (!row) return;
+
+                // 取消トグル結果の反映
+                if ('cancelled' in data) {
+                    if (data.cancelled) {
+                        row.classList.add('is-cancelled');
+                    } else {
+                        row.classList.remove('is-cancelled');
+                    }
+                }
+
+                // 未定トグル結果の反映
+                if ('time_undecided' in data) {
+                    const tdTime = row.querySelector('td[data-field="visit_time"]');
+                    if (tdTime) {
+                        tdTime.dataset.undecided = data.time_undecided ? '1' : '0';
+
+                        if (data.time_undecided) {
+                            // 未定になったらラベル表示
+                            tdTime.innerHTML = '<span class="undecided-label">未定</span>';
+                        } else {
+                            // 未定解除 → 時刻表示を再構成
+                            const value = data.visit_time || "";
+                            let hh = "";
+                            let mm = "";
+                            if (value && value.includes(':')) {
+                                const parts = value.split(':');
+                                if (parts.length === 2) {
+                                    hh = parts[0].padStart(2, '0');
+                                    mm = parts[1].padStart(2, '0');
+                                }
+                            }
+
+                            const wrapper = document.createElement('span');
+                            wrapper.className = 'time-display';
+
+                            const hourSpan = document.createElement('span');
+                            hourSpan.className = 'time-part time-hour';
+                            hourSpan.textContent = hh || '--';
+
+                            const colon = document.createTextNode(' : ');
+
+                            const minuteSpan = document.createElement('span');
+                            minuteSpan.className = 'time-part time-minute';
+                            minuteSpan.textContent = mm || '--';
+
+                            wrapper.appendChild(hourSpan);
+                            wrapper.appendChild(colon);
+                            wrapper.appendChild(minuteSpan);
+
+                            tdTime.innerHTML = '';
+                            tdTime.appendChild(wrapper);
+
+                            // クリックでポップアップを開けるよう再度イベントを付与
+                            const rowCancelled = row.classList.contains('is-cancelled');
+                            hourSpan.addEventListener('click', function (e2) {
+                                if (rowCancelled) return;
+                                e2.stopPropagation();
+                                const hText = hourSpan.textContent.trim();
+                                const mText = minuteSpan.textContent.trim();
+                                const safeHour = (hText === '--' || hText === '') ? '00' : hText;
+                                const safeMinute = (mText === '--' || mText === '') ? '00' : mText;
+                                showHourPopup(hourSpan, tdTime, tdTime.dataset.id, safeHour, safeMinute);
+                            });
+                            minuteSpan.addEventListener('click', function (e2) {
+                                if (rowCancelled) return;
+                                e2.stopPropagation();
+                                const hText = hourSpan.textContent.trim();
+                                const mText = minuteSpan.textContent.trim();
+                                const safeHour = (hText === '--' || hText === '') ? '00' : hText;
+                                const safeMinute = (mText === '--' || mText === '') ? '00' : mText;
+                                showMinutePopup(minuteSpan, tdTime, tdTime.dataset.id, safeHour, safeMinute);
+                            });
+                        }
+                    }
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('通信エラーが発生しました。');
+            });
+
+        }, true);
+    })();
+
 </script>
 
 {% endblock %}
