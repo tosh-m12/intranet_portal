@@ -5,9 +5,10 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.utils.timezone import localdate
-from django.http import JsonResponse, HttpResponseBadRequest
+from django.http import JsonResponse, HttpResponseBadRequest, Http404, HttpResponse
 from django.views.decorators.http import require_POST
 from django.urls import reverse
+from django.db import transaction
 
 from .forms import VisitorForm
 from .models import Visitor, MailingAddress, HolidayDate, VisitMailConfig
@@ -16,11 +17,13 @@ from datetime import date, time as dtime
 import datetime
 import json
 import logging
+import os
+import csv
+import io
 
 from .email_utils import send_daily_email
 
 logger = logging.getLogger(__name__)
-
 
 # =========================================================
 # 共通：Visitor の表示用 dict 変換
@@ -41,7 +44,6 @@ def _serialize_visitor(v: Visitor):
         "purpose": v.purpose,
         "location": v.location,
         "host_staff": v.host_staff,
-        "notes": v.notes,
         "cancelled_flag": v.cancelled,
     }
 
@@ -90,7 +92,6 @@ def history(request):
             "purpose": v.purpose,
             "location": v.location,
             "host_staff": v.host_staff,
-            "notes": v.notes,
             "cancelled_flag": v.cancelled,
         })
 
@@ -141,7 +142,6 @@ def add_visitor(request):
                     purpose=data.get("purpose", ""),
                     location=data["location"],
                     host_staff=data["host_staff"],
-                    notes=data.get("notes", ""),
                     cancelled=False,
                 )
 
@@ -198,7 +198,6 @@ def edit_visitor(request, id):
             visitor.purpose = data.get("purpose", "")
             visitor.location = data["location"]
             visitor.host_staff = data["host_staff"]
-            visitor.notes = data.get("notes", "")
 
             visitor.save()
             return redirect("visitors:index")
@@ -214,7 +213,6 @@ def edit_visitor(request, id):
             "purpose": visitor.purpose,
             "location": visitor.location,
             "host_staff": visitor.host_staff,
-            "notes": visitor.notes,
         }
         form = VisitorForm(initial=initial)
 
@@ -455,5 +453,152 @@ def run_email(request):
     except Exception as e:
         messages.error(request, f"⚠ メール送信中に例外が発生しました：{e}")
         print(f"[VISITOR_MAIL_VIEW] EXCEPTION: {e}")
+
+    return redirect("visitors:settings")
+
+
+@login_required
+def download_settings_csv(request, kind):
+    """
+    設定画面からの CSV ダウンロード用。
+    kind は 'visitor_list' のみ許可。
+    DB の Visitor 全件を CSV で返す。
+    """
+    if kind != "visitor_list":
+        raise Http404("Unknown CSV kind")
+
+    # レスポンス準備
+    response = HttpResponse(
+        content_type="text/csv; charset=utf-8"
+    )
+    filename = f"visitor_list_{timezone.now().strftime('%Y%m%d')}.csv"
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+    writer = csv.writer(response)
+
+    # ヘッダー行
+    writer.writerow([
+        "id",
+        "visit_date",       # YYYY-MM-DD
+        "visit_time",       # HH:MM or 空欄
+        "time_undecided",   # 1 or 0
+        "company_name",
+        "last_name",
+        "first_name",
+        "title",
+        "purpose",
+        "location",
+        "host_staff",
+        "cancelled",        # 1 or 0
+    ])
+
+    qs = Visitor.objects.all().order_by("visit_date", "visit_time", "id")
+    for v in qs:
+        visit_date = v.visit_date.strftime("%Y-%m-%d") if v.visit_date else ""
+        visit_time = v.visit_time.strftime("%H:%M") if v.visit_time else ""
+        time_undecided = "1" if v.time_undecided else "0"
+        cancelled = "1" if v.cancelled else "0"
+
+        writer.writerow([
+            v.id,
+            visit_date,
+            visit_time,
+            time_undecided,
+            v.company_name,
+            v.last_name,
+            v.first_name,
+            v.title,
+            v.purpose,
+            v.location,
+            v.host_staff,
+            cancelled,
+        ])
+
+    return response
+
+
+@login_required
+def upload_visitor_csv(request):
+    """
+    設定画面から Visitor 一覧 CSV をアップロードして DB をメンテナンスする用。
+    - CSV の id カラムは「無視」して新規作成（PK 干渉防止）
+    - アップロード成功時に Visitor 全件を入れ替える
+    """
+    if request.method != "POST":
+        return HttpResponseBadRequest("POST only")
+
+    csv_file = request.FILES.get("csv_file")
+    if not csv_file:
+        messages.error(request, "CSVファイルが選択されていません。")
+        return redirect("visitors:settings")
+
+    try:
+        # 文字コードは UTF-8 (BOM付きも許容)
+        text_file = io.TextIOWrapper(csv_file.file, encoding="utf-8-sig")
+        reader = csv.DictReader(text_file)
+
+        new_visitors = []
+
+        def to_bool(val):
+            s = (val or "").strip().lower()
+            return s in ("1", "true", "t", "yes", "y", "on")
+
+        for row in reader:
+            # CSVヘッダに存在しない場合に備えて get() で取得
+            visit_date_str = (row.get("visit_date") or "").strip()
+            visit_time_str = (row.get("visit_time") or "").strip()
+            time_undecided_str = (row.get("time_undecided") or "").strip()
+            cancelled_str = (row.get("cancelled") or "").strip()
+
+            # 日付
+            visit_date = None
+            if visit_date_str:
+                # "YYYY-MM-DD" 想定
+                visit_date = datetime.datetime.strptime(visit_date_str, "%Y-%m-%d").date()
+
+            # 時間
+            visit_time_str = visit_time_str.strip()
+            if not visit_time_str:
+                visit_time = None
+            else:
+                # 秒付き(HH:MM:SS)にも対応
+                try:
+                    visit_time = datetime.datetime.strptime(visit_time_str, "%H:%M").time()
+                except ValueError:
+                    visit_time = datetime.datetime.strptime(visit_time_str, "%H:%M:%S").time()
+
+            time_undecided = to_bool(time_undecided_str)
+            cancelled = to_bool(cancelled_str)
+
+            # 「未定」の場合は visit_time を強制的に None に
+            if time_undecided:
+                visit_time = None
+
+            v = Visitor(
+                # id はセットしない → DB が新しく採番する
+                visit_date=visit_date,
+                visit_time=visit_time,
+                time_undecided=time_undecided,
+                company_name=(row.get("company_name") or "").strip(),
+                last_name=(row.get("last_name") or "").strip(),
+                first_name=(row.get("first_name") or "").strip(),
+                title=(row.get("title") or "").strip(),
+                purpose=(row.get("purpose") or "").strip(),
+                location=(row.get("location") or "").strip(),
+                host_staff=(row.get("host_staff") or "").strip(),
+                cancelled=cancelled,
+            )
+            new_visitors.append(v)
+
+        # ここまで読み込み成功したら、トランザクションで入れ替え
+        with transaction.atomic():
+            Visitor.objects.all().delete()
+            Visitor.objects.bulk_create(new_visitors)
+
+        messages.success(request, f"VisitorデータをCSVから再登録しました（{len(new_visitors)}件）。")
+
+    except Exception as e:
+        logger.exception("upload_visitor_csv error")
+        messages.error(request, f"CSVの読み込み中にエラーが発生しました: {e}")
 
     return redirect("visitors:settings")

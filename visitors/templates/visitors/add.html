@@ -8,27 +8,14 @@
 {% endblock %}
 
 {% block subnav %}
-<div class="subnav">
-    <a href="{% url 'visitors:index' %}">
-        📋 {% trans "一覧" %}
-    </a>
-    <a href="{% url 'visitors:history' %}" class="active">
-        🕒 {% trans "過去一覧" %}
-    </a>
-    <a href="{% url 'visitors:add_visitor' %}" class="active">
-        ➕ {% trans "新規登録" %}
-    </a>
-    <a href="{% url 'visitors:settings' %}">
-        ⚙ {% trans "メール設定" %}
-    </a>
-</div>
+    {% include "visitors/_subnav.html" with active_tab="add" %}
 {% endblock %}
 
 {% block content %}
 
 <div class="page-header">
     <div>
-        <h2>{% trans "来訪予定新規登録" %}</h2>
+        <h2>{% trans "来客予定新規登録" %}</h2>
     </div>
 </div>
 
@@ -50,7 +37,6 @@
                 <th>{% trans "目的" %}</th>
                 <th>{% trans "訪問場所" %}</th>
                 <th>{% trans "入力者" %}</th>
-                <th>{% trans "備考" %}</th>
             </tr>
             </thead>
             <tbody id="formset-body">
@@ -98,19 +84,19 @@
                     <td class="editable">
                         {{ form.host_staff }}
                     </td>
-                    <td class="editable">
-                        {{ form.notes }}
-                    </td>
+
                 </tr>
             {% endfor %}
             </tbody>
         </table>
     </div>
 
-    <div style="margin-top: 10px;">
-        <button type="submit" class="btn">{% trans "保存" %}</button>
-        <button type="button" class="btn btn-outline" onclick="addForm()">
-            {% trans "行を追加" %}
+    <div class="form-action-buttons">
+        <button type="submit" class="btn btn-primary">
+            💾 {% trans "保存" %}
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="addForm()">
+            ＋ {% trans "行を追加" %}
         </button>
     </div>
 </form>
@@ -279,7 +265,6 @@ document.addEventListener('DOMContentLoaded', function () {
     <td><input type="text" name="form-__prefix__-purpose"></td>
     <td><input type="text" name="form-__prefix__-location"></td>
     <td><input type="text" name="form-__prefix__-host_staff"></td>
-    <td><input type="text" name="form-__prefix__-notes"></td>
 </tr>`;
 
     // ---- 日付表示を "YYYY年MM月DD日" に変換 ----

@@ -13,7 +13,6 @@ class Visitor(models.Model):
     purpose = models.CharField(verbose_name="目的", max_length=255, blank=True)
     location = models.CharField(verbose_name="訪問場所", max_length=255)
     host_staff = models.CharField(verbose_name="入力者", max_length=255)
-    notes = models.TextField(verbose_name="備考", blank=True)
 
     cancelled = models.BooleanField(verbose_name="キャンセル", default=False)
 

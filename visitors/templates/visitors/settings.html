@@ -3,21 +3,12 @@
 
 {% block title %}{% trans "来客予定メール設定" %}{% endblock %}
 
+{% block app_name %}
+<h1>📅 来客予定管理</h1>
+{% endblock %}
+
 {% block subnav %}
-<div class="subnav">
-    <a href="{% url 'visitors:index' %}">
-        📋 {% trans "一覧" %}
-    </a>
-    <a href="{% url 'visitors:history' %}">
-        🕒 {% trans "過去一覧" %}
-    </a>
-    <a href="{% url 'visitors:add_visitor' %}">
-        ➕ {% trans "新規登録" %}
-    </a>
-    <a href="{% url 'visitors:settings' %}" class="active">
-        ⚙ {% trans "メール設定" %}
-    </a>
-</div>
+    {% include "visitors/_subnav.html" with active_tab="settings" %}
 {% endblock %}
 
 {% block content %}
@@ -205,6 +196,32 @@
 
     <button type="submit">設定を保存</button>
     <a href="{% url 'visitors:index' %}" class="btn-link" style="margin-left:8px;">一覧へ戻る</a>
+</form>
+
+<hr>
+
+<h2>データメンテナンス（Visitor 一覧）</h2>
+
+<p>現在の Visitor 一覧を CSV でエクスポート／インポートできます。</p>
+
+<!-- ▼ ダウンロード -->
+<form method="get" action="{% url 'visitors:download_settings_csv' 'visitor_list' %}" style="margin-bottom:8px;">
+    <button type="submit" class="btn btn-secondary">
+        💾 Visitor 一覧 CSV をダウンロード
+    </button>
+</form>
+
+<!-- ▼ アップロード -->
+<form method="post" action="{% url 'visitors:upload_visitor_csv' %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="csv_file" accept=".csv">
+    <button type="submit" class="btn btn-danger">
+        ⬆ Visitor 一覧 CSV をアップロード（全件入れ替え）
+    </button>
+    <p style="font-size:12px; color:#666; margin-top:4px;">
+        ※ ダウンロードした CSV を編集してアップロードすると、Visitor データが全件入れ替えられます。<br>
+        ※ CSV 内の id カラムは無視され、新しい ID が採番されます。
+    </p>
 </form>
 
 <hr>

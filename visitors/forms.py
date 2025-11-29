@@ -44,7 +44,6 @@ class VisitorForm(forms.Form):
     purpose = forms.CharField(label='目的', required=False)
     location = forms.CharField(label='場所', required=False)
     host_staff = forms.CharField(label='担当者', required=False)
-    notes = forms.CharField(label='備考', required=False, widget=forms.TextInput())
 
     def clean(self):
         cleaned = super().clean()
@@ -63,7 +62,6 @@ class VisitorForm(forms.Form):
             "purpose",
             "location",
             "host_staff",
-            "notes",
         ]
 
         is_empty_row = True
