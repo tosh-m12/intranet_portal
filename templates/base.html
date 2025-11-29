@@ -14,7 +14,7 @@
                     <a href="{% url 'profile' %}">プロフィール</a> |
                     <a href="{% url 'logout' %}">ログアウト</a> |
                 {% else %}
-                    <a href="{% url 'login' %}">ログイン</a>
+                    <a href="{% url 'authsys:login' %}">ログイン</a>
                 {% endif %}
             </nav>
         </header>

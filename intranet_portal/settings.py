@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'authsys',
     'visitors.apps.VisitorsConfig',
+    'meetings',
 ]
 
 MIDDLEWARE = [
@@ -137,9 +138,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # カスタムユーザーモデル
 AUTH_USER_MODEL = 'authsys.User'
 
-LOGIN_URL = '/accounts/login/'
+LOGIN_URL = 'authsys:login'
 LOGIN_REDIRECT_URL = '/'      # or 'home'
-LOGOUT_REDIRECT_URL = '/'     # ログアウト後もポータルへ
+LOGOUT_REDIRECT_URL = 'authsys:login'     # ログアウト後もポータルへ
 
 # メール設定（Aliyun 企業メール）
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

@@ -1,0 +1,31 @@
+{% extends "portal/base.html" %}
+{% load i18n %}
+
+{% block title %}ユーザー招待 - 社内ポータル{% endblock %}
+
+{% block app_name %}
+<h1>👥 ユーザー管理</h1>
+{% endblock %}
+
+{% block content %}
+<h2>新規メンバー招待</h2>
+
+<form method="post">
+    {% csrf_token %}
+    <table>
+        <tr>
+            <th>{{ form.full_name.label_tag }}</th>
+            <td>{{ form.full_name }}</td>
+        </tr>
+        <tr>
+            <th>{{ form.email.label_tag }}</th>
+            <td>{{ form.email }}</td>
+        </tr>
+    </table>
+    <button type="submit" class="btn btn-primary">招待メールを送信</button>
+</form>
+
+<p style="margin-top:10px;">
+    <a href="{% url 'home' %}">ホームに戻る</a>
+</p>
+{% endblock %}

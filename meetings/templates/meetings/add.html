@@ -1,0 +1,698 @@
+{# meetings/add.html #}
+{% extends "portal/base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "本日以降の訪問・WEB会議予定" %} - 社内ポータル{% endblock %}
+
+{% block app_name %}
+<h1>📅 訪問・WEB会議予定管理</h1>
+{% endblock %}
+
+{% block subnav %}
+    {% include "meetings/_subnav.html" with active_tab="add" %}
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h2>{% trans "訪問・WEB会議予定新規登録" %}</h2>
+    </div>
+</div>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+    {{ formset.management_form }}
+
+    <div class="table-wrapper">
+        <table class="visit-table visit">
+            <thead>
+            <tr>
+                <th>{% trans "来訪日" %}</th>
+                <th>{% trans "未定" %}</th>
+                <th>{% trans "時間" %}</th>
+                <th>{% trans "正式会社名" %}</th>
+                <th>{% trans "姓" %}</th>
+                <th>{% trans "名" %}</th>
+                <th>{% trans "役職" %}</th>
+                <th>{% trans "目的" %}</th>
+                <th>{% trans "訪問・WEB" %}</th>
+                <th>{% trans "入力者" %}</th>
+            </tr>
+            </thead>
+            <tbody id="formset-body">
+            {% for form in formset %}
+                <tr class="form-row">
+                    <td class="date-cell">
+                        <span class="date-display"></span>
+                        {{ form.visit_date }}
+                    </td>
+
+                    <td class="undecided-cell action-cell">
+                        <label class="undecided-label">
+                            {{ form.time_undecided }}
+                        </label>
+                    </td>
+
+                    <td class="editable time-cell">
+                        <span class="time-display">
+                            <span class="time-part time-hour">--</span>
+                            <span> : </span>
+                            <span class="time-part time-minute">--</span>
+                        </span>
+                        <span class="undecided-label undecided-badge" style="display:none;">未定</span>
+                        {{ form.visit_time }}
+                    </td>
+
+                    <td class="editable company-cell">
+                        {{ form.company_name }}
+                    </td>
+                    <td class="editable">
+                        {{ form.last_name }}
+                    </td>
+                    <td class="editable">
+                        {{ form.first_name }}
+                    </td>
+                    <td class="editable">
+                        {{ form.title }}
+                    </td>
+                    <td class="editable">
+                        {{ form.purpose }}
+                    </td>
+
+                    {# 訪問・WEB：プルダウン #}
+                    <td class="editable">
+                        {% with form.location.value as loc_val %}
+                        <select name="{{ form.location.html_name }}" class="location-select">
+                            <option value="">{% trans "選択してください" %}</option>
+                            <option value="訪問" {% if loc_val == "訪問" %}selected{% endif %}>
+                                {% trans "訪問" %}
+                            </option>
+                            <option value="WEB会議" {% if loc_val == "WEB会議" %}selected{% endif %}>
+                                {% trans "WEB会議" %}
+                            </option>
+                        </select>
+                        {% endwith %}
+                    </td>
+
+                    <td class="editable">
+                        {{ form.host_staff }}
+                    </td>
+
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="form-action-buttons">
+        <button type="submit" class="btn btn-primary">
+            💾 {% trans "保存" %}
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="addForm()">
+            ＋ {% trans "行を追加" %}
+        </button>
+    </div>
+</form>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('form');
+    if (!form) return;
+
+    // ─────────────────────────────
+    // 共通：行バリデーション関数
+    // ─────────────────────────────
+    function validateRowsAndMark() {
+        let hasError = false;
+
+        // 既存の赤枠をクリア
+        document.querySelectorAll('#formset-body td.input-error').forEach(td => {
+            td.classList.remove('input-error');
+        });
+
+        const rows = document.querySelectorAll('#formset-body .form-row');
+
+        rows.forEach(row => {
+            // 各フィールドを個別に取得
+            const companyInput   = row.querySelector('input[name$="-company_name"]');
+            const lastNameInput  = row.querySelector('input[name$="-last_name"]');
+            const firstNameInput = row.querySelector('input[name$="-first_name"]');
+            const titleInput     = row.querySelector('input[name$="-title"]');        // 任意
+            const purposeInput   = row.querySelector('input[name$="-purpose"]');
+            const hostInput      = row.querySelector('input[name$="-host_staff"]');
+            const dateInput      = row.querySelector('input[type="date"], input[name$="-visit_date"]');
+            const timeSelect     = row.querySelector('select[name$="-visit_time"]');
+            const undecided      = row.querySelector('input[type="checkbox"][name$="-time_undecided"]');
+            const visitWebSelect = row.querySelector('select[name$="-location"]');
+
+            // 行全体が空かどうかを判定するための値リスト
+            const values = [];
+
+            function pushVal(input) {
+                if (!input) return;
+                values.push((input.value || '').trim());
+            }
+
+            pushVal(companyInput);
+            pushVal(lastNameInput);
+            pushVal(firstNameInput);
+            pushVal(titleInput);
+            pushVal(purposeInput);
+            pushVal(hostInput);
+            pushVal(dateInput);
+            pushVal(visitWebSelect);
+
+            const undecidedChecked = !!(undecided && undecided.checked);
+            if (timeSelect && !undecidedChecked) {
+                pushVal(timeSelect);
+            }
+            if (undecidedChecked) {
+                values.push('HAS_UNDECIDED');
+            }
+
+            // 完全に空の行ならスキップ
+            const allEmpty = values.every(v => v === '');
+            if (allEmpty) {
+                return;
+            }
+
+            // 必須チェック用のヘルパ
+            function markIfEmpty(input) {
+                if (!input) return;
+                const td = input.closest('td');
+                if (!td) return;
+                const val = (input.value || '').trim();
+                if (val === '') {
+                    td.classList.add('input-error');
+                    hasError = true;
+                }
+            }
+
+            // ■ 必須1: 来訪日
+            markIfEmpty(dateInput);
+
+            // ■ 必須2: 時間（未定チェック ON の場合はスキップ）
+            if (!undecidedChecked) {
+                markIfEmpty(timeSelect);
+            }
+
+            // ■ 必須3: 会社名・姓・名・目的・訪問/WEB・入力者
+            markIfEmpty(companyInput);
+            markIfEmpty(lastNameInput);
+            markIfEmpty(firstNameInput);
+            markIfEmpty(purposeInput);
+            markIfEmpty(visitWebSelect);
+            markIfEmpty(hostInput);
+        });
+
+        return hasError;
+    }
+
+    // ─────────────────────────────
+    // 1) 「保存」ボタン（フォーム submit）のとき
+    // ─────────────────────────────
+    form.addEventListener('submit', function (e) {
+        const hasError = validateRowsAndMark();
+        if (hasError) {
+            e.preventDefault();
+            alert(
+                '入力途中の行で必須項目が未入力です。\n' +
+                '入力する行については、来訪日・時間（または未定）・会社名・訪問/WEBなど必須項目をすべて入力してください。'
+            );
+        }
+    });
+
+    // ─────────────────────────────
+    // 2) 他のリンクやボタンをクリックして
+    //    ページを離れようとしたとき
+    // ─────────────────────────────
+    document.addEventListener('click', function (e) {
+        const target = e.target.closest('a, button[type="submit"], input[type="submit"]');
+        if (!target) return;
+
+        // 新しいタブで開くものは対象外
+        if (target.tagName === 'A' && target.target === '_blank') {
+            return;
+        }
+
+        // javascript: や # だけのリンクは対象外
+        if (target.tagName === 'A') {
+            const href = target.getAttribute('href') || '';
+            if (
+                href === '' ||
+                href === '#' ||
+                href.startsWith('javascript:')
+            ) {
+                return;
+            }
+        }
+
+        // フォームの送信ボタンは、submit イベント側でチェックするのでここではスキップ
+        if (target.closest('form') === form && target.type === 'submit') {
+            return;
+        }
+
+        const hasError = validateRowsAndMark();
+        if (hasError) {
+            e.preventDefault();
+            alert(
+                '入力途中の行で必須項目が未入力です。\n' +
+                '入力する行については、来訪日・時間（または未定）・会社名・訪問/WEBなど必須項目をすべて入力してください。'
+            );
+        }
+    }, true);  // ← capture フェーズで先に拾う
+});
+</script>
+
+
+<p style="margin-top: 10px;">
+    <a href="{% url 'meetings:index' %}">{% trans "一覧に戻る" %}</a>
+</p>
+
+{# ポップアップ用コンテナ #}
+<div id="calendar-popup" class="calendar-popup" style="display:none;"></div>
+<div id="hour-popup" class="time-popup" style="display:none;"></div>
+<div id="minute-popup" class="time-popup" style="display:none;"></div>
+
+<script>
+    // ---- 既存フォーム数・時間候補（new row 用） ----
+    let formIdx = {{ formset.total_form_count }};
+    const timeChoicesHtml = `
+        {% for value, label in time_choices %}
+            <option value="{{ value }}">{{ label }}</option>
+        {% endfor %}
+    `;
+
+    // 訪問・WEB プルダウンの HTML（追加行用）
+    const visitWebChoicesHtml = `
+        <option value="">{% trans "選択してください" %}</option>
+        <option value="訪問">{% trans "訪問" %}</option>
+        <option value="WEB会議">{% trans "WEB会議" %}</option>
+    `;
+
+    // 空行テンプレ
+    const emptyRowHtml = `
+<tr class="form-row">
+    <td class="date-cell">
+        <span class="date-display"></span>
+        <input type="date" name="form-__prefix__-visit_date"
+               class="hidden-date-input" style="display:none;">
+    </td>
+    <td class="undecided-cell action-cell">
+        <label class="undecided-label">
+            <input type="checkbox" name="form-__prefix__-time_undecided">
+        </label>
+    </td>
+    <td class="time-cell">
+        <span class="time-display">
+            <span class="time-part time-hour">--</span>
+            <span> : </span>
+            <span class="time-part time-minute">--</span>
+        </span>
+        <span class="undecided-label undecided-badge" style="display:none;">未定</span>
+        <select name="form-__prefix__-visit_time"
+                class="hidden-time-input" style="display:none;">
+            ${timeChoicesHtml}
+        </select>
+    </td>
+    <td><input type="text" name="form-__prefix__-company_name"></td>
+    <td><input type="text" name="form-__prefix__-last_name"></td>
+    <td><input type="text" name="form-__prefix__-first_name"></td>
+    <td><input type="text" name="form-__prefix__-title"></td>
+    <td><input type="text" name="form-__prefix__-purpose"></td>
+    <td>
+        <select name="form-__prefix__-location" class="location-select">
+            ${visitWebChoicesHtml}
+        </select>
+    </td>
+    <td><input type="text" name="form-__prefix__-host_staff"></td>
+</tr>`;
+
+    // ---- 日付表示を "YYYY年MM月DD日" に変換 ----
+    function formatDisplayDate(yyyyMmDd) {
+        if (!yyyyMmDd) return "";
+        const [y, m, d] = yyyyMmDd.split("-");
+        if (!y || !m || !d) return "";
+        return `${y}年${m.padStart(2, "0")}月${d.padStart(2, "0")}日`;
+    }
+
+    // ---- カレンダー表示（add 用） ----
+    function showCalendarForInput(td, input) {
+        const popup = document.getElementById("calendar-popup");
+        if (!popup) return;
+
+        const hourPopup = document.getElementById("hour-popup");
+        const minutePopup = document.getElementById("minute-popup");
+        if (hourPopup) hourPopup.style.display = "none";
+        if (minutePopup) minutePopup.style.display = "none";
+
+        const rect = td.getBoundingClientRect();
+        popup.style.left = rect.left + window.scrollX + "px";
+        popup.style.top = rect.bottom + window.scrollY + "px";
+        popup.style.display = "block";
+
+        let baseDate;
+        if (input.value) {
+            baseDate = new Date(input.value);
+        } else {
+            baseDate = new Date();
+        }
+        let current = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1);
+
+        function renderCalendar() {
+            const year = current.getFullYear();
+            const month = current.getMonth();
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+
+            let html = `
+                <div class="calendar-header">
+                    <button id="cal-prev">←</button>
+                    <span>${year}年${String(month+1).padStart(2,"0")}月</span>
+                    <button id="cal-next">→</button>
+                </div>
+                <div class="calendar-grid">
+                    <div>Sun</div><div>Mon</div><div>Tue</div>
+                    <div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+            `;
+
+            for (let i=0; i<firstDay; i++) {
+                html += `<div class="calendar-day-disabled"></div>`;
+            }
+
+            const today = new Date();
+            for (let day=1; day<=lastDate; day++) {
+                const isToday =
+                    year === today.getFullYear() &&
+                    month === today.getMonth() &&
+                    day === today.getDate();
+
+                html += `
+                    <div class="cal-day ${isToday ? "cal-today" : ""}"
+                         data-day="${day}">
+                        ${day}
+                    </div>`;
+            }
+
+            html += `</div>`;
+            popup.innerHTML = html;
+
+            document.getElementById("cal-prev").onclick = () => {
+                current = new Date(year, month - 1, 1);
+                renderCalendar();
+            };
+            document.getElementById("cal-next").onclick = () => {
+                current = new Date(year, month + 1, 1);
+                renderCalendar();
+            };
+
+            popup.querySelectorAll(".cal-day").forEach(d => {
+                d.addEventListener("click", () => {
+                    const dd = String(d.dataset.day).padStart(2, "0");
+                    const mm = String(month + 1).padStart(2, "0");
+                    const yyyy = String(year);
+                    const value = `${yyyy}-${mm}-${dd}`;
+                    const display = formatDisplayDate(value);
+
+                    input.value = value;
+                    const span = td.querySelector(".date-display");
+                    if (span) span.textContent = display;
+
+                    popup.style.display = "none";
+                });
+            });
+        }
+
+        renderCalendar();
+    }
+
+    // ---- 時ポップアップ ----
+    function showHourPopupForInput(targetSpan, td, select, currentHour, currentMinute) {
+        const popup = document.getElementById("hour-popup");
+        if (!popup) return;
+
+        const cal = document.getElementById("calendar-popup");
+        const minutePopup = document.getElementById("minute-popup");
+        if (cal) cal.style.display = "none";
+        if (minutePopup) minutePopup.style.display = "none";
+
+        const rect = targetSpan.getBoundingClientRect();
+        popup.style.left = rect.left + window.scrollX + "px";
+        popup.style.top = rect.bottom + window.scrollY + "px";
+        popup.style.display = "block";
+
+        let curH = (currentHour || "00").trim();
+        let curM = (currentMinute || "00").trim();
+        if (curH === "--" || curH === "") curH = "00";
+        if (curM === "--" || curM === "") curM = "00";
+        curH = curH.padStart(2, "0");
+        curM = curM.padStart(2, "0");
+
+        let html = "";
+        for (let h=0; h<24; h++) {
+            const hh = String(h).padStart(2, "0");
+            const selected = (hh === curH) ? " time-selected" : "";
+            html += `
+                <div class="time-item${selected}" data-hour="${hh}">
+                    ${hh}
+                </div>`;
+        }
+        popup.innerHTML = html;
+
+        popup.querySelectorAll(".time-item").forEach(item => {
+            item.addEventListener("click", () => {
+                const hh = item.dataset.hour;
+                const mm = curM;
+                const value = `${hh}:${mm}`;
+
+                if (select) {
+                    let found = false;
+                    for (const opt of select.options) {
+                        if (opt.value === value) {
+                            select.value = value;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        const opt = new Option(value, value, true, true);
+                        select.add(opt);
+                    }
+                }
+
+                const hourSpan = td.querySelector(".time-hour");
+                const minuteSpan = td.querySelector(".time-minute");
+                if (hourSpan) hourSpan.textContent = hh;
+                if (minuteSpan) minuteSpan.textContent = mm;
+
+                popup.style.display = "none";
+            });
+        });
+    }
+
+    // ---- 分ポップアップ ----
+    function showMinutePopupForInput(targetSpan, td, select, currentHour, currentMinute) {
+        const popup = document.getElementById("minute-popup");
+        if (!popup) return;
+
+        const cal = document.getElementById("calendar-popup");
+        const hourPopup = document.getElementById("hour-popup");
+        if (cal) cal.style.display = "none";
+        if (hourPopup) hourPopup.style.display = "none";
+
+        const rect = targetSpan.getBoundingClientRect();
+        popup.style.left = rect.left + window.scrollX + "px";
+        popup.style.top = rect.bottom + window.scrollY + "px";
+        popup.style.display = "block";
+
+        let curH = (currentHour || "00").trim();
+        let curM = (currentMinute || "00").trim();
+        if (curH === "--" || curH === "") curH = "00";
+        if (curM === "--" || curM === "") curM = "00";
+        curH = curH.padStart(2, "0");
+        curM = curM.padStart(2, "0");
+
+        const minuteList = ["00", "15", "30", "45"];
+        let html = "";
+        minuteList.forEach(mm => {
+            const selected = (mm === curM) ? " time-selected" : "";
+            html += `
+                <div class="time-item${selected}" data-minute="${mm}">
+                    ${mm}
+                </div>`;
+        });
+        popup.innerHTML = html;
+
+        popup.querySelectorAll(".time-item").forEach(item => {
+            item.addEventListener("click", () => {
+                const mm = item.dataset.minute;
+                const hh = curH;
+                const value = `${hh}:${mm}`;
+
+                if (select) {
+                    let found = false;
+                    for (const opt of select.options) {
+                        if (opt.value === value) {
+                            select.value = value;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        const opt = new Option(value, value, true, true);
+                        select.add(opt);
+                    }
+                }
+
+                const hourSpan = td.querySelector(".time-hour");
+                const minuteSpan = td.querySelector(".time-minute");
+                if (hourSpan) hourSpan.textContent = hh;
+                if (minuteSpan) minuteSpan.textContent = mm;
+
+                popup.style.display = "none";
+            });
+        });
+    }
+
+    // ---- 行ごとの初期化（既存フォーム） ----
+    function initFormRow(row) {
+        const dateInput = row.querySelector(".hidden-date-input");
+        const dateCell = row.querySelector(".date-cell");
+        const dateDisplay = row.querySelector(".date-display");
+
+        if (dateInput && dateDisplay) {
+            dateDisplay.textContent = formatDisplayDate(dateInput.value);
+            dateCell.addEventListener("click", function () {
+                showCalendarForInput(dateCell, dateInput);
+            });
+        }
+
+        const timeSelect = row.querySelector(".hidden-time-input");
+        const timeCell = row.querySelector(".time-cell");
+        const hourSpan = timeCell ? timeCell.querySelector(".time-hour") : null;
+        const minuteSpan = timeCell ? timeCell.querySelector(".time-minute") : null;
+        const undecidedBadge = timeCell ? timeCell.querySelector(".undecided-badge") : null;
+
+        const undecidedCheckbox = row.querySelector('input[type="checkbox"][name$="-time_undecided"]');
+
+        function applyTimeFromSelect() {
+            if (!timeSelect || !hourSpan || !minuteSpan) return;
+            const val = timeSelect.value || "";
+            if (val && val.includes(":")) {
+                const [h, m] = val.split(":");
+                hourSpan.textContent = h.padStart(2, "0");
+                minuteSpan.textContent = m.padStart(2, "0");
+            } else {
+                hourSpan.textContent = "--";
+                minuteSpan.textContent = "--";
+            }
+        }
+
+        // 初期状態
+        applyTimeFromSelect();
+
+        if (undecidedCheckbox && timeCell) {
+            function updateUndecidedUI() {
+                const checked = undecidedCheckbox.checked;
+                if (checked) {
+                    timeSelect.disabled = true;
+                    timeSelect.value = "";
+                    if (hourSpan) hourSpan.textContent = "--";
+                    if (minuteSpan) minuteSpan.textContent = "--";
+                    if (undecidedBadge) undecidedBadge.style.display = "inline-block";
+                    const tdDisplay = timeCell.querySelector(".time-display");
+                    if (tdDisplay) tdDisplay.style.display = "none";
+                } else {
+                    timeSelect.disabled = false;
+                    if (undecidedBadge) undecidedBadge.style.display = "none";
+                    const tdDisplay = timeCell.querySelector(".time-display");
+                    if (tdDisplay) tdDisplay.style.display = "inline-flex";
+                    applyTimeFromSelect();
+                }
+            }
+
+            undecidedCheckbox.addEventListener("change", updateUndecidedUI);
+            updateUndecidedUI();
+        }
+
+        // 時/分クリックでポップアップ
+        if (timeCell && hourSpan && minuteSpan) {
+            hourSpan.addEventListener("click", function (e) {
+                if (undecidedCheckbox && undecidedCheckbox.checked) return;
+                e.stopPropagation();
+                const hText = hourSpan.textContent.trim();
+                const mText = minuteSpan.textContent.trim();
+                const safeHour = (hText === "--" || hText === "") ? "00" : hText;
+                const safeMinute = (mText === "--" || mText === "") ? "00" : mText;
+                showHourPopupForInput(hourSpan, timeCell, timeSelect, safeHour, safeMinute);
+            });
+
+            minuteSpan.addEventListener("click", function (e) {
+                if (undecidedCheckbox && undecidedCheckbox.checked) return;
+                e.stopPropagation();
+                const hText = hourSpan.textContent.trim();
+                const mText = minuteSpan.textContent.trim();
+                const safeHour = (hText === "--" || hText === "") ? "00" : hText;
+                const safeMinute = (mText === "--" || mText === "") ? "00" : mText;
+                showMinutePopupForInput(minuteSpan, timeCell, timeSelect, safeHour, safeMinute);
+            });
+        }
+    }
+
+    // ---- 新しい行を追加 ----
+    function addForm() {
+        const tbody = document.getElementById("formset-body");
+        const html = emptyRowHtml.replace(/__prefix__/g, formIdx);
+        tbody.insertAdjacentHTML("beforeend", html);
+
+        formIdx++;
+        const totalFormsInput = document.getElementById("id_form-TOTAL_FORMS");
+        if (totalFormsInput) {
+            totalFormsInput.value = formIdx;
+        }
+
+        const rows = tbody.querySelectorAll(".form-row");
+        const newRow = rows[rows.length - 1];
+        initFormRow(newRow);
+    }
+
+    // ---- ポップアップ外クリックで閉じる ----
+    document.addEventListener("click", function (e) {
+        const cal = document.getElementById("calendar-popup");
+        const hourPopup = document.getElementById("hour-popup");
+        const minutePopup = document.getElementById("minute-popup");
+
+        const isDateCell = e.target.closest(".date-cell");
+        const isHourSpan = e.target.closest(".time-hour");
+        const isMinuteSpan = e.target.closest(".time-minute");
+
+        if (cal && cal.style.display !== "none") {
+            if (!cal.contains(e.target) && !isDateCell &&
+                e.target.id !== "cal-prev" && e.target.id !== "cal-next") {
+                cal.style.display = "none";
+            }
+        }
+        if (hourPopup && hourPopup.style.display !== "none") {
+            if (!hourPopup.contains(e.target) && !isHourSpan) {
+                hourPopup.style.display = "none";
+            }
+        }
+        if (minutePopup && minutePopup.style.display !== "none") {
+            if (!minutePopup.contains(e.target) && !isMinuteSpan) {
+                minutePopup.style.display = "none";
+            }
+        }
+    });
+
+    // ---- 初期行のセットアップ ----
+    const rows = document.querySelectorAll("#formset-body .form-row");
+    rows.forEach(row => initFormRow(row));
+
+    // addForm をグローバルに公開
+    window.addForm = addForm;
+</script>
+
+{% endblock %}

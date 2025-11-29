@@ -614,3 +614,16 @@ footer {
     padding: 8px 0;
 }
 
+.logout-link-button {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    color: #ffddaa;
+    cursor: pointer;
+    font: inherit;
+    text-decoration: underline;
+}
+.logout-link-button:hover {
+    opacity: 0.8;
+}
