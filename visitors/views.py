@@ -3,16 +3,18 @@ from django.forms import formset_factory
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.utils import translation, timezone
+from django.utils import timezone
+from django.utils.timezone import localdate
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.http import require_POST
+from django.urls import reverse
 
 from .forms import VisitorForm
 from .models import Visitor, MailingAddress, HolidayDate, VisitMailConfig
-from datetime import datetime, date, time as dtime
 
+from datetime import date, time as dtime
+import datetime
 import json
-import os
 import logging
 
 from .email_utils import send_daily_email
@@ -20,63 +22,82 @@ from .email_utils import send_daily_email
 logger = logging.getLogger(__name__)
 
 
+# =========================================================
+# 共通：Visitor の表示用 dict 変換
+# =========================================================
+def _serialize_visitor(v: Visitor):
+    return {
+        "id": v.id,
+        # 表示用: 2025年11月04日
+        "visit_date": v.visit_date.strftime("%Y年%m月%d日") if v.visit_date else "",
+        # 編集用: 2025-11-04
+        "visit_date_raw": v.visit_date.strftime("%Y-%m-%d") if v.visit_date else "",
+        "visit_time": v.visit_time.strftime("%H:%M") if v.visit_time else "",
+        "time_undecided_flag": v.time_undecided,
+        "company_name": v.company_name,
+        "last_name": v.last_name,
+        "first_name": v.first_name,
+        "title": v.title,
+        "purpose": v.purpose,
+        "location": v.location,
+        "host_staff": v.host_staff,
+        "notes": v.notes,
+        "cancelled_flag": v.cancelled,
+    }
+
+
+# =========================================================
+# 本日以降の一覧
+# =========================================================
 @login_required
 def index(request):
-    today = date.today()
+    today = localdate()  # タイムゾーン考慮
 
     visitors_qs = Visitor.objects.filter(
         visit_date__gte=today
     ).order_by("visit_date", "visit_time", "id")
 
-    visitors = []
-    for v in visitors_qs:
-        visitors.append({
-            "id": v.id,
-            # 表示用: 2025年11月04日
-            "visit_date": v.visit_date.strftime("%Y年%m月%d日") if v.visit_date else "",
-            # 編集用: 2025-11-04
-            "visit_date_raw": v.visit_date.strftime("%Y-%m-%d") if v.visit_date else "",
-            "visit_time": v.visit_time.strftime("%H:%M") if v.visit_time else "",
-            "time_undecided_flag": v.time_undecided,
-            "company_name": v.company_name,
-            "last_name": v.last_name,
-            "first_name": v.first_name,
-            "title": v.title,
-            "purpose": v.purpose,
-            "location": v.location,
-            "host_staff": v.host_staff,
-            "notes": v.notes,
-            "cancelled_flag": v.cancelled,
-        })
+    visitors = [_serialize_visitor(v) for v in visitors_qs]
 
-    return render(request, 'visitors/index.html', {'visitors': visitors})
+    return render(request, "visitors/index.html", {"visitors": visitors})
 
 
+# =========================================================
+# 過去の来訪者一覧（本日を含む過去）
+# =========================================================
 @login_required
 def history(request):
-    """過去の来訪者一覧（本日より前）"""
-    today = timezone.localdate()
-    visitors = (
-        Visitor.objects
-        .filter(visit_date__lt=today)
-        .order_by('-visit_date', '-visit_time', 'company_name')  # 過去なので日付降順
-    )
-    return render(request, "visitors/history.html", {"visitors": visitors})
+    today = localdate()
 
+    visitors_qs = Visitor.objects.filter(
+        visit_date__lte=today
+    ).order_by("-visit_date", "visit_time", "id")
+
+    # index と同じ形式の dict に揃える
+    visitors = [_serialize_visitor(v) for v in visitors_qs]
+
+    return render(request, "visitors/history.html", {
+        "visitors": visitors,
+    })
+
+
+# =========================================================
+# 新規登録
+# =========================================================
 @login_required
 def add_visitor(request):
     VisitorFormSet = formset_factory(VisitorForm, extra=3)
     formset = VisitorFormSet(request.POST or None)
-    time_choices = formset.empty_form.fields['visit_time'].widget.choices
+    time_choices = formset.empty_form.fields["visit_time"].widget.choices
 
-    if request.method == 'POST':
+    if request.method == "POST":
         has_error = False
         valid_forms = []
 
         for form in formset:
             # 全項目空欄ならスキップ
             all_empty = all(
-                not form.data.get(f'{form.prefix}-{field}')
+                not form.data.get(f"{form.prefix}-{field}")
                 for field in form.fields
             )
             if all_empty:
@@ -92,28 +113,31 @@ def add_visitor(request):
                 data = form.cleaned_data
 
                 Visitor.objects.create(
-                    visit_date=data['visit_date'],
-                    visit_time=data['visit_time'] if not data.get('time_undecided') else None,
-                    time_undecided=data.get('time_undecided', False),
-                    company_name=data['company_name'],
-                    last_name=data['last_name'],
-                    first_name=data['first_name'],
-                    title=data.get('title', ''),
-                    purpose=data.get('purpose', ''),
-                    location=data['location'],
-                    host_staff=data['host_staff'],
-                    notes=data.get('notes', ''),
+                    visit_date=data["visit_date"],
+                    visit_time=data["visit_time"] if not data.get("time_undecided") else None,
+                    time_undecided=data.get("time_undecided", False),
+                    company_name=data["company_name"],
+                    last_name=data["last_name"],
+                    first_name=data["first_name"],
+                    title=data.get("title", ""),
+                    purpose=data.get("purpose", ""),
+                    location=data["location"],
+                    host_staff=data["host_staff"],
+                    notes=data.get("notes", ""),
                     cancelled=False,
                 )
 
-            return redirect('visitors:index')
+            return redirect("visitors:index")
 
-    return render(request, 'visitors/add.html', {
-        'formset': formset,
-        'time_choices': time_choices,
+    return render(request, "visitors/add.html", {
+        "formset": formset,
+        "time_choices": time_choices,
     })
 
 
+# =========================================================
+# キャンセルフラグ ON/OFF
+# =========================================================
 @login_required
 def cancel_visitor(request, id):
     if request.method == 'POST':
@@ -122,51 +146,58 @@ def cancel_visitor(request, id):
         visitor.cancelled = not visitor.cancelled
         visitor.save()
 
-    return redirect('visitors:index')
+    # ★ 戻り先を「直前のページ(Referer)」、なければ index
+    next_url = request.META.get("HTTP_REFERER") or reverse('visitors:index')
+    return redirect(next_url)
 
-
+# =========================================================
+# 個別編集（今後あまり使わないかも）
+# =========================================================
 @login_required
 def edit_visitor(request, id):
     visitor = get_object_or_404(Visitor, pk=id)
 
-    if request.method == 'POST':
+    if request.method == "POST":
         form = VisitorForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
 
-            visitor.visit_date = data['visit_date']
-            visitor.visit_time = data['visit_time'] if not data.get('time_undecided') else None
-            visitor.time_undecided = data.get('time_undecided', False)
-            visitor.company_name = data['company_name']
-            visitor.last_name = data['last_name']
-            visitor.first_name = data['first_name']
-            visitor.title = data.get('title', '')
-            visitor.purpose = data.get('purpose', '')
-            visitor.location = data['location']
-            visitor.host_staff = data['host_staff']
-            visitor.notes = data.get('notes', '')
+            visitor.visit_date = data["visit_date"]
+            visitor.visit_time = data["visit_time"] if not data.get("time_undecided") else None
+            visitor.time_undecided = data.get("time_undecided", False)
+            visitor.company_name = data["company_name"]
+            visitor.last_name = data["last_name"]
+            visitor.first_name = data["first_name"]
+            visitor.title = data.get("title", "")
+            visitor.purpose = data.get("purpose", "")
+            visitor.location = data["location"]
+            visitor.host_staff = data["host_staff"]
+            visitor.notes = data.get("notes", "")
 
             visitor.save()
-            return redirect('visitors:index')
+            return redirect("visitors:index")
     else:
         initial = {
-            'visit_date': visitor.visit_date,
-            'visit_time': visitor.visit_time,
-            'time_undecided': visitor.time_undecided,
-            'company_name': visitor.company_name,
-            'last_name': visitor.last_name,
-            'first_name': visitor.first_name,
-            'title': visitor.title,
-            'purpose': visitor.purpose,
-            'location': visitor.location,
-            'host_staff': visitor.host_staff,
-            'notes': visitor.notes,
+            "visit_date": visitor.visit_date,
+            "visit_time": visitor.visit_time,
+            "time_undecided": visitor.time_undecided,
+            "company_name": visitor.company_name,
+            "last_name": visitor.last_name,
+            "first_name": visitor.first_name,
+            "title": visitor.title,
+            "purpose": visitor.purpose,
+            "location": visitor.location,
+            "host_staff": visitor.host_staff,
+            "notes": visitor.notes,
         }
         form = VisitorForm(initial=initial)
 
-    return render(request, 'visitors/edit.html', {'form': form, 'visitor_id': id})
+    return render(request, "visitors/edit.html", {"form": form, "visitor_id": id})
 
 
+# =========================================================
+# メール設定画面
+# =========================================================
 @login_required
 def settings_view(request):
     # VisitMailConfig は1レコードだけ使う想定
@@ -254,14 +285,12 @@ def settings_view(request):
     return render(request, "visitors/settings.html", context)
 
 
+# =========================================================
+# 一覧のインライン更新（AJAX）
+# =========================================================
 @require_POST
 @login_required
 def inline_update(request):
-    import datetime
-    import json
-    from django.http import JsonResponse
-    from .models import Visitor
-
     try:
         data = json.loads(request.body)
         visitor_id = data.get("id")
@@ -314,7 +343,9 @@ def inline_update(request):
         return JsonResponse({"ok": False, "error": str(e)})
 
 
-
+# =========================================================
+# 「時間未定」トグル
+# =========================================================
 @login_required
 def toggle_undecided(request, id):
     if request.method == 'POST':
@@ -327,10 +358,14 @@ def toggle_undecided(request, id):
 
         visitor.save()
 
-    return redirect('visitors:index')
+    # ★ 戻り先を「直前のページ(Referer)」、なければ index
+    next_url = request.META.get("HTTP_REFERER") or reverse('visitors:index')
+    return redirect(next_url)
 
 
-
+# =========================================================
+# 今すぐメール送信
+# =========================================================
 @login_required
 def run_email(request):
     try:
@@ -383,4 +418,4 @@ def run_email(request):
         messages.error(request, f"⚠ メール送信中に例外が発生しました：{e}")
         print(f"[VISITOR_MAIL_VIEW] EXCEPTION: {e}")
 
-    return redirect('visitors:settings')
+    return redirect("visitors:settings")
