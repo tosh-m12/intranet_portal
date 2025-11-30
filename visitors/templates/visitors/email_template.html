@@ -7,22 +7,40 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            font-size: 13px;
+            background-color: #fff;
         }
+
         th, td {
-            padding: 6px;
-            border: 1px solid #999;
+            border: 1px solid #ddd;
+            padding: 6px 4px;
+            vertical-align: middle;
             text-align: center;
-            font-size: 14px;
         }
+
+        th {
+            background-color: #f1f3f5;
+            white-space: nowrap;
+        }
+
+        td.company-cell,
+        td.last-cell,
+        td.first-cell,
+        td.title-cell,
+        td.purpose-cell,
+        td.location-cell {
+            text-align: left;
+        }
+
         .cancelled-row td {
+            background-color: #ffe6e6;
             color: red;
             text-decoration: line-through;
         }
     </style>
 </head>
 <body>
-    <p>外ロジ各位<br>
-    外通各位</p>
+    <p>外ロジ各位<br>外通各位</p>
 
     <p>本日以降の来客予定を展開いたします。<br>
     今天之后将开展客户来访预定。</p>
@@ -36,7 +54,6 @@
             <tr>
                 <th>来訪日</th>
                 <th>時間</th>
-                <th>時間未定</th>
                 <th>会社名</th>
                 <th>姓</th>
                 <th>名</th>
@@ -44,27 +61,31 @@
                 <th>目的</th>
                 <th>訪問場所</th>
                 <th>入力者</th>
-                <th>備考</th>
             </tr>
         </thead>
         <tbody>
             {% for v in visitors %}
             <tr class="{% if v.is_cancelled %}cancelled-row{% endif %}">
-                <td>{{ v.visit_date }}</td>
-                <td>{{ v.visit_time }}</td>
-                <td>{% if v.time_undecided_flag %}✔{% endif %}</td>
-                <td>{{ v.company_name }}</td>
-                <td>{{ v.last_name }}</td>
-                <td>{{ v.first_name }}</td>
-                <td>{{ v.title }}</td>
-                <td>{{ v.purpose }}</td>
-                <td>{{ v.location }}</td>
+                <td>{{ v.visit_date|date:"Y年m月d日" }}</td>
+                <td>
+                    {% if v.visit_time %}
+                        {{ v.visit_time }}
+                    {% elif v.time_undecided_flag %}
+                        未定
+                    {% endif %}
+                </td>
+
+                <td class="company-cell">{{ v.company_name }}</td>
+                <td class="last-cell">{{ v.last_name }}</td>
+                <td class="first-cell">{{ v.first_name }}</td>
+                <td class="title-cell">{{ v.title }}</td>
+                <td class="purpose-cell">{{ v.purpose }}</td>
+                <td class="location-cell">{{ v.location }}</td>
+
                 <td>{{ v.host_staff }}</td>
-                <td>{{ v.notes }}</td>
             </tr>
             {% endfor %}
         </tbody>
-
     </table>
     {% else %}
         <p>本日以降の来訪予定はありません。</p>

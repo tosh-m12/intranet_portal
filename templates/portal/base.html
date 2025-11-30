@@ -34,7 +34,11 @@
         <a href="{% url 'meetings:index' %}">📅 客先訪問・WEB会議</a>
         <a href="#">🌡 温湿度モニター<br>（準備中）</a>
         <a href="#">📝 日報<br>（準備中）</a>
-        <a href="{% url 'authsys:invite_user' %}">👥 ユーザー招待</a>
+
+        {# ▼ 管理者だけ「ユーザー管理」を表示 #}
+        {% if user.is_superuser or user.is_staff %}
+            <a href="{% url 'authsys:user_management' %}">👥 ユーザー管理</a>
+        {% endif %}
     </nav>
 </div>
 

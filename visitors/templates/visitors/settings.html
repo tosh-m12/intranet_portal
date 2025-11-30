@@ -31,31 +31,7 @@
 <form method="post">
     {% csrf_token %}
 
-    <!-- ▼ スケジューラ選択 -->
-    <h2>スケジューラ方式</h2>
-    <p>メールの自動送信方式を選択します。</p>
-
-    <label>
-        <input type="radio" name="scheduler_mode" value="windows"
-               {% if scheduler_mode == 'windows' %}checked{% endif %}>
-        Windows タスクスケジューラ
-    </label><br>
-
-    <label>
-        <input type="radio" name="scheduler_mode" value="django"
-               {% if scheduler_mode == 'django' %}checked{% endif %}>
-        Django 内部スケジューラ
-    </label><br>
-
-    <label>
-        <input type="radio" name="scheduler_mode" value="none"
-               {% if scheduler_mode == 'none' %}checked{% endif %}>
-        自動送信なし
-    </label>
-
-    <hr>
-
-    <!-- ▼ 送信時刻 -->
+    <!-- ▼ 自動送信の時刻設定 -->
     <h2>{% trans "自動送信の時刻設定" %}</h2>
     <p>自動で送信する時刻を選択してください。</p>
 
@@ -82,41 +58,6 @@
     </label>
 
     <hr>
-
-    <!-- ★ SMTP 設定 -->
-    <fieldset style="margin-bottom: 16px;">
-        <legend>SMTP 設定</legend>
-
-        <label>SMTPサーバー:
-            <input type="text" name="smtp_host" value="{{ config.smtp_host }}">
-        </label><br>
-
-        <label>ポート番号:
-            <input type="number" name="smtp_port" value="{{ config.smtp_port }}">
-        </label><br>
-
-        <label>
-            <input type="checkbox" name="use_tls" {% if config.use_tls %}checked{% endif %}>
-            TLS を使用
-        </label><br>
-
-        <label>
-            <input type="checkbox" name="use_ssl" {% if config.use_ssl %}checked{% endif %}>
-            SSL を使用
-        </label><br>
-
-        <label>SMTPユーザー（ログインID / From）:
-            <input type="email" name="smtp_user" value="{{ config.smtp_user }}" placeholder="cs_info@ngls.sh.cn">
-        </label><br>
-
-        <label>SMTPパスワード:
-            <input type="password" name="smtp_password" value="" placeholder="※変更する場合のみ入力">
-        </label><br>
-
-        <label>送信者名（表示名）:
-            <input type="text" name="from_name" value="{{ config.from_name }}">
-        </label>
-    </fieldset>
 
     <!-- ▼ メーリングリスト -->
     <h2>{% trans "メーリングリスト" %}</h2>
@@ -149,44 +90,6 @@
         }
 
         function removeRow(btn) {
-            const tr = btn.closest('tr');
-            if (tr) tr.remove();
-        }
-    </script>
-
-    <hr>
-
-    <!-- ▼ 休日設定 -->
-    <h2>{% trans "休日設定" %}</h2>
-    <p>メールを送信しない日付（YYYY-MM-DD）を追加してください。</p>
-
-    <table id="holiday-table">
-        {% for day in holidays %}
-        <tr>
-            <td><input type="date" name="holidays" value="{{ day }}"></td>
-            <td><button type="button" onclick="removeHoliday(this)">−削除</button></td>
-        </tr>
-        {% endfor %}
-        <tr>
-            <td><input type="date" name="holidays"></td>
-            <td><button type="button" onclick="removeHoliday(this)">−削除</button></td>
-        </tr>
-    </table>
-
-    <button type="button" onclick="addHolidayRow()">＋追加</button>
-
-    <script>
-        function addHolidayRow() {
-            const t = document.getElementById('holiday-table');
-            const row = `
-                <tr>
-                    <td><input type="date" name="holidays"></td>
-                    <td><button type="button" onclick="removeHoliday(this)">−削除</button></td>
-                </tr>`;
-            t.insertAdjacentHTML('beforeend', row);
-        }
-
-        function removeHoliday(btn) {
             const tr = btn.closest('tr');
             if (tr) tr.remove();
         }
@@ -228,9 +131,20 @@
 
 <h2>今すぐメール送信</h2>
 <p>現在の設定で、1回だけ手動でメールを送信します。</p>
-<form method="post" action="{% url 'visitors:run_email' %}">
-    {% csrf_token %}
-    <button type="submit">📨 今すぐ送信</button>
-</form>
+
+<div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+
+    <!-- ★ プレビューボタン（GET） -->
+    <form method="get" action="{% url 'visitors:preview_email' %}">
+        <button type="submit">👀 メールプレビュー</button>
+    </form>
+
+    <!-- 送信ボタン（POST） -->
+    <form method="post" action="{% url 'visitors:run_email' %}">
+        {% csrf_token %}
+        <button type="submit">📨 今すぐ送信</button>
+    </form>
+
+</div>
 
 {% endblock %}

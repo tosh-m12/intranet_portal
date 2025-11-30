@@ -14,8 +14,12 @@
        class="{% if active_tab == 'add' %}active{% endif %}">
         ➕ {% trans "新規登録" %}
     </a>
-    <a href="{% url 'visitors:settings' %}"
-       class="{% if active_tab == 'settings' %}active{% endif %}">
-        ⚙ {% trans "各種設定" %}
-    </a>
+
+    {# ▼ authsys の is_admin と同じ条件（superuser または staff） #}
+    {% if request.user.is_superuser or request.user.is_staff %}
+        <a href="{% url 'visitors:settings' %}"
+           class="{% if active_tab == 'settings' %}active{% endif %}">
+            ⚙ {% trans "各種設定" %}
+        </a>
+    {% endif %}
 </div>

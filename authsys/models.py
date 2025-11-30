@@ -1,6 +1,6 @@
 # authsys/models.py
 from django.db import models
-from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.contrib.auth.models import AbstractUser, BaseUserManager, AbstractBaseUser, PermissionsMixin
 
 
 class UserManager(BaseUserManager):
@@ -48,6 +48,11 @@ class User(AbstractUser):
 
     # ログインIDにするメールアドレス
     email = models.EmailField('メールアドレス', unique=True)
+
+    must_change_password = models.BooleanField(
+        '初回ログイン時にパスワード変更が必要',
+        default=False,
+    )
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

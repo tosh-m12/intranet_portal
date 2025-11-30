@@ -1,0 +1,265 @@
+{% extends "portal/base.html" %}
+{% load i18n %}
+
+{% block title %}ユーザー管理 - 社内ポータル{% endblock %}
+
+{% block app_name %}
+<h1>👥 ユーザー管理</h1>
+{% endblock %}
+
+{% block content %}
+
+{% if messages %}
+  <ul class="django-messages">
+    {% for message in messages %}
+      <li class="alert alert-{{ message.tags }}">{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<h2>登録ユーザー一覧</h2>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>姓</th>
+            <th>名</th>
+            <th>メール</th>
+            <th>権限</th>
+            <th>初回PW</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+
+    <tbody id="user-table-body">
+        {# 既存ユーザー行 #}
+        {% for u in users %}
+        <tr class="user-row"
+            data-user-id="{{ u.id }}"
+            data-is-superuser="{% if u.is_superuser %}1{% else %}0{% endif %}"
+            data-is-self="{% if u.id == request.user.id %}1{% else %}0{% endif %}">
+            <td>
+                <input type="text"
+                       class="form-control form-control-sm user-input user-last-name"
+                       value="{{ u.last_name }}">
+            </td>
+            <td>
+                <input type="text"
+                       class="form-control form-control-sm user-input user-first-name"
+                       value="{{ u.first_name }}">
+            </td>
+            <td>
+                <input type="email"
+                       class="form-control form-control-sm user-input user-email"
+                       value="{{ u.email }}">
+            </td>
+            <td>
+                {% if u.is_superuser or u.is_staff %}
+                    管理者
+                {% else %}
+                    一般ユーザー
+                {% endif %}
+            </td>
+            <td>
+                {% if u.must_change_password %}
+                    要変更
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>
+                {# PW再発行ボタン（これは従来通りフォームPOSTでOK） #}
+                <form method="post"
+                      action="{% url 'authsys:reset_user_password' u.id %}"
+                      style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-warning">
+                        PW再発行
+                    </button>
+                </form>
+
+                {# 削除ボタン（管理者 & 自分 には表示しない） #}
+                {% if not u.is_superuser and u.id != request.user.id %}
+                    <button type="button"
+                            class="btn btn-sm btn-danger user-delete-btn">
+                        削除
+                    </button>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+
+        {# 新規行テンプレート（非表示） #}
+        <tr id="user-row-template" class="user-row d-none"
+            data-user-id=""
+            data-is-superuser="0"
+            data-is-self="0">
+            <td>
+                <input type="text"
+                       class="form-control form-control-sm user-input user-last-name"
+                       value="">
+            </td>
+            <td>
+                <input type="text"
+                       class="form-control form-control-sm user-input user-first-name"
+                       value="">
+            </td>
+            <td>
+                <input type="email"
+                       class="form-control form-control-sm user-input user-email"
+                       value=""
+                       placeholder="メールアドレス">
+            </td>
+            <td>
+                一般ユーザー
+            </td>
+            <td>
+                {# 新規行にはPW再発行ボタン・削除ボタンは最初は無し #}
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<div style="margin-top: 10px;">
+    <button type="button" id="add-row-btn" class="btn btn-sm btn-success">
+        ＋行追加
+    </button>
+</div>
+
+<p style="margin-top:10px;">
+    <a href="{% url 'home' %}">ホームに戻る</a>
+</p>
+
+{# ==== 自動保存 & 行追加用のスクリプト ==== #}
+<script>
+(function() {
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie("csrftoken");
+    const tbody = document.getElementById("user-table-body");
+    const template = document.getElementById("user-row-template");
+    const addRowBtn = document.getElementById("add-row-btn");
+
+    // 行追加ボタン：空の行を増やすだけ
+    addRowBtn.addEventListener("click", function() {
+        const clone = template.cloneNode(true);
+        clone.id = "";
+        clone.classList.remove("d-none");
+        tbody.appendChild(clone);
+    });
+
+    // 入力変更時に自動保存
+    tbody.addEventListener("change", function(e) {
+        if (!e.target.classList.contains("user-input")) return;
+
+        const row = e.target.closest(".user-row");
+        const userId = row.dataset.userId;
+
+        const lastName = row.querySelector(".user-last-name").value.trim();
+        const firstName = row.querySelector(".user-first-name").value.trim();
+        const email = row.querySelector(".user-email").value.trim();
+
+        let action;
+        if (userId) {
+            action = "update";
+        } else {
+            if (!email) {
+                // メールが空のうちは新規作成しない
+                return;
+            }
+            action = "create";
+        }
+
+        const params = new URLSearchParams();
+        params.append("action", action);
+        if (userId) {
+            params.append("user_id", userId);
+        }
+        params.append("last_name", lastName);
+        params.append("first_name", firstName);
+        params.append("email", email);
+
+        fetch(window.location.pathname, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": csrftoken,
+                "X-Requested-With": "XMLHttpRequest",
+            },
+            body: params.toString(),
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "ok") {
+                // 新規作成された場合、戻り値の id を行にセット
+                if (!userId && data.id) {
+                    row.dataset.userId = data.id;
+                }
+            } else {
+                alert(data.message || "エラーが発生しました。");
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("通信エラーが発生しました。");
+        });
+    });
+
+    // 削除ボタン
+    tbody.addEventListener("click", function(e) {
+        const btn = e.target.closest(".user-delete-btn");
+        if (!btn) return;
+
+        const row = btn.closest(".user-row");
+        const userId = row.dataset.userId;
+
+        if (!userId) {
+            // まだ保存されていない新規行の場合は、単純に行を消すだけ
+            row.remove();
+            return;
+        }
+
+        if (!confirm("本当に削除しますか？")) return;
+
+        const params = new URLSearchParams();
+        params.append("action", "delete");
+        params.append("user_id", userId);
+
+        fetch(window.location.pathname, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": csrftoken,
+                "X-Requested-With": "XMLHttpRequest",
+            },
+            body: params.toString(),
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "ok") {
+                row.remove();
+            } else {
+                alert(data.message || "削除できませんでした。");
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("通信エラーが発生しました。");
+        });
+    });
+})();
+</script>
+
+{% endblock %}

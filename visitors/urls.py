@@ -13,5 +13,6 @@ urlpatterns = [
     path('inline-update/', views.inline_update, name='inline_update'),
     path('<int:id>/toggle-undecided/', views.toggle_undecided, name='toggle_undecided'),
     path('settings/download/<str:kind>/', views.download_settings_csv, name='download_settings_csv'),
-    path('settings/upload/visitor_list/', views.upload_visitor_csv, name='upload_visitor_csv')
+    path('settings/upload/visitor_list/', views.upload_visitor_csv, name='upload_visitor_csv'),
+    path("preview-email/", views.preview_email, name="preview_email"),
 ]

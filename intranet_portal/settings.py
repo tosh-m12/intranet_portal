@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'authsys',
     'visitors.apps.VisitorsConfig',
     'meetings',
+    'working_schedule',
+    'mailcenter'
 ]
 
 MIDDLEWARE = [
@@ -53,6 +55,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    "authsys.middleware.ForcePasswordChangeMiddleware",
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]

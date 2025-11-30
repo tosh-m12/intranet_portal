@@ -11,7 +11,7 @@
                 {% if user.is_authenticated %}
                     {{ user.email }} としてログイン中 |
                     <a href="{% url 'home' %}">ホーム</a> |
-                    <a href="{% url 'profile' %}">プロフィール</a> |
+                    <a href="{% url 'authsys:profile' %}">プロフィール</a> |
                     <a href="{% url 'logout' %}">ログアウト</a> |
                 {% else %}
                     <a href="{% url 'authsys:login' %}">ログイン</a>

@@ -1,4 +1,9 @@
+# visitors/apps.py
 from django.apps import AppConfig
+from django.conf import settings
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class VisitorsConfig(AppConfig):
@@ -7,11 +12,12 @@ class VisitorsConfig(AppConfig):
 
     def ready(self):
         """
-        Django 起動時にバックグラウンドスケジューラを起動。
-        実際に送信するかどうかは VisitMailConfig.mode で制御。
-        二重起動防止は scheduler 側の _scheduler_started で行う。
+        アプリ起動時に一度だけスケジューラを起動する。
         """
-        from .scheduler import start_scheduler
-
-        print("[DEBUG] VisitorsConfig.ready() called")  # ← 一旦確認用
-        start_scheduler()
+        # 管理コマンドなどでも ready() が呼ばれるので、
+        # 「本番サーバ起動時だけにしたい」などあれば条件を入れてもよい
+        try:
+            from .scheduler import start_scheduler
+            start_scheduler()
+        except Exception:
+            logger.exception("[VISITOR_SCHED] failed to start scheduler")

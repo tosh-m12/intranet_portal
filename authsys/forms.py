@@ -9,9 +9,11 @@ class EmailAuthenticationForm(AuthenticationForm):
         widget=forms.EmailInput(attrs={'autofocus': True})
     )
     
-class InviteUserForm(forms.Form):
-    full_name = forms.CharField(label="氏名", max_length=100)
-    email = forms.EmailField(label="社内メールアドレス")
 
 class ResetPasswordForm(forms.Form):
     email = forms.EmailField(label="登録済みメールアドレス")
+
+class UserCreateForm(forms.Form):
+    last_name = forms.CharField(label="姓", max_length=150)
+    first_name = forms.CharField(label="名", max_length=150)
+    email = forms.EmailField(label="メールアドレス")

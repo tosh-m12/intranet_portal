@@ -1,29 +1,32 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.forms import formset_factory
-from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils import timezone
 from django.utils.timezone import localdate
 from django.http import JsonResponse, HttpResponseBadRequest, Http404, HttpResponse
 from django.views.decorators.http import require_POST
-from django.urls import reverse
 from django.db import transaction
+from django.template.loader import render_to_string
+from django.utils.safestring import mark_safe
 
 from .forms import VisitorForm
-from .models import Visitor, MailingAddress, HolidayDate, VisitMailConfig
+from .models import Visitor, MailingAddress, VisitMailConfig
+from working_schedule.models import HolidayDate
+from .email_utils import send_daily_email, get_visitors_for_mail
 
-from datetime import date, time as dtime
 import datetime
 import json
 import logging
-import os
 import csv
 import io
-
-from .email_utils import send_daily_email
+from datetime import time as dtime
 
 logger = logging.getLogger(__name__)
+
+def is_admin(user):
+    return user.is_superuser or user.is_staff
+
 
 # =========================================================
 # 共通：Visitor の表示用 dict 変換
@@ -79,9 +82,7 @@ def history(request):
     for v in visitors_qs:
         visitors.append({
             "id": v.id,
-            # 表示用: 2025年11月04日
             "visit_date": v.visit_date.strftime("%Y年%m月%d日") if v.visit_date else "",
-            # 編集用: 2025-11-04
             "visit_date_raw": v.visit_date.strftime("%Y-%m-%d") if v.visit_date else "",
             "visit_time": v.visit_time.strftime("%H:%M") if v.visit_time else "",
             "time_undecided_flag": v.time_undecided,
@@ -176,8 +177,9 @@ def cancel_visitor(request, id):
     next_page = request.GET.get("next", "index")
     return redirect(f'visitors:{next_page}')
 
+
 # =========================================================
-# 個別編集（今後あまり使わないかも）
+# 個別編集
 # =========================================================
 @login_required
 def edit_visitor(request, id):
@@ -221,19 +223,16 @@ def edit_visitor(request, id):
 
 # =========================================================
 # メール設定画面
+#   - SMTP 設定は mailcenter に移管済みなのでここでは扱わない
+#   - スケジューラー方式も Django 内部固定。mode は常に MODE_DJANGO にしておく。
 # =========================================================
+@user_passes_test(is_admin)
 @login_required
 def settings_view(request):
     # VisitMailConfig は1レコードだけ使う想定
     config, _ = VisitMailConfig.objects.get_or_create(pk=1)
 
     if request.method == "POST":
-        # ▼ スケジューラ方式
-        mode = request.POST.get("scheduler_mode", VisitMailConfig.MODE_WINDOWS)
-        if mode not in dict(VisitMailConfig.MODE_CHOICES):
-            mode = VisitMailConfig.MODE_WINDOWS
-        config.mode = mode
-
         # ▼ 送信時刻（時・分を別々に受け取る）
         send_hour_str = request.POST.get("send_hour", "09")
         send_minute_str = request.POST.get("send_minute", "00")
@@ -244,24 +243,8 @@ def settings_view(request):
         except ValueError:
             config.send_time = dtime(9, 0)
 
-        # ▼ SMTP 設定
-        config.smtp_host = request.POST.get("smtp_host", "").strip() or "smtp.qiye.aliyun.com"
-        try:
-            config.smtp_port = int(request.POST.get("smtp_port", "587"))
-        except ValueError:
-            config.smtp_port = 587
-
-        config.use_tls = bool(request.POST.get("use_tls"))
-        config.use_ssl = bool(request.POST.get("use_ssl"))
-
-        config.smtp_user = request.POST.get("smtp_user", "").strip()
-
-        new_password = request.POST.get("smtp_password", "").strip()
-        # パスワード欄が空なら「変更なし」
-        if new_password:
-            config.smtp_password = new_password
-
-        config.from_name = request.POST.get("from_name", "").strip() or config.from_name
+        # 自動送信方式は Django 内部固定にする
+        config.mode = VisitMailConfig.MODE_DJANGO
 
         # ▼ メーリングリスト再保存
         MailingAddress.objects.all().delete()
@@ -271,13 +254,12 @@ def settings_view(request):
             if e:
                 MailingAddress.objects.create(email=e)
 
-        # ▼ 休日再保存
+        # ▼ 休日再保存（working_schedule 側の HolidayDate をここから編集）
         HolidayDate.objects.all().delete()
         dates = request.POST.getlist("holidays")
         for d in dates:
             d = d.strip()
             if d:
-                # "YYYY-MM-DD" 文字列をそのまま入れてOK（DateFieldが解釈）
                 HolidayDate.objects.create(date=d)
 
         config.save()
@@ -299,12 +281,11 @@ def settings_view(request):
     context = {
         "mailing_list": mailing_list,
         "holidays": [d.strftime("%Y-%m-%d") for d in holidays],
-        "scheduler_mode": config.mode,
         "send_hour": f"{send_hour:02d}",
         "send_minute": f"{send_minute:02d}",
         "hours": hours,
         "minutes": minutes,
-        "config": config,  # smtp_host 等をテンプレートから参照
+        "config": config,
     }
     return render(request, "visitors/settings.html", context)
 
@@ -323,9 +304,7 @@ def inline_update(request):
 
         v = Visitor.objects.get(id=visitor_id)
 
-        # ------------------------------------
         # 来訪日（YYYY-MM-DD）
-        # ------------------------------------
         if field == "visit_date":
             try:
                 dt = datetime.datetime.strptime(value, "%Y-%m-%d")
@@ -336,12 +315,9 @@ def inline_update(request):
             except Exception as e:
                 return JsonResponse({"ok": False, "error": str(e)})
 
-        # ------------------------------------
         # 来訪時間（HH:MM）
-        # ------------------------------------
         elif field == "visit_time":
             try:
-                # 空の場合（--:-- など）はエラーにしない
                 if value == "":
                     v.visit_time = None
                 else:
@@ -353,13 +329,10 @@ def inline_update(request):
             except Exception as e:
                 return JsonResponse({"ok": False, "error": str(e)})
 
-        # ------------------------------------
-        # 上記以外のフィールド（会社名・名前・目的など）
-        # ------------------------------------
+        # 上記以外（会社名・名前・目的など）
         else:
             setattr(v, field, value)
             v.save()
-
             display_value = value if value is not None else ""
             return JsonResponse({"ok": True, "value": display_value})
 
@@ -377,16 +350,13 @@ def toggle_undecided(request, id):
 
     visitor = get_object_or_404(Visitor, pk=id)
 
-    # フラグを反転
     visitor.time_undecided = not visitor.time_undecided
 
-    # 未定になったら時間をクリア
     if visitor.time_undecided:
         visitor.visit_time = None
 
     visitor.save()
 
-    # Ajax の場合は JSON で返す
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return JsonResponse({
             "ok": True,
@@ -394,44 +364,65 @@ def toggle_undecided(request, id):
             "visit_time": visitor.visit_time.strftime("%H:%M") if visitor.visit_time else "",
         })
 
-    # 通常遷移（保険）
     next_page = request.GET.get("next", "index")
     return redirect(f'visitors:{next_page}')
 
 
 # =========================================================
-# 今すぐメール送信
+# メールプレビュー画面
+# =========================================================
+@login_required
+def preview_email(request):
+    # 今日以降のデータを取得（本番のメールと同じロジック）
+    today = localdate()
+    visitors = get_visitors_for_mail(today)
+
+    # メール本文（HTML）をテンプレートから生成
+    html_body = render_to_string(
+        "visitors/email_template.html",
+        {
+            "visitors": visitors,
+            "today": today,
+        },
+    )
+
+    # portal のレイアウトに埋め込んで表示
+    return render(
+        request,
+        "visitors/email_preview.html",
+        {
+            "email_html": mark_safe(html_body),
+        },
+    )
+
+
+# =========================================================
+# 今すぐメール送信（手動）
 # =========================================================
 @login_required
 def run_email(request):
     try:
-        # 1) メール送信実行
-        result = send_daily_email()
+        # ★ 手動送信なので ignore_holiday=True
+        result = send_daily_email(ignore_holiday=True)
 
         today = timezone.localdate()
         config, _ = VisitMailConfig.objects.get_or_create(pk=1)
 
-        # 2) result の形式を吸収（dict でも str でも動くように）
         sent = False
         detail = ""
 
         if isinstance(result, dict):
-            # 新仕様: {"sent": True/False, "reason": "...", "recipients": [...], ...}
             sent = result.get("sent", False)
             detail = result.get("reason", "")
         else:
-            # 旧仕様: "ok" / "error: xxx"
             sent = (result == "ok")
             if not sent:
                 detail = str(result)
 
-        # 3) 成功・失敗で分岐
         if sent:
-            # ★ 成功したときだけ「今日送った」と記録
             config.last_sent_date = today
             config.save(update_fields=["last_sent_date"])
 
-            # 宛先表示（dict のときだけ）
             recipients_str = ""
             if isinstance(result, dict):
                 recipients = result.get("recipients") or []
@@ -457,31 +448,27 @@ def run_email(request):
     return redirect("visitors:settings")
 
 
+# =========================================================
+# 設定画面：Visitor 一覧 CSV ダウンロード
+# =========================================================
 @login_required
 def download_settings_csv(request, kind):
-    """
-    設定画面からの CSV ダウンロード用。
-    kind は 'visitor_list' のみ許可。
-    DB の Visitor 全件を CSV で返す。
-    """
     if kind != "visitor_list":
         raise Http404("Unknown CSV kind")
 
-    # レスポンス準備
     response = HttpResponse(
         content_type="text/csv; charset=utf-8"
     )
     filename = f"visitor_list_{timezone.now().strftime('%Y%m%d')}.csv"
-    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    response["Content-Disposition"] = f"attachment; filename=\"{filename}\""
 
     writer = csv.writer(response)
 
-    # ヘッダー行
     writer.writerow([
         "id",
-        "visit_date",       # YYYY-MM-DD
-        "visit_time",       # HH:MM or 空欄
-        "time_undecided",   # 1 or 0
+        "visit_date",
+        "visit_time",
+        "time_undecided",
         "company_name",
         "last_name",
         "first_name",
@@ -489,7 +476,7 @@ def download_settings_csv(request, kind):
         "purpose",
         "location",
         "host_staff",
-        "cancelled",        # 1 or 0
+        "cancelled",
     ])
 
     qs = Visitor.objects.all().order_by("visit_date", "visit_time", "id")
@@ -517,13 +504,11 @@ def download_settings_csv(request, kind):
     return response
 
 
+# =========================================================
+# 設定画面：Visitor 一覧 CSV アップロード
+# =========================================================
 @login_required
 def upload_visitor_csv(request):
-    """
-    設定画面から Visitor 一覧 CSV をアップロードして DB をメンテナンスする用。
-    - CSV の id カラムは「無視」して新規作成（PK 干渉防止）
-    - アップロード成功時に Visitor 全件を入れ替える
-    """
     if request.method != "POST":
         return HttpResponseBadRequest("POST only")
 
@@ -533,7 +518,6 @@ def upload_visitor_csv(request):
         return redirect("visitors:settings")
 
     try:
-        # 文字コードは UTF-8 (BOM付きも許容)
         text_file = io.TextIOWrapper(csv_file.file, encoding="utf-8-sig")
         reader = csv.DictReader(text_file)
 
@@ -544,24 +528,19 @@ def upload_visitor_csv(request):
             return s in ("1", "true", "t", "yes", "y", "on")
 
         for row in reader:
-            # CSVヘッダに存在しない場合に備えて get() で取得
             visit_date_str = (row.get("visit_date") or "").strip()
             visit_time_str = (row.get("visit_time") or "").strip()
             time_undecided_str = (row.get("time_undecided") or "").strip()
             cancelled_str = (row.get("cancelled") or "").strip()
 
-            # 日付
             visit_date = None
             if visit_date_str:
-                # "YYYY-MM-DD" 想定
                 visit_date = datetime.datetime.strptime(visit_date_str, "%Y-%m-%d").date()
 
-            # 時間
             visit_time_str = visit_time_str.strip()
             if not visit_time_str:
                 visit_time = None
             else:
-                # 秒付き(HH:MM:SS)にも対応
                 try:
                     visit_time = datetime.datetime.strptime(visit_time_str, "%H:%M").time()
                 except ValueError:
@@ -570,12 +549,10 @@ def upload_visitor_csv(request):
             time_undecided = to_bool(time_undecided_str)
             cancelled = to_bool(cancelled_str)
 
-            # 「未定」の場合は visit_time を強制的に None に
             if time_undecided:
                 visit_time = None
 
             v = Visitor(
-                # id はセットしない → DB が新しく採番する
                 visit_date=visit_date,
                 visit_time=visit_time,
                 time_undecided=time_undecided,
@@ -590,7 +567,6 @@ def upload_visitor_csv(request):
             )
             new_visitors.append(v)
 
-        # ここまで読み込み成功したら、トランザクションで入れ替え
         with transaction.atomic():
             Visitor.objects.all().delete()
             Visitor.objects.bulk_create(new_visitors)
@@ -602,3 +578,4 @@ def upload_visitor_csv(request):
         messages.error(request, f"CSVの読み込み中にエラーが発生しました: {e}")
 
     return redirect("visitors:settings")
+

@@ -33,11 +33,15 @@ class MailingAddress(models.Model):
         return self.email
 
 
-class HolidayDate(models.Model):
-    date = models.DateField()
-
-
 class VisitMailConfig(models.Model):
+    """
+    来客予定メールの設定。
+
+    ※ SMTP 接続情報については現在 mailcenter.MailAccount 側を利用。
+       ここに残っている smtp_* フィールドは既存DB互換のため。
+       将来的には migrations で削除する候補。
+    """
+
     MODE_WINDOWS = 'windows'
     MODE_DJANGO = 'django'
     MODE_NONE = 'none'
@@ -56,14 +60,13 @@ class VisitMailConfig(models.Model):
         verbose_name="スケジューラ方式",
     )
 
-    # ★ これを追加
     last_sent_date = models.DateField(
         null=True,
         blank=True,
         verbose_name="最終送信日",
     )
 
-    # ★ ここから追加：SMTP 設定
+    # ↓↓↓ SMTP 設定（現在は mailcenter 側に移管済み・未使用） ↓↓↓
     smtp_host = models.CharField(
         max_length=255,
         verbose_name="SMTPサーバー",
@@ -96,6 +99,7 @@ class VisitMailConfig(models.Model):
         blank=True,
         default="NGLS-CS-INFO",
     )
+    # ↑↑↑ いずれ削除予定（mailcenter.MailAccount に一本化） ↑↑↑
 
     def __str__(self):
         return f"毎日 {self.send_time.strftime('%H:%M')} / mode={self.mode}"
