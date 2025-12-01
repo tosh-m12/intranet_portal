@@ -20,7 +20,7 @@
     </div>
 </div>
 
-<form method="post" novalidate>
+<form id="meeting-form" method="post" novalidate>
     {% csrf_token %}
     {{ formset.management_form }}
 
@@ -115,155 +115,175 @@
     </div>
 </form>
 
-
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const form = document.querySelector('form');
-    if (!form) return;
+    // ログインユーザーのフルネーム（なければユーザー名など）
+    const currentUserName = "{{ host_name|escapejs }}";
 
-    // ─────────────────────────────
-    // 共通：行バリデーション関数
-    // ─────────────────────────────
-    function validateRowsAndMark() {
-        let hasError = false;
+    // その行の「入力者」が空なら、自動で currentUserName を入れる
+    function setHostStaffIfNeededForElement(el) {
+        if (!el) return;
+        const row = el.closest(".form-row");
+        if (!row) return;
 
-        // 既存の赤枠をクリア
-        document.querySelectorAll('#formset-body td.input-error').forEach(td => {
-            td.classList.remove('input-error');
-        });
+        const hostInput = row.querySelector('input[name$="-host_staff"]');
+        if (!hostInput) return;
 
-        const rows = document.querySelectorAll('#formset-body .form-row');
-
-        rows.forEach(row => {
-            // 各フィールドを個別に取得
-            const companyInput   = row.querySelector('input[name$="-company_name"]');
-            const lastNameInput  = row.querySelector('input[name$="-last_name"]');
-            const firstNameInput = row.querySelector('input[name$="-first_name"]');
-            const titleInput     = row.querySelector('input[name$="-title"]');        // 任意
-            const purposeInput   = row.querySelector('input[name$="-purpose"]');
-            const hostInput      = row.querySelector('input[name$="-host_staff"]');
-            const dateInput      = row.querySelector('input[type="date"], input[name$="-visit_date"]');
-            const timeSelect     = row.querySelector('select[name$="-visit_time"]');
-            const undecided      = row.querySelector('input[type="checkbox"][name$="-time_undecided"]');
-            const visitWebSelect = row.querySelector('select[name$="-location"]');
-
-            // 行全体が空かどうかを判定するための値リスト
-            const values = [];
-
-            function pushVal(input) {
-                if (!input) return;
-                values.push((input.value || '').trim());
-            }
-
-            pushVal(companyInput);
-            pushVal(lastNameInput);
-            pushVal(firstNameInput);
-            pushVal(titleInput);
-            pushVal(purposeInput);
-            pushVal(hostInput);
-            pushVal(dateInput);
-            pushVal(visitWebSelect);
-
-            const undecidedChecked = !!(undecided && undecided.checked);
-            if (timeSelect && !undecidedChecked) {
-                pushVal(timeSelect);
-            }
-            if (undecidedChecked) {
-                values.push('HAS_UNDECIDED');
-            }
-
-            // 完全に空の行ならスキップ
-            const allEmpty = values.every(v => v === '');
-            if (allEmpty) {
-                return;
-            }
-
-            // 必須チェック用のヘルパ
-            function markIfEmpty(input) {
-                if (!input) return;
-                const td = input.closest('td');
-                if (!td) return;
-                const val = (input.value || '').trim();
-                if (val === '') {
-                    td.classList.add('input-error');
-                    hasError = true;
-                }
-            }
-
-            // ■ 必須1: 来訪日
-            markIfEmpty(dateInput);
-
-            // ■ 必須2: 時間（未定チェック ON の場合はスキップ）
-            if (!undecidedChecked) {
-                markIfEmpty(timeSelect);
-            }
-
-            // ■ 必須3: 会社名・姓・名・目的・訪問/WEB・入力者
-            markIfEmpty(companyInput);
-            markIfEmpty(lastNameInput);
-            markIfEmpty(firstNameInput);
-            markIfEmpty(purposeInput);
-            markIfEmpty(visitWebSelect);
-            markIfEmpty(hostInput);
-        });
-
-        return hasError;
+        if (!hostInput.value || hostInput.value.trim() === "") {
+            hostInput.value = currentUserName;
+        }
     }
 
-    // ─────────────────────────────
-    // 1) 「保存」ボタン（フォーム submit）のとき
-    // ─────────────────────────────
-    form.addEventListener('submit', function (e) {
-        const hasError = validateRowsAndMark();
-        if (hasError) {
-            e.preventDefault();
-            alert(
-                '入力途中の行で必須項目が未入力です。\n' +
-                '入力する行については、来訪日・時間（または未定）・会社名・訪問/WEBなど必須項目をすべて入力してください。'
-            );
-        }
-    });
+    document.addEventListener('DOMContentLoaded', function () {
+        // ★ メインのフォームだけを対象にする
+        const form = document.getElementById('meeting-form');
+        if (!form) return;
 
-    // ─────────────────────────────
-    // 2) 他のリンクやボタンをクリックして
-    //    ページを離れようとしたとき
-    // ─────────────────────────────
-    document.addEventListener('click', function (e) {
-        const target = e.target.closest('a, button[type="submit"], input[type="submit"]');
-        if (!target) return;
+        // どこかが編集されたら、その行の入力者を自動セット
+        const tbodyForAuto = document.getElementById("formset-body");
+        if (tbodyForAuto) {
+            tbodyForAuto.addEventListener("input", function (e) {
+                const target = e.target;
+                if (!target.name) return;
+                if (target.name.endsWith("-host_staff")) return;  // 自分自身は除外
+                setHostStaffIfNeededForElement(target);
+            });
 
-        // 新しいタブで開くものは対象外
-        if (target.tagName === 'A' && target.target === '_blank') {
-            return;
+            tbodyForAuto.addEventListener("change", function (e) {
+                const target = e.target;
+                if (!target.name) return;
+                if (target.name.endsWith("-host_staff")) return;
+                setHostStaffIfNeededForElement(target);
+            });
         }
 
-        // javascript: や # だけのリンクは対象外
-        if (target.tagName === 'A') {
-            const href = target.getAttribute('href') || '';
-            if (
-                href === '' ||
-                href === '#' ||
-                href.startsWith('javascript:')
-            ) {
-                return;
+        // ─────────────────────────────
+        // 行バリデーション関数（visitors と同じスタイル）
+        // ─────────────────────────────
+        function validateRowsAndMark() {
+            let hasError = false;
+
+            // 既存の赤枠をクリア
+            document.querySelectorAll('#formset-body td.input-error').forEach(td => {
+                td.classList.remove('input-error');
+            });
+
+            const rows = document.querySelectorAll('#formset-body .form-row');
+
+            rows.forEach(row => {
+                // テキスト入力をまとめて取得
+                const textInputs = row.querySelectorAll('input[type="text"]');
+
+                // 日付・時間・未定・訪問/WEB
+                const dateInput      = row.querySelector('input[type="date"], input[name$="-visit_date"]');
+                const timeSelect     = row.querySelector('select[name$="-visit_time"]');
+                const undecided      = row.querySelector('input[type="checkbox"][name$="-time_undecided"]');
+                const visitWebSelect = row.querySelector('select[name$="-location"]');
+
+                // 行全体が空かどうか判定するための値リスト
+                const values = [];
+
+                // テキスト系（会社名・姓・名・役職・目的・入力者など）
+                textInputs.forEach(inp => {
+                    values.push((inp.value || '').trim());
+                });
+
+                // 日付
+                if (dateInput) {
+                    values.push((dateInput.value || '').trim());
+                }
+
+                // 時間（未定でない場合）
+                const undecidedChecked = !!(undecided && undecided.checked);
+                if (timeSelect && !undecidedChecked) {
+                    values.push((timeSelect.value || '').trim());
+                }
+
+                // 未定チェックも「入力あり」とみなす
+                if (undecidedChecked) {
+                    values.push('HAS_UNDECIDED');
+                }
+
+                // 訪問/WEB セレクトも「入力あり」判定に含める
+                if (visitWebSelect) {
+                    values.push((visitWebSelect.value || '').trim());
+                }
+
+                // 完全に空の行ならスキップ
+                const allEmpty = values.every(v => v === '');
+                if (allEmpty) {
+                    return;
+                }
+
+                // 必須チェック用のヘルパ（input 用）
+                function markIfEmptyInput(selector) {
+                    const input = row.querySelector(selector);
+                    if (!input) return;
+                    const td = input.closest('td');
+                    if (!td) return;
+
+                    const val = (input.value || '').trim();
+                    if (val === '') {
+                        td.classList.add('input-error');
+                        hasError = true;
+                    }
+                }
+
+                // ■ 必須1: 来訪日
+                if (dateInput) {
+                    const val = (dateInput.value || '').trim();
+                    if (val === '') {
+                        const td = dateInput.closest('td');
+                        if (td) td.classList.add('input-error');
+                        hasError = true;
+                    }
+                }
+
+                // ■ 必須2: 時間（未定チェック ON の場合はスキップ）
+                if (!undecidedChecked && timeSelect) {
+                    const val = (timeSelect.value || '').trim();
+                    if (val === '') {
+                        const td = timeSelect.closest('td');
+                        if (td) td.classList.add('input-error');
+                        hasError = true;
+                    }
+                }
+
+                // ■ 必須3: 会社名・姓・名・目的・入力者（input）
+                markIfEmptyInput('input[name$="-company_name"]');
+                markIfEmptyInput('input[name$="-last_name"]');
+                markIfEmptyInput('input[name$="-first_name"]');
+                // title は任意
+                markIfEmptyInput('input[name$="-purpose"]');
+                markIfEmptyInput('input[name$="-host_staff"]');
+
+                // ■ 必須4: 訪問/WEB（select）
+                if (visitWebSelect) {
+                    const val = (visitWebSelect.value || '').trim();
+                    if (val === '') {
+                        const td = visitWebSelect.closest('td');
+                        if (td) td.classList.add('input-error');
+                        hasError = true;
+                    }
+                }
+            });
+
+            return hasError;
+        }
+
+        // ─────────────────────────────
+        // 「保存」ボタン（フォーム submit）のときだけチェック
+        // ─────────────────────────────
+        form.addEventListener('submit', function (e) {
+            const hasError = validateRowsAndMark();
+            if (hasError) {
+                e.preventDefault();
+                alert(
+                    '入力途中の行で必須項目が未入力です。\n' +
+                    '入力する行については、来訪日・時間（または未定）・会社名・訪問/WEBなど必須項目をすべて入力してください。'
+                );
             }
-        }
-
-        // フォームの送信ボタンは、submit イベント側でチェックするのでここではスキップ
-        if (target.closest('form') === form && target.type === 'submit') {
-            return;
-        }
-
-        const hasError = validateRowsAndMark();
-        if (hasError) {
-            e.preventDefault();
-            alert(
-                '入力途中の行で必須項目が未入力です。\n' +
-                '入力する行については、来訪日・時間（または未定）・会社名・訪問/WEBなど必須項目をすべて入力してください。'
-            );
-        }
-    }, true);  // ← capture フェーズで先に拾う
-});
+        });
+    });
 </script>
 
 
@@ -294,41 +314,41 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 空行テンプレ
     const emptyRowHtml = `
-<tr class="form-row">
-    <td class="date-cell">
-        <span class="date-display"></span>
-        <input type="date" name="form-__prefix__-visit_date"
-               class="hidden-date-input" style="display:none;">
-    </td>
-    <td class="undecided-cell action-cell">
-        <label class="undecided-label">
-            <input type="checkbox" name="form-__prefix__-time_undecided">
-        </label>
-    </td>
-    <td class="time-cell">
-        <span class="time-display">
-            <span class="time-part time-hour">--</span>
-            <span> : </span>
-            <span class="time-part time-minute">--</span>
-        </span>
-        <span class="undecided-label undecided-badge" style="display:none;">未定</span>
-        <select name="form-__prefix__-visit_time"
-                class="hidden-time-input" style="display:none;">
-            ${timeChoicesHtml}
-        </select>
-    </td>
-    <td><input type="text" name="form-__prefix__-company_name"></td>
-    <td><input type="text" name="form-__prefix__-last_name"></td>
-    <td><input type="text" name="form-__prefix__-first_name"></td>
-    <td><input type="text" name="form-__prefix__-title"></td>
-    <td><input type="text" name="form-__prefix__-purpose"></td>
-    <td>
-        <select name="form-__prefix__-location" class="location-select">
-            ${visitWebChoicesHtml}
-        </select>
-    </td>
-    <td><input type="text" name="form-__prefix__-host_staff"></td>
-</tr>`;
+        <tr class="form-row">
+            <td class="date-cell">
+                <span class="date-display"></span>
+                <input type="date" name="form-__prefix__-visit_date"
+                    class="hidden-date-input" style="display:none;">
+            </td>
+            <td class="undecided-cell action-cell">
+                <label class="undecided-label">
+                    <input type="checkbox" name="form-__prefix__-time_undecided">
+                </label>
+            </td>
+            <td class="time-cell">
+                <span class="time-display">
+                    <span class="time-part time-hour">--</span>
+                    <span> : </span>
+                    <span class="time-part time-minute">--</span>
+                </span>
+                <span class="undecided-label undecided-badge" style="display:none;">未定</span>
+                <select name="form-__prefix__-visit_time"
+                        class="hidden-time-input" style="display:none;">
+                    ${timeChoicesHtml}
+                </select>
+            </td>
+            <td><input type="text" name="form-__prefix__-company_name"></td>
+            <td><input type="text" name="form-__prefix__-last_name"></td>
+            <td><input type="text" name="form-__prefix__-first_name"></td>
+            <td><input type="text" name="form-__prefix__-title"></td>
+            <td><input type="text" name="form-__prefix__-purpose"></td>
+            <td>
+                <select name="form-__prefix__-location" class="location-select">
+                    ${visitWebChoicesHtml}
+                </select>
+            </td>
+            <td><input type="text" name="form-__prefix__-host_staff"></td>
+        </tr>`;
 
     // ---- 日付表示を "YYYY年MM月DD日" に変換 ----
     function formatDisplayDate(yyyyMmDd) {
@@ -421,6 +441,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     const span = td.querySelector(".date-display");
                     if (span) span.textContent = display;
 
+                    setHostStaffIfNeededForElement(input);
+
                     popup.style.display = "none";
                 });
             });
@@ -488,6 +510,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (hourSpan) hourSpan.textContent = hh;
                 if (minuteSpan) minuteSpan.textContent = mm;
 
+                setHostStaffIfNeededForElement(select || td);
+
                 popup.style.display = "none";
             });
         });
@@ -551,6 +575,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 const minuteSpan = td.querySelector(".time-minute");
                 if (hourSpan) hourSpan.textContent = hh;
                 if (minuteSpan) minuteSpan.textContent = mm;
+
+                setHostStaffIfNeededForElement(select || td);
 
                 popup.style.display = "none";
             });

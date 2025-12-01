@@ -13,13 +13,50 @@ import json
 import datetime
 
 
-def _serialize_meeting(m: Meeting):
+def _get_display_name(user):
+    """
+    visitors アプリと同仕様：
+    - ユーザーの「姓 名」があればそれを優先
+    - なければ Django 的な get_full_name()
+    - それもなければ email or username
+    """
+    last = (user.last_name or "").strip()
+    first = (user.first_name or "").strip()
+    full = f"{last} {first}".strip()
+    if full:
+        return full
+
+    if user.get_full_name():
+        return user.get_full_name()
+
+    if user.email:
+        return user.email
+
+    return user.get_username()
+
+
+def _can_edit_meeting(meeting: Meeting, user):
+    """
+    編集権限：
+    - スーパーユーザー or staff は全行OK
+    - それ以外は created_by が自分の行のみ
+    """
+    if not user.is_authenticated:
+        return False
+    if user.is_superuser or user.is_staff:
+        return True
+    creator_id = getattr(meeting, "created_by_id", None)
+    return creator_id == user.id
+
+
+def _serialize_meeting(m: Meeting, user):
+    can_edit = _can_edit_meeting(m, user)
     return {
         "id": m.id,
         "visit_date": m.visit_date.strftime("%Y年%m月%d日") if m.visit_date else "",
         "visit_date_raw": m.visit_date.strftime("%Y-%m-%d") if m.visit_date else "",
         "visit_time": m.visit_time.strftime("%H:%M") if m.visit_time else "",
-        "time_undecided_flag": m.time_undecided,
+        "time_undecided_flag": bool(getattr(m, "time_undecided", False)),
         "company_name": m.company_name,
         "last_name": m.last_name,
         "first_name": m.first_name,
@@ -27,27 +64,47 @@ def _serialize_meeting(m: Meeting):
         "purpose": m.purpose,
         "location": m.location,
         "host_staff": m.host_staff,
-        "cancelled_flag": m.cancelled,
+        "cancelled_flag": bool(getattr(m, "cancelled", False)),
+        # 権限フラグ（visitors と同思想）
+        "can_edit": can_edit,
+        "can_toggle_undecided": can_edit,
+        "can_toggle_cancel": can_edit,
     }
+
 
 @login_required
 def index(request):
     today = localdate()
-    qs = Meeting.objects.filter(visit_date__gte=today).order_by("visit_date", "visit_time", "id")
-    meetings = [_serialize_meeting(m) for m in qs]
+    qs = (
+        Meeting.objects
+        .filter(visit_date__gte=today)
+        .order_by("visit_date", "visit_time", "id")
+    )
+    meetings = [_serialize_meeting(m, request.user) for m in qs]
     return render(request, "meetings/index.html", {"meetings": meetings})
+
 
 @login_required
 def add_meeting(request):
+    """
+    visitors.add_visitor と同様の仕様：
+    - 行は formset で複数入力
+    - 全項目空行はスキップ
+    - host_staff は画面入力値ではなく「ログインユーザー名」を強制採用
+    - created_by に request.user をセット
+    """
     MeetingFormSet = formset_factory(MeetingForm, extra=3)
     formset = MeetingFormSet(request.POST or None)
     time_choices = formset.empty_form.fields["visit_time"].widget.choices
+
+    host_name = _get_display_name(request.user)
 
     if request.method == "POST":
         has_error = False
         valid_forms = []
 
         for form in formset:
+            # 全項目空欄ならスキップ
             all_empty = all(
                 not form.data.get(f"{form.prefix}-{field}")
                 for field in form.fields
@@ -73,14 +130,17 @@ def add_meeting(request):
                     title=data.get("title", ""),
                     purpose=data.get("purpose", ""),
                     location=data["location"],
-                    host_staff=data["host_staff"],
+                    host_staff=_get_display_name(request.user),  # 表示用：フルネーム
                     cancelled=False,
+                    created_by=request.user,                    # 権限判定用
                 )
+
             return redirect("meetings:index")
 
     return render(request, "meetings/add.html", {
         "formset": formset,
         "time_choices": time_choices,
+        "host_name": host_name,
     })
 
 
@@ -90,6 +150,7 @@ def inline_update(request):
     """
     一覧画面のインライン編集用。
     id / field / value を JSON で受け取って Meeting を更新し、JSON を返す。
+    visitors.inline_update と同じ思想で権限チェックを追加。
     """
     try:
         data = json.loads(request.body.decode("utf-8"))
@@ -104,6 +165,13 @@ def inline_update(request):
         return HttpResponseBadRequest("Missing parameters")
 
     meeting = get_object_or_404(Meeting, pk=pk)
+
+    # 権限チェック
+    if not _can_edit_meeting(meeting, request.user):
+        return JsonResponse(
+            {"ok": False, "error": "この行を編集する権限がありません。"},
+            status=403,
+        )
 
     try:
         if field == "visit_date":
@@ -152,13 +220,19 @@ def inline_update(request):
 def toggle_undecided(request, pk):
     """
     未定チェックボックスのトグル。
-    Ajax と通常 POST の両方に対応（visitors と同じ思想）。
+    visitors.toggle_undecided と同様に権限チェック・JSON 返却。
     """
     meeting = get_object_or_404(Meeting, pk=pk)
 
+    if not _can_edit_meeting(meeting, request.user):
+        return JsonResponse(
+            {"ok": False, "error": "この行を更新する権限がありません。"},
+            status=403,
+        )
+
     # チェックボックスが送られてきたかどうかで判定
     checked = bool(request.POST.get("time_undecided"))
-    meeting.time_undecided_flag = checked
+    meeting.time_undecided = checked  # ★ 正しいフィールド名に修正
 
     # 未定になったときは時間をクリアする仕様
     if checked:
@@ -170,7 +244,7 @@ def toggle_undecided(request, pk):
     if is_ajax:
         return JsonResponse({
             "ok": True,
-            "time_undecided": meeting.time_undecided_flag,
+            "time_undecided": meeting.time_undecided,
             "visit_time": meeting.visit_time.strftime("%H:%M") if meeting.visit_time else "",
         })
 
@@ -185,18 +259,25 @@ def toggle_undecided(request, pk):
 def cancel_meeting(request, pk):
     """
     取消スイッチのトグル。
+    visitors.cancel_visitor と同様に権限チェック。
     """
     meeting = get_object_or_404(Meeting, pk=pk)
 
+    if not _can_edit_meeting(meeting, request.user):
+        return JsonResponse(
+            {"ok": False, "error": "この行を更新する権限がありません。"},
+            status=403,
+        )
+
     checked = bool(request.POST.get("cancelled"))
-    meeting.cancelled_flag = checked
+    meeting.cancelled = checked  # ★ 正しいフィールド名に修正
     meeting.save()
 
     is_ajax = request.headers.get("x-requested-with") == "XMLHttpRequest"
     if is_ajax:
         return JsonResponse({
             "ok": True,
-            "cancelled": meeting.cancelled_flag,
+            "cancelled": meeting.cancelled,
         })
 
     next_url = request.GET.get("next")
@@ -204,9 +285,14 @@ def cancel_meeting(request, pk):
         return redirect("meetings:index")
     return redirect("meetings:index")
 
+
 @login_required
 def history(request):
-    """過去分（本日より前）の訪問・WEB会議予定一覧"""
+    """
+    過去分（本日より前）の訪問・WEB会議予定一覧。
+    とりあえず既存仕様を維持。必要になれば visitors のように
+    can_edit 系フラグも付ける。
+    """
     today = timezone.localdate()
 
     qs = (
@@ -219,16 +305,11 @@ def history(request):
     for m in qs:
         meetings.append({
             "id": m.id,
-            # 表示用の日付（YYYY年MM月DD日）
             "visit_date": m.visit_date.strftime("%Y年%m月%d日") if m.visit_date else "",
-            # カレンダーポップアップ用の生データ
             "visit_date_raw": m.visit_date.strftime("%Y-%m-%d") if m.visit_date else "",
-            # 表示用時間
             "visit_time": m.visit_time.strftime("%H:%M") if m.visit_time else "",
-            # フラグ類（テンプレート側と合わせる）
             "time_undecided_flag": bool(getattr(m, "time_undecided", False)),
             "cancelled_flag": bool(getattr(m, "cancelled", False)),
-            # テキスト項目
             "company_name": m.company_name,
             "last_name": m.last_name,
             "first_name": m.first_name,

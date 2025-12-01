@@ -1,3 +1,4 @@
+{# meetings/index.html #}
 {% extends "portal/base.html" %}
 {% load i18n %}
 
@@ -38,19 +39,22 @@
             </thead>
             <tbody>
                 {% for m in meetings %}
-                <tr class="{% if m.cancelled_flag %}is-cancelled{% endif %}">
+                <tr class="
+                    {% if m.cancelled_flag %}is-cancelled{% endif %}
+                    {% if not m.can_edit %}is-readonly{% endif %}
+                ">
 
-                    <!-- 来訪日 -->
-                    <td class="editable"
+                    {# 来訪日 #}
+                    <td class="{% if m.can_edit %}editable{% endif %}"
                         data-id="{{ m.id }}"
                         data-field="visit_date"
                         data-date="{{ m.visit_date_raw }}">
                         {{ m.visit_date }}
                     </td>
 
-                    <!-- 未定チェック：キャンセル行は非表示 -->
-                    <td class="action-cell">
-                        {% if not m.cancelled_flag %}
+                    {# 未定チェック：キャンセル行は CSS で非表示。権限でフォーム出し分け #}
+                    <td class="action-cell undecided-cell">
+                        {% if m.can_toggle_undecided %}
                             <form method="post"
                                   action="{% url 'meetings:toggle_undecided' m.id %}?next=index"
                                   class="inline-action-form"
@@ -62,54 +66,56 @@
                                        {% if m.time_undecided_flag %}checked{% endif %}>
                             </form>
                         {% else %}
-                            &nbsp;
+                            <span class="readonly-label">-</span>
                         {% endif %}
                     </td>
 
-                    <!-- 時間 -->
-                    <td class="editable"
+                    {# 時間 #}
+                    <td class="{% if m.can_edit %}editable{% endif %}"
                         data-id="{{ m.id }}"
                         data-field="visit_time"
                         data-undecided="{% if m.time_undecided_flag %}1{% else %}0{% endif %}">
                         {{ m.visit_time }}
                     </td>
 
-                    <!-- 各種テキスト項目（インライン編集対象） -->
-                    <td class="editable"
+                    {# 各種テキスト項目（インライン編集対象） #}
+                    <td class="{% if m.can_edit %}editable{% endif %}"
                         data-id="{{ m.id }}"
                         data-field="company_name">
                         {{ m.company_name }}
                     </td>
 
-                    <td class="editable"
+                    <td class="{% if m.can_edit %}editable{% endif %}"
                         data-id="{{ m.id }}"
                         data-field="last_name">
                         {{ m.last_name }}
                     </td>
 
-                    <td class="editable"
+                    <td class="{% if m.can_edit %}editable{% endif %}"
                         data-id="{{ m.id }}"
                         data-field="first_name">
                         {{ m.first_name }}
                     </td>
 
-                    <td class="editable"
+                    <td class="{% if m.can_edit %}editable{% endif %}"
                         data-id="{{ m.id }}"
                         data-field="title">
                         {{ m.title }}
                     </td>
 
-                    <td class="editable"
+                    <td class="{% if m.can_edit %}editable{% endif %}"
                         data-id="{{ m.id }}"
                         data-field="purpose">
                         {{ m.purpose }}
                     </td>
 
-                    <!-- 訪問・WEB：プルダウン -->
-                    <td class="editable location-cell"
+                    {# 訪問・WEB：プルダウン #}
+                    <td class="location-cell {% if m.can_edit %}editable{% endif %}"
                         data-id="{{ m.id }}"
                         data-field="location">
-                        <select class="location-select" data-prev="{{ m.location|default_if_none:'' }}">
+                        <select class="location-select"
+                                data-prev="{{ m.location|default_if_none:'' }}"
+                                {% if not m.can_edit %}disabled{% endif %}>
                             <option value="">{% trans "選択してください" %}</option>
                             <option value="訪問" {% if m.location == "訪問" %}selected{% endif %}>
                                 {% trans "訪問" %}
@@ -120,27 +126,36 @@
                         </select>
                     </td>
 
-                    <td class="editable"
+                    <td class="{% if m.can_edit %}editable{% endif %}"
                         data-id="{{ m.id }}"
                         data-field="host_staff">
                         {{ m.host_staff }}
                     </td>
 
-                    <!-- キャンセルスイッチ -->
+                    {# キャンセルスイッチ #}
                     <td class="action-cell">
-                        <form method="post"
-                              action="{% url 'meetings:cancel_meeting' m.id %}?next=index"
-                              class="inline-action-form"
-                              style="display:inline;">
-                            {% csrf_token %}
-                            <label class="switch">
+                        {% if m.can_toggle_cancel %}
+                            <form method="post"
+                                  action="{% url 'meetings:cancel_meeting' m.id %}?next=index"
+                                  class="inline-action-form"
+                                  style="display:inline;">
+                                {% csrf_token %}
+                                <label class="switch">
+                                    <input type="checkbox"
+                                           name="cancelled"
+                                           value="1"
+                                           {% if m.cancelled_flag %}checked{% endif %}>
+                                    <span class="slider round"></span>
+                                </label>
+                            </form>
+                        {% else %}
+                            <label class="switch switch-readonly">
                                 <input type="checkbox"
-                                       name="cancelled"
-                                       value="1"
+                                       disabled
                                        {% if m.cancelled_flag %}checked{% endif %}>
                                 <span class="slider round"></span>
                             </label>
-                        </form>
+                        {% endif %}
                     </td>
 
                 </tr>
@@ -149,7 +164,7 @@
         </table>
     </div>
 
-    <!-- ポップアップ用要素 -->
+    {# ポップアップ用要素 #}
     <div id="calendar-popup" class="calendar-popup" style="display:none;"></div>
     <div id="hour-popup" class="time-popup" style="display:none;"></div>
     <div id="minute-popup" class="time-popup" style="display:none;"></div>
@@ -195,6 +210,9 @@
         // ===== ① 汎用インライン編集（visit_time / visit_date / location 以外） =====
         function startEdit(td) {
             if (editing) return;
+
+            const row = td.closest('tr');
+            if (row && row.classList.contains('is-readonly')) return;  // ★ 権限なし行は編集禁止
 
             const id = td.dataset.id;
             const field = td.dataset.field;
@@ -264,10 +282,7 @@
             const newValue = td.textContent.trim();
 
             if (REQUIRED_FIELDS.includes(field) && newValue === '') {
-                // エラー枠を付ける
                 td.classList.add('input-error');
-
-                // テキストは元に戻す（サーバーと不整合にならないように）
                 td.textContent = oldText;
 
                 alert('この項目は必須です。空欄にはできません。');
@@ -332,6 +347,15 @@
                 select.addEventListener('change', function () {
                     const td = select.closest('td.location-cell');
                     if (!td) return;
+
+                    const row = td.closest('tr');
+                    if (row && row.classList.contains('is-readonly')) {
+                        // 権限無し行は変更不可
+                        select.value = select.dataset.prev || '';
+                        alert('この行は編集できません。');
+                        return;
+                    }
+
                     const id = td.dataset.id;
                     const field = td.dataset.field || 'location';
                     const newValue = (select.value || '').trim();
@@ -379,7 +403,8 @@
 
             tds.forEach(td => {
                 const row = td.closest('tr');
-                const isCancelled = row && row.classList.contains('is-cancelled'); 
+                const isCancelled = row && row.classList.contains('is-cancelled');
+                const isReadonly = row && row.classList.contains('is-readonly');
 
                 const id = td.dataset.id;
                 const text = (td.textContent || '').trim();
@@ -423,7 +448,7 @@
                 td.appendChild(wrapper);
 
                 hourSpan.addEventListener('click', function (e) {
-                    if (isCancelled) return; 
+                    if (isCancelled || isReadonly) return; 
                     e.stopPropagation();
                     const hText = hourSpan.textContent.trim();
                     const mText = minuteSpan.textContent.trim();
@@ -433,7 +458,7 @@
                 });
 
                 minuteSpan.addEventListener('click', function (e) {
-                    if (isCancelled) return; 
+                    if (isCancelled || isReadonly) return; 
                     e.stopPropagation();
                     const hText = hourSpan.textContent.trim();
                     const mText = minuteSpan.textContent.trim();
@@ -446,12 +471,15 @@
 
         // ===== ③ テーブルクリックでセルごとの処理振り分け =====
         table.addEventListener('click', function (e) {
-            const td = e.target.closest('td.editable');
-            if (!td) return;
+            const td = e.target.closest('td');
+            if (!td || !td.classList.contains('editable')) return;
 
-            // キャンセル行は編集禁止
             const row = td.closest('tr');
-            if (row && row.classList.contains('is-cancelled')) return;
+
+            // キャンセル・読み取り専用行は編集禁止
+            if (row && (row.classList.contains('is-cancelled') || row.classList.contains('is-readonly'))) {
+                return;
+            }
 
             // キャンセルスイッチは無視
             if (e.target.closest('label.switch')) return;
@@ -738,7 +766,7 @@
                         if (data.ok) {
                             td.textContent = displayValue;
                         } else {
-                            alert("保存に失敗しました: " + data.error);
+                            alert("保存に失敗しました: " + (data.error || ''));
                         }
                         popup.style.display = "none";
                     });
@@ -758,8 +786,12 @@
         const tds = table.querySelectorAll('td[data-field="visit_time"]');
 
         tds.forEach(td => {
+            const row = td.closest('tr');
+            const isCancelled = row && row.classList.contains('is-cancelled');
+            const isReadonly = row && row.classList.contains('is-readonly');
+
             const isUndecided = td.dataset.undecided === '1';
-            if (isUndecided) {
+            if (isUndecided || isCancelled || isReadonly) {
                 td.classList.remove('time-error');
                 return;
             }
@@ -816,9 +848,10 @@
         const row = td.closest('tr');
         const isCancelled = row && row.classList.contains('is-cancelled');
         const isUndecided = td.dataset.undecided === '1';
+        const isReadonly = row && row.classList.contains('is-readonly');
 
-        // キャンセル行 / 未定はエラー扱いにしない
-        if (isCancelled || isUndecided) {
+        // キャンセル行 / 未定 / 読み取り専用はエラー扱いにしない
+        if (isCancelled || isUndecided || isReadonly) {
             td.classList.remove("time-error");
             return;
         }
@@ -899,7 +932,6 @@
     // ===== 「取消」「未定」フォームの Ajax 送信 =====
     document.addEventListener('change', function (e) {
         const checkbox = e.target;
-        // inline-action-form 内のチェックボックスだけ対象
         const form = checkbox.closest('form.inline-action-form');
         if (!form) return;
 
@@ -934,7 +966,7 @@
             .then(response => response.json())
             .then(data => {
                 if (!data.ok) {
-                    alert('更新に失敗しました。');
+                    alert('更新に失敗しました。' + (data.error ? '\n' + data.error : ''));
                     return;
                 }
 
@@ -991,8 +1023,10 @@
                             tdTime.appendChild(wrapper);
 
                             const rowCancelled = row.classList.contains('is-cancelled');
+                            const rowReadonly = row.classList.contains('is-readonly');
+
                             hourSpan.addEventListener('click', function (e2) {
-                                if (rowCancelled) return;
+                                if (rowCancelled || rowReadonly) return;
                                 e2.stopPropagation();
                                 const hText = hourSpan.textContent.trim();
                                 const mText = minuteSpan.textContent.trim();
@@ -1001,9 +1035,9 @@
                                 showHourPopup(hourSpan, tdTime, tdTime.dataset.id, safeHour, safeMinute);
                             });
                             minuteSpan.addEventListener('click', function (e2) {
-                                if (rowCancelled) return;
+                                if (rowCancelled || rowReadonly) return;
                                 e2.stopPropagation();
-                                const hText = hourSpan.textContent.trim();
+                                const hText = minuteSpan.textContent.trim();
                                 const mText = minuteSpan.textContent.trim();
                                 const safeHour = (hText === '--' || hText === '') ? '00' : hText;
                                 const safeMinute = (mText === '--' || mText === '') ? '00' : mText;

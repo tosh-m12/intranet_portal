@@ -1,5 +1,6 @@
 # meetings/models.py
 from django.db import models
+from django.conf import settings
 
 class Meeting(models.Model):
     visit_date = models.DateField(verbose_name="訪問日")
@@ -17,6 +18,15 @@ class Meeting(models.Model):
     # 将来 WEB 会議用の URL 等を足しても良い
     cancelled = models.BooleanField(verbose_name="キャンセル", default=False)
 
+    # ★ 追加（visitors と同じ思想）
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='meetings',
+        null=True,   # 既存データ用に許可
+        blank=True,  # admin 画面で空でも保存できるように
+    )
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
