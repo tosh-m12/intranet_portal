@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils import timezone
 from django.utils.timezone import localdate
-from django.http import JsonResponse, HttpResponseBadRequest, Http404, HttpResponse
+from django.http import JsonResponse, HttpResponseBadRequest, Http404, HttpResponse, HttpResponseForbidden
 from django.views.decorators.http import require_POST
 from django.db import transaction
 from django.template.loader import render_to_string
@@ -24,8 +24,28 @@ from datetime import time as dtime
 
 logger = logging.getLogger(__name__)
 
+
 def is_admin(user):
     return user.is_superuser or user.is_staff
+
+
+def can_edit_visitor(user, visitor: Visitor) -> bool:
+    """
+    ・管理者（superuser / staff）は常にOK
+    ・それ以外は、作成者（created_by == user）のみOK
+    ・created_by が None の場合は、管理者のみ編集可
+    """
+    if not user.is_authenticated:
+        return False
+
+    if is_admin(user):
+        return True
+
+    if visitor.created_by_id is None:
+        # 古いデータなど、入力者不明 → 一般ユーザーは編集不可
+        return False
+
+    return visitor.created_by_id == user.id
 
 
 # =========================================================
@@ -142,8 +162,11 @@ def add_visitor(request):
                     title=data.get("title", ""),
                     purpose=data.get("purpose", ""),
                     location=data["location"],
-                    host_staff=data["host_staff"],
+                    # 画面表示用：フルネーム
+                    host_staff=request.user.get_full_name() or request.user.username,
                     cancelled=False,
+                    # ★権限判定用：ID
+                    created_by=request.user,
                 )
 
             return redirect("visitors:index")
@@ -163,8 +186,18 @@ def cancel_visitor(request, id):
         return HttpResponseBadRequest("POST only")
 
     visitor = get_object_or_404(Visitor, pk=id)
+
+    # ★権限チェック
+    if not can_edit_visitor(request.user, visitor):
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse(
+                {"ok": False, "error": "この来訪予定を編集する権限がありません。"},
+                status=403,
+            )
+        return HttpResponseForbidden("この来訪予定を編集する権限がありません。")
+
     visitor.cancelled = not visitor.cancelled
-    visitor.save()
+    visitor.save()    
 
     # Ajax の場合は JSON で返す
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -185,6 +218,10 @@ def cancel_visitor(request, id):
 def edit_visitor(request, id):
     visitor = get_object_or_404(Visitor, pk=id)
 
+    # ★権限チェック：本人 or 管理権限者のみ
+    if not can_edit_visitor(request.user, visitor):
+        return HttpResponseForbidden("この来訪予定を編集する権限がありません。")
+
     if request.method == "POST":
         form = VisitorForm(request.POST)
         if form.is_valid():
@@ -199,7 +236,8 @@ def edit_visitor(request, id):
             visitor.title = data.get("title", "")
             visitor.purpose = data.get("purpose", "")
             visitor.location = data["location"]
-            visitor.host_staff = data["host_staff"]
+            # ★host_staff は「入力者」として固定。編集時は触らない。
+            # visitor.host_staff = data["host_staff"]
 
             visitor.save()
             return redirect("visitors:index")
@@ -214,7 +252,8 @@ def edit_visitor(request, id):
             "title": visitor.title,
             "purpose": visitor.purpose,
             "location": visitor.location,
-            "host_staff": visitor.host_staff,
+            # ★フォームで編集させないなら initial にも渡さない
+            # "host_staff": visitor.host_staff,
         }
         form = VisitorForm(initial=initial)
 
@@ -304,6 +343,13 @@ def inline_update(request):
 
         v = Visitor.objects.get(id=visitor_id)
 
+        # ★権限チェック
+        if not can_edit_visitor(request.user, v):
+            return JsonResponse(
+                {"ok": False, "error": "この来訪予定を編集する権限がありません。"},
+                status=403,
+            )
+
         # 来訪日（YYYY-MM-DD）
         if field == "visit_date":
             try:
@@ -349,6 +395,15 @@ def toggle_undecided(request, id):
         return HttpResponseBadRequest("POST only")
 
     visitor = get_object_or_404(Visitor, pk=id)
+
+    # ★権限チェック
+    if not can_edit_visitor(request.user, visitor):
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse(
+                {"ok": False, "error": "この来訪予定を編集する権限がありません。"},
+                status=403,
+            )
+        return HttpResponseForbidden("この来訪予定を編集する権限がありません。")
 
     visitor.time_undecided = not visitor.time_undecided
 

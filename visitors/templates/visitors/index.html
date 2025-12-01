@@ -38,7 +38,10 @@
             </thead>
             <tbody>
                 {% for v in visitors %}
-                <tr class="{% if v.cancelled_flag %}is-cancelled{% endif %}">
+                    <tr class="
+                        {% if v.cancelled_flag %}is-cancelled{% endif %}
+                        {% if not v.can_edit %} read-only-row{% endif %}
+                    ">
 
                     <!-- 来訪日 -->
                     <td class="editable"
@@ -53,14 +56,15 @@
                     <td class="action-cell">
                         {% if not v.cancelled_flag %}
                             <form method="post"
-                                  action="{% url 'visitors:toggle_undecided' v.id %}?next=index"
-                                  class="inline-action-form"
-                                  style="display:inline;">
+                                action="{% url 'visitors:toggle_undecided' v.id %}?next=index"
+                                class="inline-action-form {% if not v.can_edit %}read-only-control{% endif %}"
+                                style="display:inline;">
                                 {% csrf_token %}
                                 <input type="checkbox"
-                                       name="time_undecided"
-                                       value="1"
-                                       {% if v.time_undecided_flag %}checked{% endif %}>
+                                    name="time_undecided"
+                                    value="1"
+                                    {% if v.time_undecided_flag %}checked{% endif %}
+                                    {% if not v.can_edit %}disabled{% endif %}>
                             </form>
                         {% else %}
                             &nbsp;
@@ -122,19 +126,21 @@
                     <!-- キャンセルスイッチ -->
                     <td class="action-cell">
                         <form method="post"
-                              action="{% url 'visitors:cancel_visitor' v.id %}?next=index"
-                              class="inline-action-form"
-                              style="display:inline;">
+                            action="{% url 'visitors:cancel_visitor' v.id %}?next=index"
+                            class="inline-action-form {% if not v.can_edit %}read-only-control{% endif %}"
+                            style="display:inline;">
                             {% csrf_token %}
                             <label class="switch">
                                 <input type="checkbox"
-                                       name="cancelled"
-                                       value="1"
-                                       {% if v.cancelled_flag %}checked{% endif %}>
+                                    name="cancelled"
+                                    value="1"
+                                    {% if v.cancelled_flag %}checked{% endif %}
+                                    {% if not v.can_edit %}disabled{% endif %}>
                                 <span class="slider round"></span>
                             </label>
                         </form>
                     </td>
+
 
                 </tr>
                 {% endfor %}
@@ -323,6 +329,7 @@
             tds.forEach(td => {
                 const row = td.closest('tr');
                 const isCancelled = row && row.classList.contains('is-cancelled'); 
+                const isReadOnly = row && row.classList.contains('read-only-row');
 
                 const id = td.dataset.id;
                 const text = (td.textContent || '').trim();
@@ -366,7 +373,7 @@
                 td.appendChild(wrapper);
 
                 hourSpan.addEventListener('click', function (e) {
-                    if (isCancelled) return; 
+                    if (isCancelled || isReadOnly) return;
                     e.stopPropagation();
                     const hText = hourSpan.textContent.trim();
                     const mText = minuteSpan.textContent.trim();
@@ -376,7 +383,7 @@
                 });
 
                 minuteSpan.addEventListener('click', function (e) {
-                    if (isCancelled) return; 
+                    if (isCancelled || isReadOnly) return;
                     e.stopPropagation();
                     const hText = hourSpan.textContent.trim();
                     const mText = minuteSpan.textContent.trim();
@@ -392,9 +399,14 @@
             const td = e.target.closest('td.editable');
             if (!td) return;
 
-            // キャンセル行は編集禁止
             const row = td.closest('tr');
-            if (row && row.classList.contains('is-cancelled')) return;
+            if (!row) return;
+
+            // キャンセル行 or read-only 行は編集禁止
+            if (row.classList.contains('is-cancelled') ||
+                row.classList.contains('read-only-row')) {
+                return;
+            }
 
             // キャンセルスイッチは無視
             if (e.target.closest('label.switch')) return;
@@ -842,6 +854,14 @@
         const form = checkbox.closest('form.inline-action-form');
         if (!form) return;
 
+        // ★追加: read-only 行なら何もしない
+        const row = form.closest('tr');
+        if (row && row.classList.contains('read-only-row')) {
+            checkbox.checked = !checkbox.checked;  // ★ここを有効化
+            return;
+        }
+
+
         // ここで「通常の submit イベント」を発火させる
         if (typeof form.requestSubmit === 'function') {
             // requestSubmit は submit イベントをちゃんと飛ばしてくれる
@@ -858,6 +878,12 @@
         document.addEventListener('submit', function (e) {
             const form = e.target;
             if (!form.classList || !form.classList.contains('inline-action-form')) {
+                return;
+            }
+
+            // ★追加: read-only 行は Ajax も送らない
+            const row = form.closest('tr');
+            if (row && row.classList.contains('read-only-row')) {
                 return;
             }
 

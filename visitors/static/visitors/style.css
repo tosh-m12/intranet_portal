@@ -627,3 +627,29 @@ footer {
 .logout-link-button:hover {
     opacity: 0.8;
 }
+
+/* 編集不可行（他人のデータなど） */
+.visit-table tr.read-only-row td {
+    background-color: #f9f9f9;
+    color: #999;
+}
+
+/* read-only 行のチェックボックス・スイッチは薄く＆クリック感なし */
+.visit-table tr.read-only-row input[type="checkbox"],
+.visit-table tr.read-only-row .slider {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* read-only 行のセルはホバー色を付けない */
+.visit-table tr.read-only-row td {
+    cursor: default;
+}
+
+/* 既存ホバーを「編集可能行だけ」に限定 */
+.visit-table tr:not(.is-cancelled):not(.read-only-row) td.editable:not(.time-error):hover,
+.visit-table tr:not(.is-cancelled):not(.read-only-row) td.date-cell:not(.time-error):hover,
+.visit-table tr:not(.is-cancelled):not(.read-only-row) td.time-cell:not(.time-error):hover,
+.visit-table tr:not(.is-cancelled):not(.read-only-row) td.company-cell:not(.time-error):hover {
+    background-color: #fff9e6;
+}

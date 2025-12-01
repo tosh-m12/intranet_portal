@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 
@@ -15,6 +16,15 @@ class Visitor(models.Model):
     host_staff = models.CharField(verbose_name="入力者", max_length=255)
 
     cancelled = models.BooleanField(verbose_name="キャンセル", default=False)
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="created_visitors",
+        verbose_name="入力者ユーザー",
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

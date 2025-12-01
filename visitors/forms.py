@@ -96,7 +96,6 @@ class VisitorForm(forms.Form):
             "first_name",
             "purpose",
             "location",
-            "host_staff",
         ]
 
         for field in required_fields:
