@@ -103,7 +103,7 @@
 
 <script>
     // ログインユーザーのフルネーム（なければユーザー名）
-    const currentUserName = "{{ request.user.get_full_name|default:request.user.get_username|escapejs }}";
+    const currentUserName = "{{ host_name|escapejs }}";
 
     // その行の「入力者」が空なら、自動で currentUserName を入れる
     function setHostStaffIfNeededForElement(el) {

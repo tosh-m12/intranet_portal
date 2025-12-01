@@ -47,16 +47,25 @@ def can_edit_visitor(user, visitor: Visitor) -> bool:
 
     return visitor.created_by_id == user.id
 
+def _get_display_name(user):
+    """
+    入力者名を「姓 名」の順で返す。
+    姓・名が両方空なら username を返す。
+    """
+    last = (getattr(user, "last_name", "") or "").strip()
+    first = (getattr(user, "first_name", "") or "").strip()
+
+    if last or first:
+        return (last + " " + first).strip()
+    return user.get_username()
 
 # =========================================================
 # 共通：Visitor の表示用 dict 変換
 # =========================================================
-def _serialize_visitor(v: Visitor):
-    return {
+def _serialize_visitor(v: Visitor, user=None):
+    data = {
         "id": v.id,
-        # 表示用: 2025年11月04日
         "visit_date": v.visit_date.strftime("%Y年%m月%d日") if v.visit_date else "",
-        # 編集用: 2025-11-04
         "visit_date_raw": v.visit_date.strftime("%Y-%m-%d") if v.visit_date else "",
         "visit_time": v.visit_time.strftime("%H:%M") if v.visit_time else "",
         "time_undecided_flag": v.time_undecided,
@@ -70,6 +79,10 @@ def _serialize_visitor(v: Visitor):
         "cancelled_flag": v.cancelled,
     }
 
+    if user is not None:
+        data["can_edit"] = can_edit_visitor(user, v)
+
+    return data
 
 # =========================================================
 # 本日以降の一覧
@@ -82,7 +95,7 @@ def index(request):
         visit_date__gte=today
     ).order_by("visit_date", "visit_time", "id")
 
-    visitors = [_serialize_visitor(v) for v in visitors_qs]
+    visitors = [_serialize_visitor(v, request.user) for v in visitors_qs]
 
     return render(request, "visitors/index.html", {"visitors": visitors})
 
@@ -98,23 +111,7 @@ def history(request):
         visit_date__lte=today
     ).order_by("-visit_date", "visit_time", "id")
 
-    visitors = []
-    for v in visitors_qs:
-        visitors.append({
-            "id": v.id,
-            "visit_date": v.visit_date.strftime("%Y年%m月%d日") if v.visit_date else "",
-            "visit_date_raw": v.visit_date.strftime("%Y-%m-%d") if v.visit_date else "",
-            "visit_time": v.visit_time.strftime("%H:%M") if v.visit_time else "",
-            "time_undecided_flag": v.time_undecided,
-            "company_name": v.company_name,
-            "last_name": v.last_name,
-            "first_name": v.first_name,
-            "title": v.title,
-            "purpose": v.purpose,
-            "location": v.location,
-            "host_staff": v.host_staff,
-            "cancelled_flag": v.cancelled,
-        })
+    visitors = [_serialize_visitor(v, request.user) for v in visitors_qs]
 
     return render(request, "visitors/history.html", {
         "visitors": visitors,
@@ -129,6 +126,8 @@ def add_visitor(request):
     VisitorFormSet = formset_factory(VisitorForm, extra=3)
     formset = VisitorFormSet(request.POST or None)
     time_choices = formset.empty_form.fields["visit_time"].widget.choices
+
+    host_name = _get_display_name(request.user)
 
     if request.method == "POST":
         has_error = False
@@ -163,7 +162,7 @@ def add_visitor(request):
                     purpose=data.get("purpose", ""),
                     location=data["location"],
                     # 画面表示用：フルネーム
-                    host_staff=request.user.get_full_name() or request.user.username,
+                    host_staff=_get_display_name(request.user),
                     cancelled=False,
                     # ★権限判定用：ID
                     created_by=request.user,
@@ -174,6 +173,7 @@ def add_visitor(request):
     return render(request, "visitors/add.html", {
         "formset": formset,
         "time_choices": time_choices,
+        "host_name": host_name, 
     })
 
 

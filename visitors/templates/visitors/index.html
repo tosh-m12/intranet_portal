@@ -54,21 +54,17 @@
 
                     <!-- 未定チェック：キャンセル行は非表示 -->
                     <td class="action-cell">
-                        {% if not v.cancelled_flag %}
-                            <form method="post"
-                                action="{% url 'visitors:toggle_undecided' v.id %}?next=index"
-                                class="inline-action-form {% if not v.can_edit %}read-only-control{% endif %}"
-                                style="display:inline;">
-                                {% csrf_token %}
-                                <input type="checkbox"
-                                    name="time_undecided"
-                                    value="1"
-                                    {% if v.time_undecided_flag %}checked{% endif %}
-                                    {% if not v.can_edit %}disabled{% endif %}>
-                            </form>
-                        {% else %}
-                            &nbsp;
-                        {% endif %}
+                        <form method="post"
+                            action="{% url 'visitors:toggle_undecided' v.id %}?next=index"
+                            class="inline-action-form {% if not v.can_edit %}read-only-control{% endif %}"
+                            style="display:inline;">
+                            {% csrf_token %}
+                            <input type="checkbox"
+                                name="time_undecided"
+                                value="1"
+                                {% if v.time_undecided_flag %}checked{% endif %}
+                                {% if v.cancelled_flag or not v.can_edit %}disabled{% endif %}>
+                        </form>
                     </td>
 
 
@@ -908,16 +904,29 @@
                 }
 
                 const row = form.closest('tr');
-                if (!row) return;
-
-                // 取消トグル結果の反映
                 if ('cancelled' in data) {
-                    if (data.cancelled) {
+                    const wasCancelled = data.cancelled;
+
+                    if (wasCancelled) {
                         row.classList.add('is-cancelled');
                     } else {
                         row.classList.remove('is-cancelled');
                     }
+
+                    // ★ 未定チェックボックスの enable/disable を切り替える
+                    const undecidedCheckbox = row.querySelector('input[name="time_undecided"]');
+                    if (undecidedCheckbox) {
+                        if (wasCancelled) {
+                            // キャンセル時 → 無効化
+                            undecidedCheckbox.disabled = true;
+                        } else {
+                            // キャンセル解除時 → 編集権限あれば有効化
+                            const canEdit = !row.classList.contains('read-only-row');
+                            undecidedCheckbox.disabled = !canEdit;
+                        }
+                    }
                 }
+
 
                 // 未定トグル結果の反映
                 if ('time_undecided' in data) {

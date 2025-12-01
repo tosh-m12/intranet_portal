@@ -519,15 +519,6 @@ footer {
     border-radius: 4px;
 }
 
-/* index.html と同じホバー効果（add.html も含めて）
-   ※キャンセル行・エラーセルは除外 */
-.visit-table tr:not(.is-cancelled) td.editable:not(.time-error):hover,
-.visit-table tr:not(.is-cancelled) td.date-cell:not(.time-error):hover,
-.visit-table tr:not(.is-cancelled) td.time-cell:not(.time-error):hover,
-.visit-table tr:not(.is-cancelled) td.company-cell:not(.time-error):hover {
-    background-color: #fff9e6;
-}
-
 /* add.html / index.html 共通：必須未入力の赤枠 */
 .visit-table td.input-error {
     border: 2px solid #d9534f !important;
@@ -626,12 +617,6 @@ footer {
 }
 .logout-link-button:hover {
     opacity: 0.8;
-}
-
-/* 編集不可行（他人のデータなど） */
-.visit-table tr.read-only-row td {
-    background-color: #f9f9f9;
-    color: #999;
 }
 
 /* read-only 行のチェックボックス・スイッチは薄く＆クリック感なし */
