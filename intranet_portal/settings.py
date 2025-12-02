@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'authsys',
     'visitors.apps.VisitorsConfig',
-    'meetings',
+    "meetings.apps.MeetingsConfig",
     'working_schedule',
     'mailcenter'
 ]
@@ -150,7 +150,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.qiye.aliyun.com'
 EMAIL_PORT = 587
 
-EMAIL_HOST_USER = 'cs_info@ngls.sh.cn'      # ← .sh.c**n** に注意（前に .cnn と書いていたかも）
+EMAIL_HOST_USER = 'cs_info@ngls.sh.cn'
 EMAIL_HOST_PASSWORD = 'NGLScs9981'
 
 EMAIL_USE_TLS = True   # ← TLS（STARTTLS）を使う
@@ -159,3 +159,27 @@ EMAIL_USE_SSL = False  # ← SSLは使わない
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 VISITORS_SCHEDULER_MODE = 'windows'  # 'windows' / 'django' / 'none'
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        # visitors/scheduler.py の logger(__name__) → "visitors.scheduler"
+        "visitors.scheduler": {
+            "handlers": ["console"],
+            "level": "INFO",   # tick ログなどを出したいので INFO
+            "propagate": False,
+        },
+        # meetings のメール送信ログ等も見たければ
+        "meetings": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}

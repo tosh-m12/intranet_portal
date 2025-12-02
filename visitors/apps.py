@@ -17,6 +17,7 @@ class VisitorsConfig(AppConfig):
         # 管理コマンドなどでも ready() が呼ばれるので、
         # 「本番サーバ起動時だけにしたい」などあれば条件を入れてもよい
         try:
+            print("### VisitorsConfig.ready() called")
             from .scheduler import start_scheduler
             start_scheduler()
         except Exception:

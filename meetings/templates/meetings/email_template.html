@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 13px;
+            background-color: #fff;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 6px 4px;
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f1f3f5;
+            white-space: nowrap;
+        }
+
+        td.company-cell,
+        td.last-cell,
+        td.first-cell,
+        td.title-cell,
+        td.purpose-cell,
+        td.location-cell {
+            text-align: left;
+        }
+
+        .cancelled-row td {
+            background-color: #ffe6e6;
+            color: red;
+            text-decoration: line-through;
+        }
+    </style>
+</head>
+<body>
+    <p>外ロジ各位<br>外通各位</p>
+
+    <p>本日以降の訪問・WEB会議予定を展開いたします。<br>
+    今天之后将开展客户访问及WEB会议预定。</p>
+
+    {% if meetings %}
+    <table>
+        <thead>
+            <tr>
+                <th>日付</th>
+                <th>時間</th>
+                <th>会社名</th>
+                <th>姓</th>
+                <th>名</th>
+                <th>役職</th>
+                <th>内容</th>
+                <th>形式 / 場所</th>
+                <th>入力者</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in meetings %}
+            <tr class="{% if m.is_cancelled %}cancelled-row{% endif %}">
+                <td>{{ m.visit_date|date:"Y年m月d日" }}</td>
+                <td>
+                    {% if m.visit_time %}
+                        {{ m.visit_time }}
+                    {% elif m.time_undecided_flag %}
+                        未定
+                    {% endif %}
+                </td>
+
+                <td class="company-cell">{{ m.company_name }}</td>
+                <td class="last-cell">{{ m.last_name }}</td>
+                <td class="first-cell">{{ m.first_name }}</td>
+                <td class="title-cell">{{ m.title }}</td>
+
+                <!-- visitors では "目的"、meetings では Meeting.purpose を表示 -->
+                <td class="purpose-cell">{{ m.purpose }}</td>
+
+                <!-- visitors の location と同じ扱い -->
+                <td class="location-cell">{{ m.location }}</td>
+
+                <td>{{ m.host_staff }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>本日以降の訪問・WEB会議の予定はありません。</p>
+    {% endif %}
+</body>
+</html>

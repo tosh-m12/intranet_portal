@@ -1,0 +1,151 @@
+{# meetings/settings.html #}
+{% extends "portal/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "訪問・WEB会議メール設定" %}{% endblock %}
+
+{% block app_name %}
+<h1>📅 訪問・WEB会議予定管理</h1>
+{% endblock %}
+
+{% block subnav %}
+    {% include "meetings/_subnav.html" with active_tab="settings" %}
+{% endblock %}
+
+{% block content %}
+<h1>{% trans "訪問・WEB会議メール設定" %}</h1>
+
+{% if messages %}
+    <div id="flash-messages">
+        {% for message in messages %}
+            <div class="alert {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    <script>
+        setTimeout(function () {
+            const box = document.getElementById('flash-messages');
+            if (box) box.style.display = 'none';
+        }, 5000);
+    </script>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+
+    <!-- ▼ 自動送信の時刻設定 -->
+    <h2>{% trans "自動送信の時刻設定" %}</h2>
+    <p>自動で送信する時刻を選択してください。</p>
+
+    <label>時：
+        <select name="send_hour">
+            {% for h in hours %}
+                <option value="{{ h }}"
+                    {% if send_hour == h %}selected{% endif %}>
+                    {{ h }}
+                </option>
+            {% endfor %}
+        </select>
+    </label>
+
+    <label>分：
+        <select name="send_minute">
+            {% for m in minutes %}
+                <option value="{{ m }}"
+                    {% if send_minute == m %}selected{% endif %}>
+                    {{ m }}
+                </option>
+            {% endfor %}
+        </select>
+    </label>
+
+    <hr>
+
+    <!-- ▼ メーリングリスト -->
+    <h2>{% trans "メーリングリスト" %}</h2>
+    <p>メール送信先を 1 行ずつ追加してください。</p>
+
+    <table id="email-table">
+        {% for email in mailing_list %}
+        <tr>
+            <td><input type="email" name="emails" value="{{ email }}" style="width:320px;"></td>
+            <td><button type="button" onclick="removeRow(this)">−削除</button></td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td><input type="email" name="emails" value="" style="width:320px;"></td>
+            <td><button type="button" onclick="removeRow(this)">−削除</button></td>
+        </tr>
+    </table>
+
+    <button type="button" onclick="addEmailRow()">＋追加</button>
+
+    <script>
+        function addEmailRow() {
+            const tbl = document.getElementById('email-table');
+            const row = `
+                <tr>
+                    <td><input type="email" name="emails" value="" style="width:320px;"></td>
+                    <td><button type="button" onclick="removeRow(this)">−削除</button></td>
+                </tr>`;
+            tbl.insertAdjacentHTML('beforeend', row);
+        }
+
+        function removeRow(btn) {
+            const tr = btn.closest('tr');
+            if (tr) tr.remove();
+        }
+    </script>
+
+    <hr>
+
+    <button type="submit">設定を保存</button>
+    <a href="{% url 'meetings:index' %}" class="btn-link" style="margin-left:8px;">一覧へ戻る</a>
+</form>
+
+<hr>
+
+<h2>データメンテナンス（Meeting 一覧）</h2>
+
+<p>現在の Meeting 一覧を CSV でエクスポート／インポートできます。</p>
+
+<!-- ▼ ダウンロード -->
+<form method="get" action="{% url 'meetings:download_settings_csv' 'meeting_list' %}" style="margin-bottom:8px;">
+    <button type="submit" class="btn btn-secondary">
+        💾 Meeting 一覧 CSV をダウンロード
+    </button>
+</form>
+
+<!-- ▼ アップロード -->
+<form method="post" action="{% url 'meetings:upload_meeting_csv' %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="csv_file" accept=".csv">
+    <button type="submit" class="btn btn-danger">
+        ⬆ Meeting 一覧 CSV をアップロード（全件入れ替え）
+    </button>
+    <p style="font-size:12px; color:#666; margin-top:4px;">
+        ※ ダウンロードした CSV を編集してアップロードすると、Meeting データが全件入れ替えられます。<br>
+        ※ CSV 内の id カラムは無視され、新しい ID が採番されます。
+    </p>
+</form>
+
+<hr>
+
+<h2>今すぐメール送信</h2>
+<p>現在の設定で、1回だけ手動でメールを送信します。</p>
+
+<div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+
+    <!-- プレビューボタン（GET） -->
+    <form method="get" action="{% url 'meetings:preview_email' %}">
+        <button type="submit">👀 メールプレビュー</button>
+    </form>
+
+    <!-- 送信ボタン（POST） -->
+    <form method="post" action="{% url 'meetings:run_email' %}">
+        {% csrf_token %}
+        <button type="submit">📨 今すぐ送信</button>
+    </form>
+
+</div>
+
+{% endblock %}

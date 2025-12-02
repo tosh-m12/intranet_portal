@@ -4,7 +4,7 @@
 <div class="subnav">
     <a href="{% url 'visitors:index' %}"
        class="{% if active_tab == 'index' %}active{% endif %}">
-        📋 {% trans "来客予定一覧" %}
+        📋 {% trans "本日以降一覧" %}
     </a>
     <a href="{% url 'visitors:history' %}"
        class="{% if active_tab == 'history' %}active{% endif %}">
