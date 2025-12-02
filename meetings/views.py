@@ -289,34 +289,17 @@ def cancel_meeting(request, pk):
 @login_required
 def history(request):
     """
-    過去分（本日より前）の訪問・WEB会議予定一覧。
-    とりあえず既存仕様を維持。必要になれば visitors のように
-    can_edit 系フラグも付ける。
+    過去分（本日を含む）訪問・WEB会議予定一覧。
+    visitors.history と同じく can_edit 付きで返す。
     """
-    today = timezone.localdate()
+    today = localdate()  # すでに import 済み
 
     qs = (
         Meeting.objects
-        .filter(visit_date__lt=today)
+        .filter(visit_date__lte=today)      # 「本日を含む過去」にするなら <=
         .order_by("-visit_date", "visit_time", "id")
     )
 
-    meetings = []
-    for m in qs:
-        meetings.append({
-            "id": m.id,
-            "visit_date": m.visit_date.strftime("%Y年%m月%d日") if m.visit_date else "",
-            "visit_date_raw": m.visit_date.strftime("%Y-%m-%d") if m.visit_date else "",
-            "visit_time": m.visit_time.strftime("%H:%M") if m.visit_time else "",
-            "time_undecided_flag": bool(getattr(m, "time_undecided", False)),
-            "cancelled_flag": bool(getattr(m, "cancelled", False)),
-            "company_name": m.company_name,
-            "last_name": m.last_name,
-            "first_name": m.first_name,
-            "title": m.title,
-            "purpose": m.purpose,
-            "location": m.location,
-            "host_staff": m.host_staff,
-        })
+    meetings = [_serialize_meeting(m, request.user) for m in qs]
 
     return render(request, "meetings/history.html", {"meetings": meetings})

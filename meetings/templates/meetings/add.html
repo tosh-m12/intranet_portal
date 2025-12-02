@@ -80,23 +80,23 @@
                         {{ form.purpose }}
                     </td>
 
-                    {# 訪問・WEB：プルダウン #}
-                    <td class="editable">
-                        {% with form.location.value as loc_val %}
-                        <select name="{{ form.location.html_name }}" class="location-select">
-                            <option value="">{% trans "選択してください" %}</option>
-                            <option value="訪問" {% if loc_val == "訪問" %}selected{% endif %}>
-                                {% trans "訪問" %}
-                            </option>
-                            <option value="WEB会議" {% if loc_val == "WEB会議" %}selected{% endif %}>
-                                {% trans "WEB会議" %}
-                            </option>
-                        </select>
-                        {% endwith %}
-                    </td>
+                    {# 訪問・WEB：自作ドロップダウン #}
+                    <td class="editable location-cell">
+                        {{ form.location.as_hidden }}
 
-                    <td class="editable">
-                        {{ form.host_staff }}
+                        <div class="fake-select-cell location-display">
+                            <span class="location-display-text">
+                                {% if form.location.value %}
+                                    {{ form.location.value }}
+                                {% else %}
+                                    {% trans "選択してください" %}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </td>
+                    <td class="host-cell">
+                        <span class="host-display"></span>
+                        {{ form.host_staff.as_hidden }}
                     </td>
 
                 </tr>
@@ -116,6 +116,7 @@
 </form>
 
 <script>
+    let activeLocationRow = null;
     // ログインユーザーのフルネーム（なければユーザー名など）
     const currentUserName = "{{ host_name|escapejs }}";
 
@@ -125,11 +126,16 @@
         const row = el.closest(".form-row");
         if (!row) return;
 
-        const hostInput = row.querySelector('input[name$="-host_staff"]');
+        const hostInput   = row.querySelector('input[name$="-host_staff"]');
+        const hostDisplay = row.querySelector('.host-display');
         if (!hostInput) return;
 
+        // まだ何も入っていないときだけ、自動セット
         if (!hostInput.value || hostInput.value.trim() === "") {
             hostInput.value = currentUserName;
+            if (hostDisplay) {
+                hostDisplay.textContent = currentUserName;
+            }
         }
     }
 
@@ -177,7 +183,7 @@
                 const dateInput      = row.querySelector('input[type="date"], input[name$="-visit_date"]');
                 const timeSelect     = row.querySelector('select[name$="-visit_time"]');
                 const undecided      = row.querySelector('input[type="checkbox"][name$="-time_undecided"]');
-                const visitWebSelect = row.querySelector('select[name$="-location"]');
+                const visitWebInput = row.querySelector('input[name$="-location"]');
 
                 // 行全体が空かどうか判定するための値リスト
                 const values = [];
@@ -204,8 +210,8 @@
                 }
 
                 // 訪問/WEB セレクトも「入力あり」判定に含める
-                if (visitWebSelect) {
-                    values.push((visitWebSelect.value || '').trim());
+                if (visitWebInput) {
+                    values.push((visitWebInput.value || '').trim());
                 }
 
                 // 完全に空の行ならスキップ
@@ -256,11 +262,11 @@
                 markIfEmptyInput('input[name$="-purpose"]');
                 markIfEmptyInput('input[name$="-host_staff"]');
 
-                // ■ 必須4: 訪問/WEB（select）
-                if (visitWebSelect) {
-                    const val = (visitWebSelect.value || '').trim();
+                // ■ 必須4: 訪問/WEB（hidden）
+                if (visitWebInput) {
+                    const val = (visitWebInput.value || '').trim();
                     if (val === '') {
-                        const td = visitWebSelect.closest('td');
+                        const td = visitWebInput.closest('td');
                         if (td) td.classList.add('input-error');
                         hasError = true;
                     }
@@ -283,6 +289,93 @@
                 );
             }
         });
+
+        // ─────────────────────────────
+        // 訪問・WEB 自作ドロップダウン（hidden と表示の同期）
+        // ─────────────────────────────
+        const locationMenu = document.getElementById("location-menu");
+        // activeLocationRow はグローバルで定義するので、ここでは宣言しない
+
+        // ★ グローバル関数として公開
+        window.initLocationRow = function (row) {
+            const hiddenInput = row.querySelector('input[name$="-location"]');
+            const display     = row.querySelector('.location-display');
+            const textSpan    = row.querySelector('.location-display-text');
+            if (!hiddenInput || !display || !textSpan) return;
+
+            function syncDisplay() {
+                const v = (hiddenInput.value || '').trim();
+                if (!v) {
+                    textSpan.textContent = '{% trans "選択してください" %}';
+                    display.classList.add('fake-select-placeholder');
+                } else {
+                    textSpan.textContent = v;
+                    display.classList.remove('fake-select-placeholder');
+                }
+            }
+            syncDisplay();
+
+            display.addEventListener('click', function (e) {
+                e.stopPropagation();
+                if (!locationMenu) return;
+
+                activeLocationRow = row;  // 今の行を記憶
+
+                const rect = display.getBoundingClientRect();
+                locationMenu.style.left = rect.left + window.scrollX + "px";
+                locationMenu.style.top  = rect.bottom + window.scrollY + "px";
+                locationMenu.style.display = "block";
+            });
+        };
+
+
+
+        // 既存行に適用
+        document.querySelectorAll('#formset-body .form-row').forEach(row => {
+            initFormRow(row);
+            initLocationRow(row);
+
+            // もし host_staff に（サーバ側で）初期値が入っているなら、それだけ span に表示
+            const hostInput   = row.querySelector('input[name$="-host_staff"]');
+            const hostDisplay = row.querySelector('.host-display');
+            if (hostInput && hostDisplay && hostInput.value.trim() !== "") {
+                hostDisplay.textContent = hostInput.value;
+            }
+        });
+
+        // addForm の最後で initLocationRow も呼ぶようにするため、既存の
+        //   rows.forEach(row => initFormRow(row));
+        // の下あたりの処理をちょっと修正しておきます（後述）。
+
+        if (locationMenu) {
+            locationMenu.querySelectorAll('.location-option').forEach(function (opt) {
+                opt.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    if (!activeLocationRow) {
+                        locationMenu.style.display = "none";
+                        return;
+                    }
+                    const value = (opt.dataset.value || '').trim();
+                    if (!value) {
+                        alert('「訪問・WEB」は必須です。');
+                        locationMenu.style.display = "none";
+                        return;
+                    }
+
+                    const hiddenInput = activeLocationRow.querySelector('input[name$="-location"]');
+                    const textSpan    = activeLocationRow.querySelector('.location-display-text');
+                    if (hiddenInput) hiddenInput.value = value;
+                    if (textSpan)    textSpan.textContent = value;
+
+                    setHostStaffIfNeededForElement(hiddenInput || activeLocationRow);
+
+                    locationMenu.style.display = "none";
+                    activeLocationRow = null;
+                });
+            });
+        }
+
+
     });
 </script>
 
@@ -295,6 +388,14 @@
 <div id="calendar-popup" class="calendar-popup" style="display:none;"></div>
 <div id="hour-popup" class="time-popup" style="display:none;"></div>
 <div id="minute-popup" class="time-popup" style="display:none;"></div>
+<div id="location-menu" class="location-menu" style="display:none;">
+    <div class="location-option" data-value="訪問">
+        {% trans "訪問" %}
+    </div>
+    <div class="location-option" data-value="WEB会議">
+        {% trans "WEB会議" %}
+    </div>
+</div>
 
 <script>
     // ---- 既存フォーム数・時間候補（new row 用） ----
@@ -303,13 +404,6 @@
         {% for value, label in time_choices %}
             <option value="{{ value }}">{{ label }}</option>
         {% endfor %}
-    `;
-
-    // 訪問・WEB プルダウンの HTML（追加行用）
-    const visitWebChoicesHtml = `
-        <option value="">{% trans "選択してください" %}</option>
-        <option value="訪問">{% trans "訪問" %}</option>
-        <option value="WEB会議">{% trans "WEB会議" %}</option>
     `;
 
     // 空行テンプレ
@@ -342,12 +436,18 @@
             <td><input type="text" name="form-__prefix__-first_name"></td>
             <td><input type="text" name="form-__prefix__-title"></td>
             <td><input type="text" name="form-__prefix__-purpose"></td>
-            <td>
-                <select name="form-__prefix__-location" class="location-select">
-                    ${visitWebChoicesHtml}
-                </select>
+            <td class="editable location-cell">
+                <input type="hidden" name="form-__prefix__-location" value="">
+                <div class="fake-select-cell location-display">
+                    <span class="location-display-text">
+                        {% trans "選択してください" %}
+                    </span>
+                </div>
             </td>
-            <td><input type="text" name="form-__prefix__-host_staff"></td>
+            <td class="host-cell">
+                <span class="host-display"></span>
+                <input type="hidden" name="form-__prefix__-host_staff" value="">
+            </td>
         </tr>`;
 
     // ---- 日付表示を "YYYY年MM月DD日" に変換 ----
@@ -683,6 +783,14 @@
         const rows = tbody.querySelectorAll(".form-row");
         const newRow = rows[rows.length - 1];
         initFormRow(newRow);
+        initLocationRow(newRow);
+
+        // 新しい行の入力者も自動セット
+        const hostInput   = newRow.querySelector('input[name$="-host_staff"]');
+        const hostDisplay = newRow.querySelector('.host-display');
+        if (hostInput && hostDisplay && hostInput.value.trim() !== "") {
+            hostDisplay.textContent = hostInput.value;
+        }
     }
 
     // ---- ポップアップ外クリックで閉じる ----
@@ -690,10 +798,12 @@
         const cal = document.getElementById("calendar-popup");
         const hourPopup = document.getElementById("hour-popup");
         const minutePopup = document.getElementById("minute-popup");
+        const locMenu = document.getElementById("location-menu");
 
-        const isDateCell = e.target.closest(".date-cell");
-        const isHourSpan = e.target.closest(".time-hour");
-        const isMinuteSpan = e.target.closest(".time-minute");
+        const isDateCell      = e.target.closest(".date-cell");
+        const isHourSpan      = e.target.closest(".time-hour");
+        const isMinuteSpan    = e.target.closest(".time-minute");
+        const isLocationCell  = e.target.closest(".location-display");
 
         if (cal && cal.style.display !== "none") {
             if (!cal.contains(e.target) && !isDateCell &&
@@ -711,11 +821,13 @@
                 minutePopup.style.display = "none";
             }
         }
+        if (locMenu && locMenu.style.display !== "none") {
+            if (!locMenu.contains(e.target) && !isLocationCell) {
+                locMenu.style.display = "none";
+                activeLocationRow = null;
+            }
+        }
     });
-
-    // ---- 初期行のセットアップ ----
-    const rows = document.querySelectorAll("#formset-body .form-row");
-    rows.forEach(row => initFormRow(row));
 
     // addForm をグローバルに公開
     window.addForm = addForm;

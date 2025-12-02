@@ -81,8 +81,11 @@
                     <td class="editable">
                         {{ form.location }}
                     </td>
-                    <td class="editable">
-                        {{ form.host_staff }}
+
+                    {# ★ 入力者：表示用 span + hidden input（editable は付けない） #}
+                    <td class="host-cell">
+                        <span class="host-display"></span>
+                        {{ form.host_staff.as_hidden }}
                     </td>
 
                 </tr>
@@ -105,17 +108,22 @@
     // ログインユーザーのフルネーム（なければユーザー名）
     const currentUserName = "{{ host_name|escapejs }}";
 
-    // その行の「入力者」が空なら、自動で currentUserName を入れる
+    // その行の「入力者」が空なら、自動で currentUserName を入れる（＋表示用 span に反映）
     function setHostStaffIfNeededForElement(el) {
         if (!el) return;
         const row = el.closest(".form-row");
         if (!row) return;
 
-        const hostInput = row.querySelector('input[name$="-host_staff"]');
+        const hostInput   = row.querySelector('input[name$="-host_staff"]');
+        const hostDisplay = row.querySelector('.host-display');
         if (!hostInput) return;
 
+        // まだ何も入っていないときだけ、自動セット
         if (!hostInput.value || hostInput.value.trim() === "") {
             hostInput.value = currentUserName;
+            if (hostDisplay) {
+                hostDisplay.textContent = currentUserName;
+            }
         }
     }
 
@@ -140,6 +148,15 @@
                 setHostStaffIfNeededForElement(target);
             });
         }
+
+        // ★ 既存レコードがある場合：hidden の値を表示用 span に反映
+        document.querySelectorAll('#formset-body .form-row').forEach(row => {
+            const hostInput   = row.querySelector('input[name$="-host_staff"]');
+            const hostDisplay = row.querySelector('.host-display');
+            if (hostInput && hostDisplay && hostInput.value.trim() !== "") {
+                hostDisplay.textContent = hostInput.value;
+            }
+        });
 
         // ---- 送信時バリデーション ----
         form.addEventListener('submit', function (e) {
@@ -291,7 +308,12 @@
     <td><input type="text" name="form-__prefix__-title"></td>
     <td><input type="text" name="form-__prefix__-purpose"></td>
     <td><input type="text" name="form-__prefix__-location"></td>
-    <td><input type="text" name="form-__prefix__-host_staff"></td>
+
+    {# ★ 新規行も host_display + hidden に揃える #}
+    <td class="host-cell">
+        <span class="host-display"></span>
+        <input type="hidden" name="form-__prefix__-host_staff" value="">
+    </td>
 </tr>`;
 
     // ---- 日付表示を "YYYY年MM月DD日" に変換 ----
@@ -631,6 +653,7 @@
 
         const newRow = tbody.querySelectorAll(".form-row")[tbody.querySelectorAll(".form-row").length - 1];
         initFormRow(newRow);
+        // 入力者は、日付/時間/他セル編集のタイミングで自動セットされる
     }
 
     // ---- カレンダー・時間ポップアップ外クリックで閉じる ----

@@ -41,9 +41,8 @@
                 {% for m in meetings %}
                 <tr class="
                     {% if m.cancelled_flag %}is-cancelled{% endif %}
-                    {% if not m.can_edit %}is-readonly{% endif %}
+                    {% if not m.can_edit %}read-only-row{% endif %}
                 ">
-
                     {# 来訪日 #}
                     <td class="{% if m.can_edit %}editable{% endif %}"
                         data-id="{{ m.id }}"
@@ -54,20 +53,17 @@
 
                     {# 未定チェック：キャンセル行は CSS で非表示。権限でフォーム出し分け #}
                     <td class="action-cell undecided-cell">
-                        {% if m.can_toggle_undecided %}
-                            <form method="post"
-                                  action="{% url 'meetings:toggle_undecided' m.id %}?next=index"
-                                  class="inline-action-form"
-                                  style="display:inline;">
-                                {% csrf_token %}
-                                <input type="checkbox"
-                                       name="time_undecided"
-                                       value="1"
-                                       {% if m.time_undecided_flag %}checked{% endif %}>
-                            </form>
-                        {% else %}
-                            <span class="readonly-label">-</span>
-                        {% endif %}
+                        <form method="post"
+                            action="{% url 'meetings:toggle_undecided' m.id %}?next=index"
+                            class="inline-action-form {% if not m.can_edit %}read-only-control{% endif %}"
+                            style="display:inline;">
+                            {% csrf_token %}
+                            <input type="checkbox"
+                                name="time_undecided"
+                                value="1"
+                                {% if m.time_undecided_flag %}checked{% endif %}
+                                {% if m.cancelled_flag or not m.can_edit %}disabled{% endif %}>
+                        </form>
                     </td>
 
                     {# 時間 #}
@@ -109,53 +105,34 @@
                         {{ m.purpose }}
                     </td>
 
-                    {# 訪問・WEB：プルダウン #}
+                    {# 訪問・WEB：セル自体は普通のテキスト表示 #}
                     <td class="location-cell {% if m.can_edit %}editable{% endif %}"
                         data-id="{{ m.id }}"
-                        data-field="location">
-                        <select class="location-select"
-                                data-prev="{{ m.location|default_if_none:'' }}"
-                                {% if not m.can_edit %}disabled{% endif %}>
-                            <option value="">{% trans "選択してください" %}</option>
-                            <option value="訪問" {% if m.location == "訪問" %}selected{% endif %}>
-                                {% trans "訪問" %}
-                            </option>
-                            <option value="WEB会議" {% if m.location == "WEB会議" %}selected{% endif %}>
-                                {% trans "WEB会議" %}
-                            </option>
-                        </select>
+                        data-field="location"
+                        data-current="{{ m.location|default_if_none:'' }}">
+                        {{ m.location|default:"（未選択）" }}
                     </td>
 
-                    <td class="{% if m.can_edit %}editable{% endif %}"
-                        data-id="{{ m.id }}"
-                        data-field="host_staff">
+                    <td>
                         {{ m.host_staff }}
                     </td>
 
                     {# キャンセルスイッチ #}
                     <td class="action-cell">
-                        {% if m.can_toggle_cancel %}
-                            <form method="post"
-                                  action="{% url 'meetings:cancel_meeting' m.id %}?next=index"
-                                  class="inline-action-form"
-                                  style="display:inline;">
-                                {% csrf_token %}
-                                <label class="switch">
-                                    <input type="checkbox"
-                                           name="cancelled"
-                                           value="1"
-                                           {% if m.cancelled_flag %}checked{% endif %}>
-                                    <span class="slider round"></span>
-                                </label>
-                            </form>
-                        {% else %}
-                            <label class="switch switch-readonly">
+                        <form method="post"
+                            action="{% url 'meetings:cancel_meeting' m.id %}?next=index"
+                            class="inline-action-form {% if not m.can_edit %}read-only-control{% endif %}"
+                            style="display:inline;">
+                            {% csrf_token %}
+                            <label class="switch">
                                 <input type="checkbox"
-                                       disabled
-                                       {% if m.cancelled_flag %}checked{% endif %}>
+                                    name="cancelled"
+                                    value="1"
+                                    {% if m.cancelled_flag %}checked{% endif %}
+                                    {% if not m.can_edit %}disabled{% endif %}>
                                 <span class="slider round"></span>
                             </label>
-                        {% endif %}
+                        </form>
                     </td>
 
                 </tr>
@@ -168,6 +145,8 @@
     <div id="calendar-popup" class="calendar-popup" style="display:none;"></div>
     <div id="hour-popup" class="time-popup" style="display:none;"></div>
     <div id="minute-popup" class="time-popup" style="display:none;"></div>
+    {# ★ 追加：訪問・WEB 選択用メニュー #}
+    <div id="location-menu" class="location-menu" style="display:none;"></div>
 
 {% else %}
     <p class="empty-message">
@@ -202,7 +181,6 @@
             'last_name',
             'first_name',
             'purpose',
-            'host_staff',
         ];
 
         let editing = null;  // {td, oldText, id, field}
@@ -212,7 +190,7 @@
             if (editing) return;
 
             const row = td.closest('tr');
-            if (row && row.classList.contains('is-readonly')) return;  // ★ 権限なし行は編集禁止
+            if (row && row.classList.contains('read-only-row')) return;
 
             const id = td.dataset.id;
             const field = td.dataset.field;
@@ -339,63 +317,6 @@
             });
         }
 
-        // ===== 訪問・WEB（location）のプルダウン変更処理 =====
-        function setupLocationSelects() {
-            const selects = table.querySelectorAll('.location-select');
-
-            selects.forEach(select => {
-                select.addEventListener('change', function () {
-                    const td = select.closest('td.location-cell');
-                    if (!td) return;
-
-                    const row = td.closest('tr');
-                    if (row && row.classList.contains('is-readonly')) {
-                        // 権限無し行は変更不可
-                        select.value = select.dataset.prev || '';
-                        alert('この行は編集できません。');
-                        return;
-                    }
-
-                    const id = td.dataset.id;
-                    const field = td.dataset.field || 'location';
-                    const newValue = (select.value || '').trim();
-                    const prevValue = (select.dataset.prev || '').trim();
-
-                    if (!newValue) {
-                        alert('「訪問・WEB」は必須です。');
-                        select.value = prevValue;
-                        return;
-                    }
-
-                    fetch("{% url 'meetings:inline_update' %}", {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': getCookie('csrftoken'),
-                        },
-                        body: JSON.stringify({
-                            id: id,
-                            field: field,
-                            value: newValue,
-                        }),
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.ok) {
-                            select.dataset.prev = newValue;
-                        } else {
-                            alert('保存に失敗しました: ' + (data.error || ''));
-                            select.value = prevValue;
-                        }
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        alert('通信エラーが発生しました。');
-                        select.value = prevValue;
-                    });
-                });
-            });
-        }
 
         // ===== ② 時間セルを「HH : MM」表示にしてポップアップ編集 =====
         function setupTimeDisplays() {
@@ -403,8 +324,6 @@
 
             tds.forEach(td => {
                 const row = td.closest('tr');
-                const isCancelled = row && row.classList.contains('is-cancelled');
-                const isReadonly = row && row.classList.contains('is-readonly');
 
                 const id = td.dataset.id;
                 const text = (td.textContent || '').trim();
@@ -447,27 +366,37 @@
                 td.innerHTML = '';
                 td.appendChild(wrapper);
 
+                // ★ ここで毎回 row の状態を見るように変更
                 hourSpan.addEventListener('click', function (e) {
-                    if (isCancelled || isReadonly) return; 
+                    const rowNow = hourSpan.closest('tr');
+                    const isCancelledNow = rowNow && rowNow.classList.contains('is-cancelled');
+                    const isReadonlyNow  = rowNow && rowNow.classList.contains('read-only-row');
+                    if (isCancelledNow || isReadonlyNow) return;
+
                     e.stopPropagation();
                     const hText = hourSpan.textContent.trim();
                     const mText = minuteSpan.textContent.trim();
-                    const safeHour = (hText === '--' || hText === '') ? '00' : hText;
+                    const safeHour   = (hText === '--' || hText === '') ? '00' : hText;
                     const safeMinute = (mText === '--' || mText === '') ? '00' : mText;
                     showHourPopup(hourSpan, td, id, safeHour, safeMinute);
                 });
 
                 minuteSpan.addEventListener('click', function (e) {
-                    if (isCancelled || isReadonly) return; 
+                    const rowNow = minuteSpan.closest('tr');
+                    const isCancelledNow = rowNow && rowNow.classList.contains('is-cancelled');
+                    const isReadonlyNow  = rowNow && rowNow.classList.contains('read-only-row');
+                    if (isCancelledNow || isReadonlyNow) return;
+
                     e.stopPropagation();
                     const hText = hourSpan.textContent.trim();
                     const mText = minuteSpan.textContent.trim();
-                    const safeHour = (hText === '--' || hText === '') ? '00' : hText;
+                    const safeHour   = (hText === '--' || hText === '') ? '00' : hText;
                     const safeMinute = (mText === '--' || mText === '') ? '00' : mText;
                     showMinutePopup(minuteSpan, td, id, safeHour, safeMinute);
                 });
             });
         }
+
 
         // ===== ③ テーブルクリックでセルごとの処理振り分け =====
         table.addEventListener('click', function (e) {
@@ -477,7 +406,7 @@
             const row = td.closest('tr');
 
             // キャンセル・読み取り専用行は編集禁止
-            if (row && (row.classList.contains('is-cancelled') || row.classList.contains('is-readonly'))) {
+            if (row && (row.classList.contains('is-cancelled') || row.classList.contains('read-only-row'))) {
                 return;
             }
 
@@ -495,7 +424,10 @@
                 showCalendar(td, id, current);
                 return;
             } else if (field === 'location') {
-                // 訪問・WEB はプルダウンで編集するので何もしない
+                // ← ここを location メニュー表示に変更
+                const id = td.dataset.id;
+                const current = (td.dataset.current || td.textContent || '').trim();
+                showLocationMenu(td, id, current);
                 return;
             } else {
                 startEdit(td);
@@ -504,10 +436,81 @@
 
         // 初期処理
         setupTimeDisplays();
-        setupLocationSelects();
         attachTimeErrorAutoClear();   // 時間入力で赤枠自動解除
         setupNavigationGuard();       // ページ遷移時のチェック
     });
+
+    // ===== 訪問・WEB（location）のメニュー表示 =====
+    function showLocationMenu(td, id, currentValue) {
+        const menu = document.getElementById("location-menu");
+        if (!menu) return;
+
+        // メニュー内容を組み立て
+        let html = `
+            <div class="location-option" data-value="">
+                {% trans "選択してください" %}
+            </div>
+            <div class="location-option" data-value="訪問">
+                {% trans "訪問" %}
+            </div>
+            <div class="location-option" data-value="WEB会議">
+                {% trans "WEB会議" %}
+            </div>
+        `;
+        menu.innerHTML = html;
+
+        // 位置決め（セルの真下あたり）
+        const rect = td.getBoundingClientRect();
+        menu.style.left = (rect.left + window.scrollX) + "px";
+        menu.style.top  = (rect.bottom + window.scrollY) + "px";
+        menu.style.display = "block";
+
+        // 各選択肢クリック
+        menu.querySelectorAll('.location-option').forEach(option => {
+            option.addEventListener('click', function (e) {
+                e.stopPropagation();
+
+                const newValue = (option.dataset.value || '').trim();
+
+                // 空は NG にしたい場合
+                if (!newValue) {
+                    alert('「訪問・WEB」は必須です。');
+                    menu.style.display = "none";
+                    return;
+                }
+
+                fetch("{% url 'meetings:inline_update' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                    body: JSON.stringify({
+                        id: id,
+                        field: 'location',
+                        value: newValue,
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.ok) {
+                        // セルの表示を書き換え
+                        td.textContent = newValue;
+                        td.dataset.current = newValue;
+                    } else {
+                        alert('保存に失敗しました: ' + (data.error || ''));
+                    }
+                    menu.style.display = "none";
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('通信エラーが発生しました。');
+                    menu.style.display = "none";
+                });
+            });
+        });
+    }
+
 
     // ===== 時ポップアップ =====
     function showHourPopup(targetSpan, td, id, currentHour, currentMinute) {
@@ -788,7 +791,7 @@
         tds.forEach(td => {
             const row = td.closest('tr');
             const isCancelled = row && row.classList.contains('is-cancelled');
-            const isReadonly = row && row.classList.contains('is-readonly');
+            const isReadonly = row && row.classList.contains('read-only-row');
 
             const isUndecided = td.dataset.undecided === '1';
             if (isUndecided || isCancelled || isReadonly) {
@@ -848,7 +851,7 @@
         const row = td.closest('tr');
         const isCancelled = row && row.classList.contains('is-cancelled');
         const isUndecided = td.dataset.undecided === '1';
-        const isReadonly = row && row.classList.contains('is-readonly');
+        const isReadonly = row && row.classList.contains('read-only-row');
 
         // キャンセル行 / 未定 / 読み取り専用はエラー扱いにしない
         if (isCancelled || isUndecided || isReadonly) {
@@ -896,14 +899,16 @@
     }
 
     // ===== ポップアップ外クリックで閉じる =====
-    document.addEventListener("click", function (e) {
+        document.addEventListener("click", function (e) {
         const cal = document.getElementById("calendar-popup");
         const hourPopup = document.getElementById("hour-popup");
         const minutePopup = document.getElementById("minute-popup");
+        const locMenu = document.getElementById("location-menu");
 
-        const isDateCell = e.target.closest("td.editable[data-field='visit_date']");
-        const isHourSpan = e.target.closest(".time-hour");
+        const isDateCell   = e.target.closest("td.editable[data-field='visit_date']");
+        const isHourSpan   = e.target.closest(".time-hour");
         const isMinuteSpan = e.target.closest(".time-minute");
+        const isLocationCell = e.target.closest("td.editable[data-field='location']");
 
         if (cal && cal.style.display !== "none") {
             if (
@@ -927,13 +932,27 @@
                 minutePopup.style.display = "none";
             }
         }
+
+        // ★ location メニューも外クリックで閉じる
+        if (locMenu && locMenu.style.display !== "none") {
+            if (!locMenu.contains(e.target) && !isLocationCell) {
+                locMenu.style.display = "none";
+            }
+        }
     });
+
 
     // ===== 「取消」「未定」フォームの Ajax 送信 =====
     document.addEventListener('change', function (e) {
         const checkbox = e.target;
         const form = checkbox.closest('form.inline-action-form');
         if (!form) return;
+
+        const row = form.closest('tr');
+        if (row && row.classList.contains('read-only-row')) {
+            checkbox.checked = !checkbox.checked;
+            return;
+        }
 
         if (typeof form.requestSubmit === 'function') {
             form.requestSubmit();
@@ -947,6 +966,11 @@
         document.addEventListener('submit', function (e) {
             const form = e.target;
             if (!form.classList || !form.classList.contains('inline-action-form')) {
+                return;
+            }
+
+            const row = form.closest('tr');
+            if (row && row.classList.contains('read-only-row')) {
                 return;
             }
 
@@ -975,13 +999,22 @@
 
                 // 取消トグル結果の反映
                 if ('cancelled' in data) {
-                    if (data.cancelled) {
+                    const cancelledNow = data.cancelled;
+
+                    if (cancelledNow) {
                         row.classList.add('is-cancelled');
                     } else {
                         row.classList.remove('is-cancelled');
                     }
-                }
 
+                    // ★ ここで未定チェックボックスの enable/disable を visitors と同じにする
+                    const undecidedCheckbox = row.querySelector('input[name="time_undecided"]');
+                    if (undecidedCheckbox) {
+                        const canEdit = !row.classList.contains('read-only-row');
+                        // キャンセル行は常に disabled、編集不可行も disabled
+                        undecidedCheckbox.disabled = cancelledNow || !canEdit;
+                    }
+                }
                 // 未定トグル結果の反映
                 if ('time_undecided' in data) {
                     const tdTime = row.querySelector('td[data-field="visit_time"]');
@@ -1022,11 +1055,11 @@
                             tdTime.innerHTML = '';
                             tdTime.appendChild(wrapper);
 
-                            const rowCancelled = row.classList.contains('is-cancelled');
-                            const rowReadonly = row.classList.contains('is-readonly');
+                            const rowCancelled = () => row.classList.contains('is-cancelled');
+                            const rowReadonly  = () => row.classList.contains('read-only-row');
 
                             hourSpan.addEventListener('click', function (e2) {
-                                if (rowCancelled || rowReadonly) return;
+                                if (rowCancelled() || rowReadonly()) return;
                                 e2.stopPropagation();
                                 const hText = hourSpan.textContent.trim();
                                 const mText = minuteSpan.textContent.trim();
@@ -1035,9 +1068,9 @@
                                 showHourPopup(hourSpan, tdTime, tdTime.dataset.id, safeHour, safeMinute);
                             });
                             minuteSpan.addEventListener('click', function (e2) {
-                                if (rowCancelled || rowReadonly) return;
+                                if (rowCancelled() || rowReadonly()) return;
                                 e2.stopPropagation();
-                                const hText = minuteSpan.textContent.trim();
+                                const hText = hourSpan.textContent.trim();
                                 const mText = minuteSpan.textContent.trim();
                                 const safeHour = (hText === '--' || hText === '') ? '00' : hText;
                                 const safeMinute = (mText === '--' || mText === '') ? '00' : mText;

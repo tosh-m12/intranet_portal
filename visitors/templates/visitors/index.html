@@ -113,9 +113,7 @@
                         {{ v.location }}
                     </td>
 
-                    <td class="editable"
-                        data-id="{{ v.id }}"
-                        data-field="host_staff">
+                    <td>
                         {{ v.host_staff }}
                     </td>
 
@@ -182,7 +180,6 @@
             'first_name',
             'purpose',
             'location',
-            'host_staff',
         ];
 
         let editing = null;  // {td, oldText, id, field}
@@ -324,8 +321,6 @@
 
             tds.forEach(td => {
                 const row = td.closest('tr');
-                const isCancelled = row && row.classList.contains('is-cancelled'); 
-                const isReadOnly = row && row.classList.contains('read-only-row');
 
                 const id = td.dataset.id;
                 const text = (td.textContent || '').trim();
@@ -368,27 +363,37 @@
                 td.innerHTML = '';
                 td.appendChild(wrapper);
 
+                // ★ クリック時にその場で状態を確認する
                 hourSpan.addEventListener('click', function (e) {
-                    if (isCancelled || isReadOnly) return;
+                    const rowNow = hourSpan.closest('tr');
+                    const isCancelledNow = rowNow && rowNow.classList.contains('is-cancelled');
+                    const isReadOnlyNow  = rowNow && rowNow.classList.contains('read-only-row');
+                    if (isCancelledNow || isReadOnlyNow) return;
+
                     e.stopPropagation();
                     const hText = hourSpan.textContent.trim();
                     const mText = minuteSpan.textContent.trim();
-                    const safeHour = (hText === '--' || hText === '') ? '00' : hText;
+                    const safeHour   = (hText === '--' || hText === '') ? '00' : hText;
                     const safeMinute = (mText === '--' || mText === '') ? '00' : mText;
                     showHourPopup(hourSpan, td, id, safeHour, safeMinute);
                 });
 
                 minuteSpan.addEventListener('click', function (e) {
-                    if (isCancelled || isReadOnly) return;
+                    const rowNow = minuteSpan.closest('tr');
+                    const isCancelledNow = rowNow && rowNow.classList.contains('is-cancelled');
+                    const isReadOnlyNow  = rowNow && rowNow.classList.contains('read-only-row');
+                    if (isCancelledNow || isReadOnlyNow) return;
+
                     e.stopPropagation();
                     const hText = hourSpan.textContent.trim();
                     const mText = minuteSpan.textContent.trim();
-                    const safeHour = (hText === '--' || hText === '') ? '00' : hText;
+                    const safeHour   = (hText === '--' || hText === '') ? '00' : hText;
                     const safeMinute = (mText === '--' || mText === '') ? '00' : mText;
                     showMinutePopup(minuteSpan, td, id, safeHour, safeMinute);
                 });
             });
         }
+
 
         // ===== ③ テーブルクリックでセルごとの処理振り分け =====
         table.addEventListener('click', function (e) {
@@ -970,29 +975,38 @@
                             tdTime.innerHTML = '';
                             tdTime.appendChild(wrapper);
 
-                            // クリックでポップアップを開けるよう再度イベントを付与
-                            const rowCancelled = row.classList.contains('is-cancelled');
+                            // ★ ここも毎回行の状態を見に行くように修正
                             hourSpan.addEventListener('click', function (e2) {
-                                if (rowCancelled) return;
+                                const rowNow = hourSpan.closest('tr');
+                                const isCancelledNow = rowNow && rowNow.classList.contains('is-cancelled');
+                                const isReadOnlyNow  = rowNow && rowNow.classList.contains('read-only-row');
+                                if (isCancelledNow || isReadOnlyNow) return;
+
                                 e2.stopPropagation();
                                 const hText = hourSpan.textContent.trim();
                                 const mText = minuteSpan.textContent.trim();
-                                const safeHour = (hText === '--' || hText === '') ? '00' : hText;
+                                const safeHour   = (hText === '--' || hText === '') ? '00' : hText;
                                 const safeMinute = (mText === '--' || mText === '') ? '00' : mText;
                                 showHourPopup(hourSpan, tdTime, tdTime.dataset.id, safeHour, safeMinute);
                             });
+
                             minuteSpan.addEventListener('click', function (e2) {
-                                if (rowCancelled) return;
+                                const rowNow = minuteSpan.closest('tr');
+                                const isCancelledNow = rowNow && rowNow.classList.contains('is-cancelled');
+                                const isReadOnlyNow  = rowNow && rowNow.classList.contains('read-only-row');
+                                if (isCancelledNow || isReadOnlyNow) return;
+
                                 e2.stopPropagation();
                                 const hText = hourSpan.textContent.trim();
                                 const mText = minuteSpan.textContent.trim();
-                                const safeHour = (hText === '--' || hText === '') ? '00' : hText;
+                                const safeHour   = (hText === '--' || hText === '') ? '00' : hText;
                                 const safeMinute = (mText === '--' || mText === '') ? '00' : mText;
                                 showMinutePopup(minuteSpan, tdTime, tdTime.dataset.id, safeHour, safeMinute);
                             });
                         }
                     }
                 }
+
             })
             .catch(err => {
                 console.error(err);

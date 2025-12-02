@@ -97,6 +97,7 @@ footer {
     font-weight: bold;
 }
 
+
 /* =========================================================
    ボタン共通
    ========================================================= */
@@ -637,4 +638,33 @@ footer {
 .visit-table tr:not(.is-cancelled):not(.read-only-row) td.time-cell:not(.time-error):hover,
 .visit-table tr:not(.is-cancelled):not(.read-only-row) td.company-cell:not(.time-error):hover {
     background-color: #fff9e6;
+}
+
+/* 訪問・WEB メニューの見た目 */
+.location-menu {
+    position: absolute;
+    z-index: 30;
+    min-width: 140px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    box-sizing: border-box;
+}
+
+/* 選択肢 */
+.location-option {
+    padding: 4px 8px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.location-option:hover {
+    background-color: #f0f0f0;
+}
+
+/* キャンセル行は他セルと同様、文字にだけ取消線 */
+tr.is-cancelled td.location-cell {
+    text-decoration: line-through;
+    color: #c00;
 }
