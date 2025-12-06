@@ -23,4 +23,5 @@ urlpatterns = [
         auth_views.LogoutView.as_view(next_page='authsys:login'),
         name='logout',
     ),
+    path("envmon/", include("envmon.urls")),
 ]

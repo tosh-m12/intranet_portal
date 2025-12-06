@@ -1,0 +1,261 @@
+{% extends "portal/base.html" %}
+{% load static %}
+
+{% block title %}倉庫ごとのデバイス割当 - 環境モニタ{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'envmon/style.css' %}">
+{% endblock %}
+
+{% block app_name %}
+<h1>🌡️ 温湿度モニタ - 倉庫ごとのデバイス割当</h1>
+{% endblock %}
+
+{% block subnav %}
+<div class="subnav">
+    <a href="{% url 'envmon:index' %}">📊 倉庫別モニタ</a>
+    <a href="{% url 'envmon:all_devices' %}">📋 全デバイス一覧</a>
+    <a href="{% url 'envmon:settings' %}">⚙ 設定</a>
+    <a href="{% url 'envmon:warehouse_assign' %}" class="active">🏷 倉庫割当</a>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div class="envmon-page">
+
+    <p class="envmon-desc">
+        タグをドラッグ＆ドロップしてデバイスの所属倉庫を変更できます。
+    </p>
+
+    <div class="container"><!-- ★ Flask と同じクラス名だが envmon-page でスコープする -->
+
+        <div class="warehouse-area">
+            {% for loc in locations %}
+            <div class="warehouse-block">
+                <div class="warehouse-main">
+                    <h3>{{ loc.name }}</h3>
+                    <div class="device-list"
+                         ondrop="drop(event, '{{ loc.code }}')"
+                         ondragover="allowDrop(event)"
+                         id="warehouse-{{ forloop.counter }}">
+                    </div>
+                </div>
+                <div class="external-block">
+                    <h4>外気測定用</h4>
+                    <div class="device-list"
+                         ondrop="drop(event, 'external_{{ loc.code }}')"
+                         ondragover="allowDrop(event)"
+                         id="external-{{ forloop.counter }}">
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="unassigned-area">
+            <h3>割当なしデバイス</h3>
+            <div class="device-list"
+                 ondrop="drop(event, '')"
+                 ondragover="allowDrop(event)"
+                 id="unassigned">
+            </div>
+        </div>
+
+    </div>
+
+    <p class="envmon-back-link">
+        <a href="{% url 'envmon:settings' %}">← 設定画面に戻る</a>
+    </p>
+
+</div><!-- /.envmon-page -->
+
+<script>
+    // Python から渡された現在の割当情報（device_id -> location_code or "external_xxx"）
+    let assignments = {{ assignments_json|safe }};
+    let draggedElement = null;
+    const placeholder = document.createElement("div");
+    placeholder.classList.add("placeholder");
+
+    function allowDrop(ev) {
+        ev.preventDefault();
+        const targetList = ev.target.closest('.device-list');
+        if (!targetList || !draggedElement) return;
+
+        if (placeholder.parentElement && placeholder.parentElement !== targetList) {
+            placeholder.parentElement.removeChild(placeholder);
+        }
+
+        const mouseY = ev.clientY;
+        let inserted = false;
+        for (let child of targetList.children) {
+            if (child === draggedElement || child === placeholder) continue;
+            const rect = child.getBoundingClientRect();
+            if (mouseY < rect.top + rect.height / 2) {
+                targetList.insertBefore(placeholder, child);
+                inserted = true;
+                break;
+            }
+        }
+
+        if (!inserted && placeholder.parentElement !== targetList) {
+            targetList.appendChild(placeholder);
+        }
+    }
+
+    function drag(ev) {
+        draggedElement = ev.target;
+        ev.dataTransfer.setData("text/plain", ev.target.id);
+    }
+
+    // ★★ ここを全面的に書き換え ★★
+    function drop(ev, warehouseCode) {
+        ev.preventDefault();
+
+        const id = ev.dataTransfer.getData("text/plain");  // "device-XXXX"
+        const deviceId = id.replace('device-', '');
+        let tag = document.getElementById(id);
+        const targetList = ev.target.closest('.device-list');
+        if (!targetList) return;
+
+        // どこに落ちたかで「割当済みかどうか」を判定
+        const isAssigned = targetList.id !== "unassigned";
+
+        // 既存のタグは一度 DOM から外す
+        if (tag) {
+            tag.remove();
+        }
+
+        // 新しいタグを作る（倉庫側なら ✖ 付き、未割当なら ✖ なし）
+        tag = createTag(deviceId, isAssigned);
+
+        // placeholder の位置に挿入 or 末尾に追加
+        if (placeholder.parentElement === targetList) {
+            targetList.replaceChild(tag, placeholder);
+        } else {
+            targetList.appendChild(tag);
+        }
+
+        // assignments を更新（warehouseCode は Django 側から来る引数）
+        if (!isAssigned) {
+            // 未割当
+            delete assignments[deviceId];
+        } else {
+            assignments[deviceId] = warehouseCode;
+        }
+
+        // Django 側へ保存
+        fetch("{% url 'envmon:save_assignment' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify(assignments)
+        }).catch(err => console.error("保存エラー", err));
+
+        // placeholder/ドラッグ状態の後始末
+        if (placeholder.parentElement) {
+            placeholder.parentElement.removeChild(placeholder);
+        }
+        draggedElement = null;
+    }
+
+    function removeAssignment(event, deviceId) {
+        event.stopPropagation();
+        const tag = document.getElementById("device-" + deviceId);
+        const unassignedBox = document.getElementById("unassigned");
+        if (tag && unassignedBox) {
+            tag.remove();
+            delete assignments[deviceId];
+
+            const newTag = createTag(deviceId, false);  // ✖なし
+            unassignedBox.appendChild(newTag);
+
+            fetch("{% url 'envmon:save_assignment' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify(assignments)
+            }).catch(err => console.error("保存エラー", err));
+        }
+    }
+
+    function createTag(deviceId, showRemove = false) {
+        const tag = document.createElement("span");
+        tag.className = "device-tag";
+        tag.id = "device-" + deviceId;
+        tag.draggable = true;
+        tag.ondragstart = drag;
+
+        // 本体文字
+        tag.textContent = deviceId;
+
+        // 必要なら ✖ボタンを追加
+        if (showRemove) {
+            const removeBtn = document.createElement("span");
+            removeBtn.className = "remove-btn";
+            removeBtn.textContent = "✖";
+            removeBtn.onclick = function(e) {
+                removeAssignment(e, deviceId);
+            };
+            tag.appendChild(removeBtn);
+        }
+
+        return tag;
+    }
+
+    function getWarehouseIndex(locCode) {
+        const codes = {{ location_codes_json|safe }};  // 例: ["loc01","loc02",...]
+        return codes.indexOf(locCode) + 1;
+    }
+
+    function getCsrfToken() {
+        const name = 'csrftoken';
+        const cookies = document.cookie ? document.cookie.split(';') : [];
+        for (let c of cookies) {
+            c = c.trim();
+            if (c.startsWith(name + '=')) {
+                return decodeURIComponent(c.substring(name.length + 1));
+            }
+        }
+        return '';
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const allTags = new Set();
+
+        // 既存の assignments を各倉庫の box に配置（✖付き）
+        for (const [deviceId, locCode] of Object.entries(assignments)) {
+            const tag = createTag(deviceId, true);
+            let targetElement = null;
+
+            if (locCode.startsWith("external_")) {
+                const baseCode = locCode.slice("external_".length);
+                const idx = getWarehouseIndex(baseCode);
+                targetElement = document.getElementById(`external-${idx}`);
+            } else {
+                const idx = getWarehouseIndex(locCode);
+                targetElement = document.getElementById(`warehouse-${idx}`);
+            }
+
+            if (targetElement && !document.getElementById("device-" + deviceId)) {
+                targetElement.appendChild(tag);
+                allTags.add(deviceId);
+            }
+        }
+
+        // 未割当デバイスを unassigned ボックスに追加（✖なし）
+        {% for dev in unassigned_devices %}
+            if (!allTags.has("{{ dev.id }}")) {
+                const tag = createTag("{{ dev.id }}", false);
+                document.getElementById("unassigned").appendChild(tag);
+            }
+        {% endfor %}
+    });
+</script>
+
+
+{% endblock %}

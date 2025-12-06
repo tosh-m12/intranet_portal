@@ -1,0 +1,62 @@
+{% extends "portal/base.html" %}
+{% load static %}
+
+{% block title %}全デバイス稼働状況一覧 - 環境モニタ{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'envmon/style.css' %}">
+{% endblock %}
+
+{% block app_name %}
+<h1>📋 全デバイス稼働状況一覧</h1>
+{% endblock %}
+
+{% block subnav %}
+<div class="subnav">
+    <a href="{% url 'envmon:index' %}">📊 倉庫別モニタ</a>
+    <a href="{% url 'envmon:all_devices' %}" class="active">📋 全デバイス一覧</a>
+    <a href="{% url 'envmon:settings' %}">⚙ 設定</a>
+    <a href="{% url 'envmon:warehouse_assign' %}">🏷 倉庫割当</a>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div class="envmon-page">
+
+    <p class="envmon-desc">
+        最終キャッシュ更新時刻: {{ last_updated }}
+    </p>
+
+    <table class="envmon-table">
+        <thead>
+            <tr>
+                <th>シリアルナンバー</th>
+                <th>倉庫</th>
+                <th>温度</th>
+                <th>湿度</th>
+                <th>最終更新</th>
+                <th>状態</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in devices %}
+                <tr>
+                    <td>{{ d.id }}</td>
+                    <td>{{ d.warehouse|default:"未割当" }}</td>
+                    <td>{{ d.temperature }}</td>
+                    <td>{{ d.humidity }}</td>
+                    <td>{{ d.last_seen }}</td>
+                    <td>{% if d.online %}●{% else %}×{% endif %}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p class="envmon-back-link">
+        <a href="{% url 'envmon:index' %}">← 倉庫別モニターへ戻る</a>
+    </p>
+
+</div>
+
+{% endblock %}

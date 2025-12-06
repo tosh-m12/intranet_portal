@@ -1,0 +1,227 @@
+/* ===============================
+   共通: envmon ページ全体
+   =============================== */
+
+.envmon-page {
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+/* 見出し */
+
+.envmon-page h1 {
+    font-size: 1.4rem;
+    margin-bottom: 12px;
+}
+
+.envmon-page h2.envmon-section-title {
+    font-size: 1.2rem;
+    margin: 16px 0 12px;
+}
+
+/* 説明テキスト・戻るリンク */
+
+.envmon-page .envmon-desc {
+    margin-bottom: 16px;
+}
+
+.envmon-page .envmon-back-link {
+    margin-top: 16px;
+}
+
+/* テーブル（index / all_devices 共通） */
+
+.envmon-page table {
+    border-collapse: collapse;
+    margin-bottom: 30px;
+    width: 100%;
+}
+
+.envmon-page th,
+.envmon-page td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+}
+
+.envmon-page h2 {
+    background-color: #f0f0f0;
+    padding: 8px;
+    margin-top: 24px;
+}
+
+/* ===============================
+   設定画面 / 倉庫名編集 共通フォーム
+   =============================== */
+
+.envmon-page .envmon-form {
+    max-width: 600px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fafafa;
+}
+
+.envmon-page .envmon-form-row {
+    margin-bottom: 12px;
+}
+
+.envmon-page .envmon-form-row label {
+    display: inline-block;
+    min-width: 220px;
+}
+
+.envmon-page .envmon-form-row input[type="number"],
+.envmon-page .envmon-form-row input[type="text"],
+.envmon-page .envmon-form-row input[type="time"] {
+    padding: 4px 6px;
+    min-width: 160px;
+    box-sizing: border-box;
+}
+
+.envmon-page .envmon-form-actions {
+    margin-top: 16px;
+}
+
+.envmon-page .envmon-form-actions button {
+    padding: 6px 16px;
+}
+
+.envmon-page .log-time-entry {
+    margin-bottom: 4px;
+}
+
+.envmon-page .log-time-entry input[type="time"] {
+    margin-right: 4px;
+}
+
+.envmon-page .envmon-note {
+    font-size: 0.9rem;
+    color: #555;
+    margin-left: 4px;
+}
+
+.envmon-page .envmon-links p {
+    margin: 4px 0;
+}
+
+/* ===============================
+   倉庫ごとのデバイス割当（warehouse_assign）
+   =============================== */
+
+/* Flask 時代の .container / .warehouse-area etc. を envmon-page 内に限定 */
+
+.envmon-page .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+}
+
+/* 左側: 倉庫エリア */
+
+.envmon-page .warehouse-area {
+    flex: 1;
+    margin-right: 30px;
+}
+
+/* 右側: 未割当エリア */
+
+.envmon-page .unassigned-area {
+    width: 260px;
+}
+
+/* 倉庫ブロック全体（倉庫名＋外気測定） */
+
+.envmon-page .warehouse-block {
+    margin-bottom: 30px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    background: #fff;
+}
+
+/* 左のメイン倉庫ボックス */
+
+.envmon-page .warehouse-main {
+    flex: 1;
+    margin-right: 12px;
+}
+
+/* 外気測定ボックス */
+
+.envmon-page .external-block {
+    width: 220px;
+}
+
+.envmon-page .external-block h4 {
+    margin: 4px 0;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+/* デバイスが入る枠 */
+
+.envmon-page .device-list {
+    min-height: 40px;
+    border: 1px dashed #aaa;
+    padding: 5px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    box-sizing: border-box;
+    background: #fafafa;
+}
+
+/* デバイスのタグ */
+
+.envmon-page .device-tag {
+    position: relative;
+    width: 170px;
+    text-align: center;
+    padding: 5px 10px;
+    margin: 5px;
+    background: #e0f7fa;
+    border: 1px solid #00796b;
+    border-radius: 5px;
+    cursor: move;
+    user-select: none;
+    box-sizing: border-box;
+}
+
+/* ×ボタン（常時表示にして「出てこない」問題を潰す） */
+
+.envmon-page .remove-btn {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #ff5555;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 5px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    display: inline-block;  /* ← ここを display:none ではなく常時表示に */
+}
+
+/* 必要なら hover 強調だけ残す */
+
+.envmon-page .device-tag:hover .remove-btn {
+    box-shadow: 0 0 3px rgba(0,0,0,0.3);
+}
+
+/* ドラッグ時のプレースホルダー */
+
+.envmon-page .placeholder {
+    width: 170px;
+    height: 30px;
+    margin: 5px;
+    border: 2px dashed #aaa;
+    border-radius: 5px;
+    background-color: #f0f0f0;
+    box-sizing: border-box;
+}

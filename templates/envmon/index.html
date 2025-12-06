@@ -1,0 +1,51 @@
+{# templates/envmon/index.html #}
+{% extends "portal/base.html" %}
+{% load static %}
+
+{% block title %}温湿度モニタ（倉庫別）{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'envmon/style.css' %}">
+{% endblock %}
+
+{% block app_name %}
+<h1>🌡️ 温湿度モニタ（倉庫別）</h1>
+{% endblock %}
+
+{% block subnav %}
+<div class="subnav">
+    <a href="{% url 'envmon:index' %}" class="active">📊 倉庫別モニタ</a>
+    <a href="{% url 'envmon:all_devices' %}">📋 全デバイス一覧</a>
+    <a href="{% url 'envmon:settings' %}">⚙ 設定</a>
+    <a href="{% url 'envmon:warehouse_assign' %}">🏷 倉庫割当</a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="envmon-page">
+
+    <p class="envmon-desc">
+        リアルタイム表示 / 更新間隔: {{ interval }} 秒<br>
+        表示更新時刻: <span id="envmon-realtime-updated">--</span>
+    </p>
+
+    <!-- JS が読み取る root 要素 -->
+    <div id="envmon-root"
+         data-api-url="{% url 'envmon:data_api' %}"
+         data-interval="{{ interval }}">
+    </div>
+
+    <!-- JS が倉庫別テーブルを書き込む領域 -->
+    <div id="warehouse-sections"></div>
+
+    <p class="envmon-back-link">
+        <a href="{% url 'envmon:all_devices' %}">
+            → 全デバイス稼働状況一覧ページへ
+        </a>
+    </p>
+</div>
+
+<!-- 外部 JS 読み込み -->
+<script src="{% static 'envmon/envmon_index.js' %}"></script>
+
+{% endblock %}

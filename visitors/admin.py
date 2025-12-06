@@ -1,8 +1,8 @@
 from django.contrib import admin
-from .models import Meeting
+from .models import Visitor, MailingAddress, VisitMailConfig
 
-@admin.register(Meeting)
-class MeetingAdmin(admin.ModelAdmin):
+@admin.register(Visitor)
+class VisitorAdmin(admin.ModelAdmin):
     list_display = (
         "visit_date",
         "visit_time",
@@ -34,4 +34,4 @@ class MeetingAdmin(admin.ModelAdmin):
 
     readonly_fields = ("created_at", "updated_at")
 
-    raw_id_fields = ("created_by",)
+    raw_id_fields = ("created_by",)   # ユーザー選択を楽にする

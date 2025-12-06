@@ -1,0 +1,1132 @@
+{
+  "C00220200A8B": [
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T01:27:17.332310"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T01:53:07.787832"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T01:53:09.783525"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T01:53:15.761182"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T01:53:17.198648"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T09:44:11.572274"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T09:44:15.061985"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T09:44:16.544799"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T09:44:18.485889"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T09:44:19.733947"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-22T09:34:17.268569"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-22T09:34:30.178462"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-22T09:34:44.462806"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-22T09:34:56.882242"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-22T09:35:10.027040"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-22T09:35:25.008918"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-22T09:35:36.278542"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-22T09:36:07.283538"
+    }
+  ],
+  "C00220200A15": [
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T01:27:17.334757"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T01:53:07.794309"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T01:53:09.794392"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T01:53:15.763075"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T01:53:17.208049"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T09:44:11.576873"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T09:44:15.069669"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T09:44:16.551498"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T09:44:18.499421"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T09:44:19.743856"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-22T09:34:17.259772"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-22T09:34:30.170521"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-22T09:34:44.454616"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-22T09:34:56.873972"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-22T09:35:10.017526"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-22T09:35:25.000269"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-22T09:35:36.269587"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-22T09:36:07.274483"
+    }
+  ],
+  "C00220200AAA": [
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T01:27:17.336753"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T01:53:07.800095"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T01:53:09.801307"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T01:53:15.777759"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T01:53:17.215237"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T09:44:11.584564"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T09:44:15.075287"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T09:44:16.558287"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T09:44:18.499421"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T09:44:19.754106"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-22T09:34:17.293062"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-22T09:34:30.202199"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-22T09:34:44.488568"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-22T09:34:56.907616"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-22T09:35:10.054261"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-22T09:35:25.035238"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-22T09:35:36.305083"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-22T09:36:07.312069"
+    }
+  ],
+  "C00220203D91": [
+    {
+      "location_id": "loc04",
+      "timestamp": "2025-07-21T01:27:17.339340"
+    },
+    {
+      "location_id": "loc04",
+      "timestamp": "2025-07-21T01:53:07.806127"
+    },
+    {
+      "location_id": "loc04",
+      "timestamp": "2025-07-21T01:53:09.808801"
+    },
+    {
+      "location_id": "loc04",
+      "timestamp": "2025-07-21T01:53:15.785059"
+    },
+    {
+      "location_id": "loc04",
+      "timestamp": "2025-07-21T01:53:17.224049"
+    },
+    {
+      "location_id": "loc04",
+      "timestamp": "2025-07-21T09:44:11.590242"
+    },
+    {
+      "location_id": "loc04",
+      "timestamp": "2025-07-21T09:44:15.083306"
+    },
+    {
+      "location_id": "loc04",
+      "timestamp": "2025-07-21T09:44:16.566429"
+    },
+    {
+      "location_id": "loc04",
+      "timestamp": "2025-07-21T09:44:18.522970"
+    },
+    {
+      "location_id": "loc04",
+      "timestamp": "2025-07-21T09:44:19.764601"
+    },
+    {
+      "location_id": "loc04",
+      "timestamp": "2025-07-22T09:34:17.284687"
+    },
+    {
+      "location_id": "loc04",
+      "timestamp": "2025-07-22T09:34:30.194342"
+    },
+    {
+      "location_id": "loc04",
+      "timestamp": "2025-07-22T09:34:44.479639"
+    },
+    {
+      "location_id": "loc04",
+      "timestamp": "2025-07-22T09:34:56.899052"
+    },
+    {
+      "location_id": "loc04",
+      "timestamp": "2025-07-22T09:35:10.045346"
+    },
+    {
+      "location_id": "loc04",
+      "timestamp": "2025-07-22T09:35:25.026494"
+    },
+    {
+      "location_id": "loc04",
+      "timestamp": "2025-07-22T09:35:36.296309"
+    },
+    {
+      "location_id": "loc04",
+      "timestamp": "2025-07-22T09:36:07.302554"
+    }
+  ],
+  "C00220102CB6": [
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-21T01:27:17.341455"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-21T01:53:07.812882"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-21T01:53:09.815054"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-21T01:53:15.792188"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-21T01:53:17.231998"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-21T09:44:11.596097"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-21T09:44:15.090460"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-21T09:44:16.573167"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-21T09:44:18.530506"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-21T09:44:19.765762"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-22T09:34:17.316359"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-22T09:34:30.227238"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-22T09:34:44.512883"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-22T09:34:56.932621"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-22T09:35:10.082500"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-22T09:35:25.061810"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-22T09:35:36.332679"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-22T09:36:07.339317"
+    }
+  ],
+  "C00220102CE6": [
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-21T01:27:17.344461"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-21T01:53:07.819860"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-21T01:53:09.815054"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-21T01:53:15.801110"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-21T01:53:17.231998"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-21T09:44:11.602560"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-21T09:44:15.097497"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-21T09:44:16.579997"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-21T09:44:18.536771"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-21T09:44:19.781665"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-22T09:34:17.324743"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-22T09:34:30.235153"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-22T09:34:44.521622"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-22T09:34:56.940703"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-22T09:35:10.094067"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-22T09:35:25.071096"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-22T09:35:36.342537"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-22T09:36:07.351738"
+    }
+  ],
+  "C00220102D5E": [
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-21T01:27:17.347482"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-21T01:53:07.826849"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-21T01:53:09.827937"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-21T01:53:15.807468"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-21T01:53:17.246710"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-21T09:44:11.608398"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-21T09:44:15.104359"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-21T09:44:16.586474"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-21T09:44:18.542083"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-21T09:44:19.781665"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-22T09:34:17.334512"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-22T09:34:30.245407"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-22T09:34:44.532674"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-22T09:34:56.952268"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-22T09:35:10.102934"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-22T09:35:25.081478"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-22T09:35:36.353308"
+    },
+    {
+      "location_id": "loc05",
+      "timestamp": "2025-07-22T09:36:07.360941"
+    }
+  ],
+  "C0022010216C": [
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T01:27:17.350595"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T01:53:07.833853"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T01:53:09.834405"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T01:53:15.814722"
+    },
+    {
+      "location_id": "loc06",
+      "timestamp": "2025-07-21T01:53:17.253240"
+    },
+    {
+      "location_id": "loc07",
+      "timestamp": "2025-07-21T09:44:11.614035"
+    },
+    {
+      "location_id": "loc07",
+      "timestamp": "2025-07-21T09:44:15.110451"
+    },
+    {
+      "location_id": "loc07",
+      "timestamp": "2025-07-21T09:44:16.593245"
+    },
+    {
+      "location_id": "loc07",
+      "timestamp": "2025-07-21T09:44:18.547331"
+    },
+    {
+      "location_id": "loc07",
+      "timestamp": "2025-07-21T09:44:19.798491"
+    },
+    {
+      "location_id": "loc07",
+      "timestamp": "2025-07-22T09:34:17.350342"
+    },
+    {
+      "location_id": "loc07",
+      "timestamp": "2025-07-22T09:34:30.261270"
+    },
+    {
+      "location_id": "loc07",
+      "timestamp": "2025-07-22T09:34:44.549849"
+    },
+    {
+      "location_id": "loc07",
+      "timestamp": "2025-07-22T09:34:56.970155"
+    },
+    {
+      "location_id": "loc07",
+      "timestamp": "2025-07-22T09:35:10.121845"
+    },
+    {
+      "location_id": "loc07",
+      "timestamp": "2025-07-22T09:35:25.105080"
+    },
+    {
+      "location_id": "loc07",
+      "timestamp": "2025-07-22T09:35:36.370122"
+    },
+    {
+      "location_id": "loc07",
+      "timestamp": "2025-07-22T09:36:07.378673"
+    }
+  ],
+  "C00220200AC3": [
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-21T01:27:17.353697"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-21T01:53:07.833853"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-21T01:53:09.837411"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-21T01:53:15.822519"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-21T01:53:17.253240"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-21T09:44:11.620006"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-21T09:44:15.117077"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-21T09:44:16.601069"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-21T09:44:18.552645"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-21T09:44:19.806320"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-22T09:34:17.300699"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-22T09:34:30.210889"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-22T09:34:44.496819"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-22T09:34:56.916050"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-22T09:35:10.063069"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-22T09:35:25.044920"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-22T09:35:36.315151"
+    },
+    {
+      "location_id": "loc03",
+      "timestamp": "2025-07-22T09:36:07.321011"
+    }
+  ],
+  "C00220102C77": [
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-21T01:27:17.356830"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-21T01:53:07.833853"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-21T01:53:09.848253"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-21T01:53:15.830358"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-21T01:53:17.271162"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-21T09:44:11.625719"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-21T09:44:15.124724"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-21T09:44:16.608328"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-21T09:44:18.558123"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-21T09:44:19.806320"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-22T09:34:17.308568"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-22T09:34:30.218792"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-22T09:34:44.504812"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-22T09:34:56.924260"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-22T09:35:10.072821"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-22T09:35:25.053258"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-22T09:35:36.323911"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-22T09:36:07.330293"
+    }
+  ],
+  "C00220200AA0": [
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-21T01:27:17.359820"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-21T01:53:07.849765"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-21T01:53:09.855930"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-21T01:53:15.830358"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-21T01:53:17.273402"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-21T09:44:11.631642"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-21T09:44:15.131765"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-21T09:44:16.608328"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-21T09:44:18.558755"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-21T09:44:19.825580"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-22T09:34:17.276390"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-22T09:34:30.186297"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-22T09:34:44.470827"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-22T09:34:56.890698"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-22T09:35:10.035965"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-22T09:35:25.017478"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-22T09:35:36.287408"
+    },
+    {
+      "location_id": "loc02",
+      "timestamp": "2025-07-22T09:36:07.292521"
+    }
+  ],
+  "C00220200A5C": [
+    {
+      "location_id": "loc01",
+      "timestamp": "2025-07-21T01:27:17.363244"
+    },
+    {
+      "location_id": "loc01",
+      "timestamp": "2025-07-21T01:53:07.849765"
+    },
+    {
+      "location_id": "loc01",
+      "timestamp": "2025-07-21T01:53:09.862338"
+    },
+    {
+      "location_id": "loc01",
+      "timestamp": "2025-07-21T01:53:15.848252"
+    },
+    {
+      "location_id": "loc01",
+      "timestamp": "2025-07-21T01:53:17.286091"
+    },
+    {
+      "location_id": "loc01",
+      "timestamp": "2025-07-21T09:44:11.637528"
+    },
+    {
+      "location_id": "loc01",
+      "timestamp": "2025-07-21T09:44:15.131765"
+    },
+    {
+      "location_id": "loc01",
+      "timestamp": "2025-07-21T09:44:16.622118"
+    },
+    {
+      "location_id": "loc01",
+      "timestamp": "2025-07-21T09:44:18.569713"
+    },
+    {
+      "location_id": "loc01",
+      "timestamp": "2025-07-21T09:44:19.833607"
+    },
+    {
+      "location_id": "loc01",
+      "timestamp": "2025-07-22T09:34:17.251995"
+    },
+    {
+      "location_id": "loc01",
+      "timestamp": "2025-07-22T09:34:30.162768"
+    },
+    {
+      "location_id": "loc01",
+      "timestamp": "2025-07-22T09:34:44.446847"
+    },
+    {
+      "location_id": "loc01",
+      "timestamp": "2025-07-22T09:34:56.865369"
+    },
+    {
+      "location_id": "loc01",
+      "timestamp": "2025-07-22T09:35:10.008843"
+    },
+    {
+      "location_id": "loc01",
+      "timestamp": "2025-07-22T09:35:24.991751"
+    },
+    {
+      "location_id": "loc01",
+      "timestamp": "2025-07-22T09:35:36.260875"
+    },
+    {
+      "location_id": "loc01",
+      "timestamp": "2025-07-22T09:36:07.264939"
+    }
+  ],
+  "C00220200A17": [
+    {
+      "location_id": "external_loc02",
+      "timestamp": "2025-07-21T01:27:17.363244"
+    },
+    {
+      "location_id": "external_loc02",
+      "timestamp": "2025-07-21T01:53:07.870707"
+    },
+    {
+      "location_id": "external_loc02",
+      "timestamp": "2025-07-21T01:53:09.868566"
+    },
+    {
+      "location_id": "external_loc02",
+      "timestamp": "2025-07-21T01:53:15.848252"
+    },
+    {
+      "location_id": "external_loc02",
+      "timestamp": "2025-07-21T01:53:17.292410"
+    },
+    {
+      "location_id": "external_loc02",
+      "timestamp": "2025-07-21T09:44:11.643021"
+    },
+    {
+      "location_id": "external_loc02",
+      "timestamp": "2025-07-21T09:44:15.147147"
+    },
+    {
+      "location_id": "external_loc02",
+      "timestamp": "2025-07-21T09:44:16.629095"
+    },
+    {
+      "location_id": "external_loc02",
+      "timestamp": "2025-07-21T09:44:18.569713"
+    },
+    {
+      "location_id": "external_loc02",
+      "timestamp": "2025-07-21T09:44:19.841922"
+    },
+    {
+      "location_id": "external_loc02",
+      "timestamp": "2025-07-22T09:34:17.342343"
+    },
+    {
+      "location_id": "external_loc02",
+      "timestamp": "2025-07-22T09:34:30.253359"
+    },
+    {
+      "location_id": "external_loc02",
+      "timestamp": "2025-07-22T09:34:44.541571"
+    },
+    {
+      "location_id": "external_loc02",
+      "timestamp": "2025-07-22T09:34:56.961767"
+    },
+    {
+      "location_id": "external_loc02",
+      "timestamp": "2025-07-22T09:35:10.112742"
+    },
+    {
+      "location_id": "external_loc02",
+      "timestamp": "2025-07-22T09:35:25.090077"
+    },
+    {
+      "location_id": "external_loc02",
+      "timestamp": "2025-07-22T09:35:36.361503"
+    },
+    {
+      "location_id": "external_loc02",
+      "timestamp": "2025-07-22T09:36:07.369836"
+    }
+  ],
+  "C00220102CFE": [
+    {
+      "location_id": "loc01",
+      "timestamp": "2025-07-21T01:53:07.870707"
+    },
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:34:57.005078"
+    },
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:35:10.154543"
+    },
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:35:25.139918"
+    },
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:35:36.403881"
+    },
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:36:07.418573"
+    }
+  ],
+  "C00220200526": [
+    {
+      "location_id": "external_loc01",
+      "timestamp": "2025-07-21T01:53:15.864046"
+    },
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:34:17.358233"
+    },
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:34:30.269594"
+    },
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:34:44.558026"
+    },
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:34:56.978892"
+    },
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:35:10.129929"
+    },
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:35:25.113893"
+    },
+    {
+      "location_id": "external_loc08",
+      "timestamp": "2025-07-22T09:35:36.378471"
+    },
+    {
+      "location_id": "external_loc08",
+      "timestamp": "2025-07-22T09:36:07.387733"
+    }
+  ],
+  "C00220203D80": [
+    {
+      "location_id": "external_loc03",
+      "timestamp": "2025-07-21T09:44:15.148555"
+    },
+    {
+      "location_id": "external_loc03",
+      "timestamp": "2025-07-21T09:44:18.582475"
+    }
+  ],
+  "C00220200AD6": [
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:34:30.277669"
+    },
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:34:44.566057"
+    },
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:34:56.987828"
+    },
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:35:10.137831"
+    },
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:35:25.122450"
+    },
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:35:36.386887"
+    },
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:36:07.397776"
+    }
+  ],
+  "C00220200A26": [
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:34:44.574165"
+    },
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:34:56.996814"
+    },
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:35:10.146265"
+    },
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:35:25.131263"
+    },
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:35:36.395095"
+    },
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:36:07.409000"
+    }
+  ],
+  "C00220200A5B": [
+    {
+      "location_id": "external_loc09",
+      "timestamp": "2025-07-22T09:35:10.164310"
+    },
+    {
+      "location_id": "external_loc09",
+      "timestamp": "2025-07-22T09:35:25.148580"
+    },
+    {
+      "location_id": "external_loc09",
+      "timestamp": "2025-07-22T09:35:36.421659"
+    },
+    {
+      "location_id": "external_loc09",
+      "timestamp": "2025-07-22T09:36:07.429221"
+    }
+  ],
+  "C00220201670": [
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:35:25.157610"
+    },
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:35:36.430596"
+    },
+    {
+      "location_id": "loc08",
+      "timestamp": "2025-07-22T09:36:07.439228"
+    }
+  ],
+  "C00220204A72": [
+    {
+      "location_id": "external_loc10",
+      "timestamp": "2025-07-22T09:36:07.449530"
+    }
+  ]
+}

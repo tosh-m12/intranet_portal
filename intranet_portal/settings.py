@@ -45,7 +45,9 @@ INSTALLED_APPS = [
     'visitors.apps.VisitorsConfig',
     "meetings.apps.MeetingsConfig",
     'working_schedule',
-    'mailcenter'
+    'mailcenter',
+    'envmon',
+    'scheduler.apps.SchedulerConfig',
 ]
 
 MIDDLEWARE = [
