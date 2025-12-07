@@ -86,6 +86,8 @@
         </div>
     </form>
 
+    
+
     <!-- ===========================
          履歴データ管理（CSV）
          =========================== -->
@@ -152,7 +154,38 @@
         </div>
     </form>
 
+
+    <!-- ===========================
+     手動実行（キャッシュ / ログ）
+     =========================== -->
+    <h2 class="envmon-section-title">手動実行（バックエンド手動トリガー）</h2>
+
+    <div class="envmon-section">
+
+        <!-- 手動キャッシュ取得 -->
+        <form method="post" action="{% url 'envmon:manual_cache' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-manual"
+                    style="padding:8px 16px; margin-bottom:10px;">
+                🔄 キャッシュを手動取得
+            </button>
+        </form>
+
+        <!-- 手動ログ取得 -->
+        <form method="post" action="{% url 'envmon:manual_log' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-manual"
+                    style="padding:8px 16px;">
+                📝 ログを手動取得
+            </button>
+        </form>
+
+    </div>
+
+    
 </div>
+
+
 
 <script>
 function addLogTime() {

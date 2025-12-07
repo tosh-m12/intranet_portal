@@ -1,0 +1,212 @@
+[
+  {
+    "model": "envmon.location",
+    "pk": 1,
+    "fields": {
+      "code": "loc01",
+      "name": "B倉庫FMC",
+      "is_external": false,
+      "created_at": "2025-12-03T12:07:18.642Z",
+      "updated_at": "2025-12-03T12:07:18.642Z"
+    }
+  },
+  {
+    "model": "envmon.location",
+    "pk": 2,
+    "fields": {
+      "code": "loc02",
+      "name": "B倉庫湿度管理室前方",
+      "is_external": false,
+      "created_at": "2025-12-03T12:07:18.655Z",
+      "updated_at": "2025-12-03T12:07:18.655Z"
+    }
+  },
+  {
+    "model": "envmon.location",
+    "pk": 3,
+    "fields": {
+      "code": "loc03",
+      "name": "B倉庫湿度管理室後方",
+      "is_external": false,
+      "created_at": "2025-12-03T12:07:18.669Z",
+      "updated_at": "2025-12-03T12:07:18.669Z"
+    }
+  },
+  {
+    "model": "envmon.location",
+    "pk": 4,
+    "fields": {
+      "code": "loc04",
+      "name": "D倉庫小部屋",
+      "is_external": false,
+      "created_at": "2025-12-03T12:07:18.683Z",
+      "updated_at": "2025-12-03T12:07:18.683Z"
+    }
+  },
+  {
+    "model": "envmon.location",
+    "pk": 5,
+    "fields": {
+      "code": "loc05",
+      "name": "D倉庫大部屋",
+      "is_external": false,
+      "created_at": "2025-12-03T12:07:18.700Z",
+      "updated_at": "2025-12-03T12:07:18.700Z"
+    }
+  },
+  {
+    "model": "envmon.location",
+    "pk": 6,
+    "fields": {
+      "code": "loc06",
+      "name": "D倉庫2F",
+      "is_external": false,
+      "created_at": "2025-12-03T12:07:18.714Z",
+      "updated_at": "2025-12-03T12:07:18.714Z"
+    }
+  },
+  {
+    "model": "envmon.location",
+    "pk": 7,
+    "fields": {
+      "code": "loc07",
+      "name": "D倉庫1F",
+      "is_external": false,
+      "created_at": "2025-12-03T12:07:18.727Z",
+      "updated_at": "2025-12-03T12:07:18.727Z"
+    }
+  },
+  {
+    "model": "envmon.location",
+    "pk": 8,
+    "fields": {
+      "code": "loc08",
+      "name": "C2-3倉庫",
+      "is_external": false,
+      "created_at": "2025-12-03T12:07:18.740Z",
+      "updated_at": "2025-12-03T12:07:18.741Z"
+    }
+  },
+  {
+    "model": "envmon.location",
+    "pk": 9,
+    "fields": {
+      "code": "loc09",
+      "name": "C-2倉庫",
+      "is_external": false,
+      "created_at": "2025-12-03T12:07:18.754Z",
+      "updated_at": "2025-12-03T12:07:18.754Z"
+    }
+  },
+  {
+    "model": "envmon.location",
+    "pk": 10,
+    "fields": {
+      "code": "loc10",
+      "name": "B1倉庫",
+      "is_external": false,
+      "created_at": "2025-12-03T12:07:18.768Z",
+      "updated_at": "2025-12-03T12:07:18.768Z"
+    }
+  },
+
+  {
+    "model": "envmon.deviceassignment",
+    "pk": 1,
+    "fields": {
+      "device_id": "C00220200A8B",
+      "location": 6,
+      "updated_at": "2025-12-04T15:09:30.761Z"
+    }
+  },
+  {
+    "model": "envmon.deviceassignment",
+    "pk": 2,
+    "fields": {
+      "device_id": "C00220200A15",
+      "location": 6,
+      "updated_at": "2025-12-04T15:09:30.814Z"
+    }
+  },
+  {
+    "model": "envmon.deviceassignment",
+    "pk": 3,
+    "fields": {
+      "device_id": "C00220200AAA",
+      "location": 6,
+      "updated_at": "2025-12-04T15:09:30.843Z"
+    }
+  },
+  {
+    "model": "envmon.deviceassignment",
+    "pk": 4,
+    "fields": {
+      "device_id": "C00220203D91",
+      "location": 4,
+      "updated_at": "2025-12-04T15:09:30.875Z"
+    }
+  },
+  {
+    "model": "envmon.deviceassignment",
+    "pk": 5,
+    "fields": {
+      "device_id": "C00220102CB6",
+      "location": 3,
+      "updated_at": "2025-12-04T15:09:30.906Z"
+    }
+  },
+  {
+    "model": "envmon.deviceassignment",
+    "pk": 6,
+    "fields": {
+      "device_id": "C00220102CE6",
+      "location": 5,
+      "updated_at": "2025-12-04T15:09:30.936Z"
+    }
+  },
+  {
+    "model": "envmon.deviceassignment",
+    "pk": 7,
+    "fields": {
+      "device_id": "C00220102D5E",
+      "location": 5,
+      "updated_at": "2025-12-04T15:09:30.967Z"
+    }
+  },
+  {
+    "model": "envmon.deviceassignment",
+    "pk": 8,
+    "fields": {
+      "device_id": "C0022010216C",
+      "location": 7,
+      "updated_at": "2025-12-04T15:09:30.997Z"
+    }
+  },
+  {
+    "model": "envmon.deviceassignment",
+    "pk": 9,
+    "fields": {
+      "device_id": "C00220200AC3",
+      "location": 3,
+      "updated_at": "2025-12-04T15:09:31.026Z"
+    }
+  },
+  {
+    "model": "envmon.deviceassignment",
+    "pk": 10,
+    "fields": {
+      "device_id": "C00220102C77",
+      "location": 2,
+      "updated_at": "2025-12-04T15:09:31.057Z"
+    }
+  },
+  {
+    "model": "envmon.deviceassignment",
+    "pk": 13,
+    "fields": {
+      "device_id": "C00220200A17",
+      "location": null,
+      "updated_at": "2025-12-03T14:21:47.228Z"
+    }
+  }
+]
