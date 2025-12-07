@@ -2,14 +2,16 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timedelta
+import os
+from datetime import datetime, timedelta, time as dt_time
 from pathlib import Path
 import urllib.parse
 import requests
 from requests import Timeout, RequestException
 import csv
-
+from collections import defaultdict
 from django.db import transaction
+from django.db.models import F
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.utils.encoding import smart_str, escape_uri_path
@@ -35,7 +37,23 @@ API_TIMEOUT = 30
 logger = logging.getLogger(__name__)
 
 
-# ==== デバイスAPI用 トークンキャッシュ ====
+# ==============================
+#  例外クラス
+# ==============================
+class DeviceApiTokenInvalid(Exception):
+    """デバイス一覧APIで code=104(token invalid) が返ってきた時用"""
+    pass
+
+
+# ★ 履歴用 API で使うトークン無効例外
+class TokenInvalidError(Exception):
+    """履歴 API 用のトークン無効例外"""
+    pass
+
+
+# ==============================
+#  デバイスAPI用 トークンキャッシュ
+# ==============================
 _DEVICE_TOKEN_CACHE = {
     "token": None,
     "user_id": None,
@@ -45,57 +63,86 @@ _DEVICE_TOKEN_LOCK = Lock()
 DEVICE_TOKEN_TTL_SECONDS = 300  # 例：5分有効
 
 
-class DeviceApiTokenInvalid(Exception):
-    """デバイス一覧APIで code=104(token invalid) が返ってきた時用"""
-    pass
-
-
-def get_device_api_token(force_refresh: bool = False) -> tuple[str, int]:
+def get_device_api_token():
     """
-    デバイスAPI用のトークンをキャッシュ付きで取得する。
-    - force_refresh=True のときは強制ログインし直し
-    - それ以外は TTL 以内ならキャッシュを返す
+    1weilian へログインし、accessToken と userId を返す。
+    cache_worker_dj.py と同じリダイレクト対応ロジック。
     """
-    from django.utils import timezone as dj_timezone  # 循環参照避け
+    payload = {
+        "account": ACCOUNT,
+        "pwd": PASSWORD,
+        "systemVersion": "PC",
+        "loginType": 2,
+    }
+    headers = {"Content-Type": "application/json;charset=UTF-8"}
 
-    now = dj_timezone.now()
+    # まずはリダイレクトを追わずに投げる
+    resp = requests.post(
+        LOGIN_URL,
+        json=payload,
+        headers=headers,
+        timeout=30,
+        allow_redirects=False,
+    )
 
-    with _DEVICE_TOKEN_LOCK:
-        cached = _DEVICE_TOKEN_CACHE
-        if (
-            not force_refresh
-            and cached["token"]
-            and cached["fetched_at"]
-            and (now - cached["fetched_at"]).total_seconds() < DEVICE_TOKEN_TTL_SECONDS
-        ):
-            return cached["token"], cached["user_id"]
+    # 30x（リダイレクト）の場合は、自分で再度 POST する
+    if resp.status_code in (301, 302, 303, 307, 308):
+        loc = resp.headers.get("Location")
+        if not loc:
+            raise RuntimeError(f"Login redirect without Location header: {resp.status_code}")
 
-        # 新しくログインしてキャッシュを更新
-        token, user_id = login_and_get_token()
-        cached["token"] = token
-        cached["user_id"] = user_id
-        cached["fetched_at"] = now
-        return token, user_id
+        login_url2 = urllib.parse.urljoin(LOGIN_URL, loc)
+        print(f"[LOGIN-DEBUG] redirect {resp.status_code} -> {login_url2}")
+
+        resp = requests.post(
+            login_url2,
+            json=payload,
+            headers=headers,
+            timeout=30,
+            allow_redirects=False,
+        )
+
+    # 最終レスポンスを JSON に
+    try:
+        result = resp.json()
+    except ValueError:
+        print("[LOGIN-DEBUG] 非JSONレスポンス:", resp.status_code, resp.text[:500])
+        raise RuntimeError("Login API returned non-JSON response")
+
+    print("[LOGIN-DEBUG] status:", resp.status_code)
+    print("[LOGIN-DEBUG] body:", json.dumps(result, ensure_ascii=False)[:500])
+
+    if "data" not in result:
+        raise RuntimeError(f"Login API error. 'data' key not found. response={result}")
+
+    data = result["data"]
+    return data["accessToken"], data["userId"]
 
 
-# ==== 外部 API 関連定数（Flask から移植） ====
+
+# ==============================
+#  外部 API 関連定数（Flask から移植）
+# ==============================
 LOGIN_URL = "https://1weilian.com/user/login"              # ★ http → https
 DATA_URL  = "https://www.1weilian.com/public/realTimeData" # ★ host も統一
+HISTORY_URL = "https://www.1weilian.com/historical/selectHistoryData"
+
 ACCOUNT = "nglswhs47"
 PASSWORD = "ngls1234"
 
-# ==== キャッシュファイルの場所 ====
+
+# ==============================
+#  キャッシュファイルの場所
+# ==============================
 # ひとまず「プロジェクトルート/cache/」を Flask 時代と同じ名前で利用する想定
 BASE_DIR = Path(settings.BASE_DIR)
 CACHE_DIR = BASE_DIR / "cache"
 CACHE_DIR.mkdir(exist_ok=True)  # なければ作成
 
 
-
-
-# ==== 共通ユーティリティ ====
-
-
+# ==============================
+#  共通ユーティリティ
+# ==============================
 def load_latest_cache() -> tuple[datetime | None, list[dict]]:
     """
     cache/device_cache_latest.json を読み込んで (更新日時, データ配列) を返す。
@@ -173,12 +220,15 @@ def login_and_get_token():
     return result["data"]["accessToken"], result["data"]["userId"]
 
 
-def fetch_all_devices(token: str, user_id: int) -> list[dict]:
+def fetch_all_devices(token, user_id):
     """
-    外部 API から全デバイス情報をページング取得する。
-    途中のページでタイムアウトしても、それまでに取得できた分は返す。
+    外部 API から全デバイスを取得。
+    cache_worker_dj.py と同様、
+    - ページング対応
+    - タイムアウト時はそこで打ち切り、取れた分だけ返す
+    - token エラー時は例外を投げる
     """
-    all_devices: list[dict] = []
+    all_devices = []
     page = 0
 
     while True:
@@ -199,54 +249,41 @@ def fetch_all_devices(token: str, user_id: int) -> list[dict]:
                 DATA_URL,
                 json=payload,
                 headers=headers,
-                timeout=API_TIMEOUT,
+                timeout=30,
                 allow_redirects=False,
             )
 
-            # データ側も 30x の可能性があるので一応対応
+            # 30x の場合は自前で POST し直す
             if resp.status_code in (301, 302, 303, 307, 308):
                 loc = resp.headers.get("Location")
                 data_url2 = urllib.parse.urljoin(DATA_URL, loc)
-                logger.debug("[FETCH-DEBUG] redirect %s -> %s", resp.status_code, data_url2)
+                print(f"[FETCH-DEBUG] redirect {resp.status_code} -> {data_url2}")
                 resp = requests.post(
                     data_url2,
                     json=payload,
                     headers=headers,
-                    timeout=API_TIMEOUT,
+                    timeout=30,
                     allow_redirects=False,
                 )
 
             try:
                 result = resp.json()
             except ValueError:
-                logger.debug(
-                    "[FETCH-DEBUG] 非JSONレスポンス: %s %s",
-                    resp.status_code,
-                    resp.text[:500],
-                )
+                print("[FETCH-DEBUG] 非JSONレスポンス:", resp.status_code, resp.text[:500])
                 break
 
             if page == 0:
-                logger.debug("[FETCH-DEBUG] status: %s", resp.status_code)
-                logger.debug(
-                    "[FETCH-DEBUG] body: %s",
-                    json.dumps(result, ensure_ascii=False)[:500],
-                )
+                print("[FETCH-DEBUG] status:", resp.status_code)
+                print("[FETCH-DEBUG] body:", json.dumps(result, ensure_ascii=False)[:500])
 
-            # ★ code チェックを追加
-            code = result.get("code")
-            if code == 104:
-                # トークン無効 → 上位で再ログインさせる
-                raise DeviceApiTokenInvalid("token invalid in fetch_all_devices")
-            if code != 0:
-                logger.error("[FETCH-ERROR] device API error: %s", result)
-                break
+            # ここで code をチェックして token エラーを検知
+            if result.get("code") != 0:
+                # ここから「token invalid in fetch_all_devices」が出ていたので、
+                # ログを出しつつ例外にする
+                raise RuntimeError(f"device API error: {result}")
 
             if "data" not in result or "dataList" not in result["data"]:
-                logger.error(
-                    "[ERROR] Unexpected device API response (no data.dataList): %s",
-                    result,
-                )
+                print("[ERROR] Unexpected device API response (no data.dataList):", result)
                 break
 
             data_list = result["data"]["dataList"]
@@ -268,56 +305,43 @@ def fetch_all_devices(token: str, user_id: int) -> list[dict]:
             page += 1
 
         except requests.Timeout as e:
-            logger.warning(
-                "[ERROR] Timeout when fetching page %s: %s", page, e
-            )
-            logger.info(
-                "[INFO] Using partial device list so far. count = %s",
-                len(all_devices),
-            )
+            print(f"[ERROR] Timeout when fetching page {page}: {e}")
+            print("[INFO] Using partial device list so far. count =", len(all_devices))
             break
-        except DeviceApiTokenInvalid:
-            # 上位にそのまま投げる（data_api で再ログイン＆リトライ）
-            raise
         except Exception as e:
-            logger.error(
-                "[ERROR] Fetch devices page %s failed: %s", page, e
-            )
-            logger.info(
-                "[INFO] Using partial device list so far. count = %s",
-                len(all_devices),
-            )
+            print(f"[ERROR] Fetch devices page {page} failed: {e}")
+            print("[INFO] Using partial device list so far. count =", len(all_devices))
             break
 
     return all_devices
 
 
-def attach_assignments(devices: list[dict]) -> None:
+def attach_assignments(devices):
     """
-    devices の各要素に DB 上の割当情報をくっつける。
-    - location_id: Location.code
-    - warehouse: Location.name または "未割当"
+    device dict に DB の倉庫割当情報を合成する。
+    （キャッシュに既に warehouse がついていても上書きOK）
     """
-    # device_id 一括取得のために辞書化
-    id_to_device: dict[str, dict] = {}
+    id_to_device = {}
     for d in devices:
-        device_id = str(d.get("id"))
-        id_to_device[device_id] = d
+        dev_id = str(d.get("id"))
+        if not dev_id:
+            continue
+        id_to_device[dev_id] = d
 
     if not id_to_device:
         return
 
-    # まとめて取得
-    assignments = (
-        DeviceAssignment.objects.select_related("location")
+    qs = (
+        DeviceAssignment.objects
+        .select_related("location")
         .filter(device_id__in=id_to_device.keys())
     )
 
-    for assign in assignments:
-        dev = id_to_device.get(assign.device_id)
+    for a in qs:
+        dev = id_to_device.get(a.device_id)
         if not dev:
             continue
-        loc = assign.location
+        loc = a.location
         if loc:
             dev["location_id"] = loc.code
             dev["warehouse"] = loc.name
@@ -325,14 +349,26 @@ def attach_assignments(devices: list[dict]) -> None:
             dev["location_id"] = None
             dev["warehouse"] = "未割当"
 
-    # 割当のないデバイスには明示的に "未割当" をセット
-    for device_id, dev in id_to_device.items():
+    # 未割当（DBに存在しないデバイス）にデフォルト値を入れる
+    for dev_id, dev in id_to_device.items():
         if "warehouse" not in dev:
             dev["location_id"] = None
             dev["warehouse"] = "未割当"
 
 
-# ==== View 関数 ====
+def create_csv_response(filename: str) -> HttpResponse:
+    """
+    CSV ダウンロード用共通レスポンス作成ヘルパー。
+    """
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    # 日本語ファイル名対応
+    response["Content-Disposition"] = f"attachment; filename*=UTF-8''{escape_uri_path(filename)}"
+    return response
+
+
+# ==============================
+#  View 関数
+# ==============================
 
 @login_required
 def index(request: HttpRequest) -> HttpResponse:
@@ -350,7 +386,6 @@ def index(request: HttpRequest) -> HttpResponse:
         "interval": interval,
     }
     return render(request, "envmon/index.html", context)
-
 
 
 @login_required
@@ -371,35 +406,46 @@ def all_devices(request: HttpRequest) -> HttpResponse:
 
 
 @login_required
-def data_api(request: HttpRequest) -> JsonResponse:
+def data_api(request):
     """
-    フロント用 JSON API
-    - 外部 API に直接アクセスして全デバイス取得
-    - DB 割当情報を付加して返却
-    ※ ここでは EnvLog や DeviceHistory は使わない（リアルタイム専用）
+    最新のリアルタイムデータを返す API。
+    キャッシュ（device_cache_latest.json）専用。
+    外部APIには一切アクセスしない。
     """
+
+    cache_file = CACHE_DIR / "device_cache_latest.json"
+
+    if not cache_file.exists():
+        print("[data_api] cache file not found")
+        return JsonResponse([], safe=False)
+
+    # キャッシュ読み込み
     try:
-        # ★ トークンをキャッシュ付きで取得
-        token, user_id = get_device_api_token()
-
-        try:
-            devices = fetch_all_devices(token, user_id)
-        except DeviceApiTokenInvalid:
-            # ★ token invalid のときだけ 1回だけ再ログインしてリトライ
-            logger.warning("[envmon] token invalid -> relogin and retry once")
-            token, user_id = get_device_api_token(force_refresh=True)
-            devices = fetch_all_devices(token, user_id)
-
-        # 倉庫割当情報を付加（warehouse, location_id）
-        attach_assignments(devices)
-
-        return JsonResponse(devices, safe=False)
-
+        with open(cache_file, "r", encoding="utf-8") as f:
+            devices = json.load(f)
+        print(f"[data_api] loaded cache: {cache_file}, count={len(devices)}")
     except Exception as e:
-        # ここにくるのは「ネットワーク完全ダウン」など本当に致命的な場合
-        logger.error("[envmon] data_api error: %s", e)
-        return JsonResponse({"error": str(e)}, status=500)
-    
+        print(f"[data_api] failed to read cache: {e}")
+        return JsonResponse([], safe=False)
+
+    # DB割当付加（キャッシュには warehouse がない可能性があるため）
+    attach_assignments(devices)
+
+    # 未割当／未登録デバイスは除外
+    filtered = []
+    for d in devices:
+        warehouse = (d.get("warehouse") or "").strip()
+        name = (d.get("name") or "").strip()
+
+        if warehouse == "未割当":
+            continue
+        if name.startswith("未登録:"):
+            continue
+
+        filtered.append(d)
+
+    return JsonResponse(filtered, safe=False)
+
 
 # ========================
 # 設定画面
@@ -453,15 +499,9 @@ def settings_view(request: HttpRequest) -> HttpResponse:
     return render(request, "envmon/settings.html", context)
 
 
-# ★ トークン無効時に使う専用例外
-class TokenInvalidError(Exception):
-    pass
-
-
-# 履歴用 API の URL（1weilian 履歴API）
-HISTORY_URL = "https://www.1weilian.com/historical/selectHistoryData"
-
-
+# ==============================
+# 履歴取得ロジック
+# ==============================
 def fetch_history_for_sn(
     token: str,
     user_id: int,
@@ -902,11 +942,6 @@ def save_assignment(request: HttpRequest) -> JsonResponse:
     except Exception:
         return JsonResponse({"error": "invalid JSON"}, status=400)
 
-    # 既存の割当を全て取得しておき、差分更新してもよいが、
-    # ここでは簡単に「一度全削除して入れ直し」でもOK。
-    # ただし履歴を残したいので、1件ずつ処理する。
-    # （Flask 版も毎回全件 record していた）
-
     # ここでは「渡された device_id だけ」を対象とする。
     now = timezone.now()
 
@@ -937,6 +972,10 @@ def save_assignment(request: HttpRequest) -> JsonResponse:
 
     return JsonResponse({"status": "ok"})
 
+
+# ========================
+# CSV ダウンロード系
+# ========================
 @login_required
 @require_POST
 def download_history_csv(request: HttpRequest) -> HttpResponse:
@@ -950,11 +989,8 @@ def download_history_csv(request: HttpRequest) -> HttpResponse:
 
     qs = DeviceHistory.objects.filter(sn=sn).order_by("recorded_at")
 
-    # CSV レスポンス
     filename = f"history_{sn}.csv"
-    response = HttpResponse(content_type="text/csv; charset=utf-8")
-    # 日本語ファイル名対応
-    response["Content-Disposition"] = f"attachment; filename*=UTF-8''{escape_uri_path(filename)}"
+    response = create_csv_response(filename)
 
     writer = csv.writer(response)
     writer.writerow(["SN", "記録日時", "温度", "湿度"])
@@ -1033,8 +1069,7 @@ def download_history_by_warehouse(request: HttpRequest) -> HttpResponse:
     dt_label = date_to_str or "ALL"
     filename = f"history_warehouse_{location.code}_{df_label}_{dt_label}.csv"
 
-    response = HttpResponse(content_type="text/csv; charset=utf-8")
-    response["Content-Disposition"] = f"attachment; filename*=UTF-8''{escape_uri_path(filename)}"
+    response = create_csv_response(filename)
 
     writer = csv.writer(response)
     writer.writerow(["倉庫コード", "倉庫名", "SN", "記録日時", "温度", "湿度"])
@@ -1099,8 +1134,7 @@ def download_history_all_range(request: HttpRequest) -> HttpResponse:
 
     filename = f"history_all_{date_from_str}_{date_to_str}.csv"
 
-    response = HttpResponse(content_type="text/csv; charset=utf-8")
-    response["Content-Disposition"] = f"attachment; filename*=UTF-8''{escape_uri_path(filename)}"
+    response = create_csv_response(filename)
 
     writer = csv.writer(response)
     writer.writerow(["SN", "記録日時", "温度", "湿度"])
@@ -1114,3 +1148,264 @@ def download_history_all_range(request: HttpRequest) -> HttpResponse:
         ])
 
     return response
+
+
+def load_cache_history_for_sns(sns_set, start_dt, end_dt):
+    """
+    キャッシュ(JSON)から指定SN群の履歴を読み込む。
+    - sns_set: SNの集合（文字列）
+    - start_dt, end_dt: 取り込み対象の期間（tz-aware）
+    戻り値: { sn: [ {recorded_at, temperature, humidity}, ... ], ... }
+    """
+    sns_set = {str(sn) for sn in sns_set}
+    if not sns_set:
+        return {}
+
+    default_tz = timezone.get_default_timezone()
+    rows_by_sn: dict[str, list[dict]] = {sn: [] for sn in sns_set}
+
+    for fname in os.listdir(CACHE_DIR):
+        if not (fname.startswith("device_cache_") and fname.endswith(".json")):
+            continue
+        if fname == "device_cache_latest.json":
+            # latest は timestamp 付きのファイルと中身が同じなのでスキップでもOK
+            continue
+
+        ts_str = fname.replace("device_cache_", "").replace(".json", "")
+        try:
+            ts_naive = datetime.strptime(ts_str, "%Y%m%d%H%M%S")
+        except Exception:
+            continue
+
+        # tz-aware に変換
+        if timezone.is_naive(ts_naive):
+            ts = timezone.make_aware(ts_naive, default_tz)
+        else:
+            ts = ts_naive
+
+        # 7日分の対象期間外はスキップ
+        if ts < start_dt or ts > end_dt:
+            continue
+
+        path = CACHE_DIR / fname
+        try:
+            with path.open("r", encoding="utf-8") as f:
+                devices = json.load(f)
+        except Exception as e:
+            print(f"[CACHE-DEBUG] failed to load {path}: {e}")
+            continue
+
+        if not isinstance(devices, list):
+            continue
+
+        for d in devices:
+            sn = str(d.get("id") or "")
+            if sn not in sns_set:
+                continue
+
+            # 温湿度を float or None に正規化
+            t_raw = d.get("temperature")
+            h_raw = d.get("humidity")
+
+            try:
+                temp = float(t_raw) if t_raw not in ("", None) else None
+            except Exception:
+                temp = None
+
+            try:
+                hum = float(h_raw) if h_raw not in ("", None) else None
+            except Exception:
+                hum = None
+
+            if temp is None and hum is None:
+                # 両方空なら記録しない
+                continue
+
+            rows_by_sn[sn].append(
+                {
+                    "recorded_at": ts,
+                    "temperature": temp,
+                    "humidity": hum,
+                }
+            )
+
+    # 時系列でソート
+    for sn, rows in rows_by_sn.items():
+        rows.sort(key=lambda r: r["recorded_at"])
+
+    return rows_by_sn
+
+
+@login_required
+def history_7days(request: HttpRequest) -> JsonResponse:
+    default_tz = timezone.get_default_timezone()
+    now = timezone.localtime(timezone.now(), default_tz)
+
+    # ★ 直近7日（今日を含む）の日付
+    start_date = now.date() - timedelta(days=6)
+
+    # ★ スロットは 7日 × 8本（00,03,06,09,12,15,18,21）で固定
+    slot_hours = (0, 3, 6, 9, 12, 15, 18, 21)
+
+    slots: list[datetime] = []
+    for day_offset in range(7):
+        d = start_date + timedelta(days=day_offset)
+        for h in slot_hours:
+            slots.append(
+                timezone.make_aware(
+                    datetime.combine(d, dt_time(hour=h, minute=0)),
+                    default_tz,
+                )
+            )
+
+    labels = [dt.strftime("%m/%d %H:%M") for dt in slots]
+
+    # ★ DB・キャッシュ検索範囲
+    start_dt = slots[0]
+    end_dt = now  # ここは「今」まで。未来スロット分は None になる。
+
+    result: dict[str, dict] = {}
+
+    # 「倉庫」として扱うのは is_external=False のもの
+    locations = Location.objects.filter(is_external=False).order_by("code")
+
+    # 割当情報を取得
+    assignments = (
+        DeviceAssignment.objects
+        .filter(location__in=locations)
+        .select_related("location")
+    )
+
+    location_sns: dict[int, list[str]] = {}
+    all_sns_set: set[str] = set()
+
+    for a in assignments:
+        if not a.location:
+            continue
+        sn = str(a.device_id)
+        location_sns.setdefault(a.location.id, []).append(sn)
+        all_sns_set.add(sn)
+
+    # キャッシュから全SN分の履歴を一括読み込み
+    cache_rows_by_sn = load_cache_history_for_sns(all_sns_set, start_dt, end_dt)
+
+    for loc in locations:
+        # このロケーションに割り当てられているデバイス一覧
+        sns = location_sns.get(loc.id, [])
+        if not sns:
+            continue  # デバイスがない倉庫はスキップ
+
+        # DB から履歴を取得
+        qs = (
+            DeviceHistory.objects
+            .filter(sn__in=sns, recorded_at__gte=start_dt, recorded_at__lte=end_dt)
+            .order_by("sn", "recorded_at")
+        )
+
+        # rows_by_sn[sn] = [{recorded_at, temperature, humidity}, ...]
+        rows_by_sn: dict[str, list[dict]] = {sn: [] for sn in sns}
+
+        # DBからの行を格納
+        for row in qs:
+            rows_by_sn[row.sn].append(
+                {
+                    "recorded_at": row.recorded_at,
+                    "temperature": float(row.temperature) if row.temperature is not None else None,
+                    "humidity": float(row.humidity) if row.humidity is not None else None,
+                }
+            )
+
+        # キャッシュからの行をマージ
+        for sn in sns:
+            cache_rows = cache_rows_by_sn.get(sn, [])
+            if cache_rows:
+                rows_by_sn[sn].extend(cache_rows)
+
+        # 時系列でソート
+        for sn in sns:
+            rows_by_sn[sn].sort(key=lambda r: r["recorded_at"])
+
+        # SNごとにどこまで読んだかのポインタ
+        index_by_sn: dict[str, int] = {sn: 0 for sn in sns}
+
+        # デバイスごとのスロット別値
+        device_series: dict[str, dict[str, list]] = {
+            sn: {"temps": [], "hums": []} for sn in sns
+        }
+
+        # 倉庫平均用
+        temps_series: list[float | None] = []
+        hums_series: list[float | None] = []
+
+        for i, slot_start in enumerate(slots):
+            # このスロットの終了時刻（次スロットまで）
+            if i + 1 < len(slots):
+                slot_end = slots[i + 1]
+            else:
+                slot_end = end_dt + timedelta(seconds=1)
+
+            slot_temps: list[float] = []
+            slot_hums: list[float] = []
+
+            for sn in sns:
+                rows = rows_by_sn.get(sn, [])
+                if not rows:
+                    device_series[sn]["temps"].append(None)
+                    device_series[sn]["hums"].append(None)
+                    continue
+
+                idx = index_by_sn.get(sn, 0)
+
+                # slot_start 以前のデータをスキップ
+                while idx < len(rows) and rows[idx]["recorded_at"] < slot_start:
+                    idx += 1
+
+                temp_val = None
+                hum_val = None
+
+                # このスロットで最初に現れたレコードが slot_end 未満なら採用
+                if idx < len(rows):
+                    row = rows[idx]
+                    if row["recorded_at"] < slot_end:
+                        if row["temperature"] is not None:
+                            temp_val = float(row["temperature"])
+                            slot_temps.append(temp_val)
+                        if row["humidity"] is not None:
+                            hum_val = float(row["humidity"])
+                            slot_hums.append(hum_val)
+
+                # デバイス別シリーズに追加（なければ None）
+                device_series[sn]["temps"].append(temp_val)
+                device_series[sn]["hums"].append(hum_val)
+
+                # ポインタ更新
+                index_by_sn[sn] = idx
+
+            # 倉庫平均値
+            if slot_temps:
+                temps_series.append(round(sum(slot_temps) / len(slot_temps), 1))
+            else:
+                temps_series.append(None)
+
+            if slot_hums:
+                hums_series.append(round(sum(slot_hums) / len(slot_hums), 1))
+            else:
+                hums_series.append(None)
+
+        # 少なくともどこか1スロットにデータがある倉庫だけ結果に載せる
+        if any(v is not None for v in temps_series) or any(v is not None for v in hums_series):
+            result[loc.name] = {
+                "labels": labels,
+                "temps": temps_series,   # 倉庫平均
+                "hums": hums_series,
+                "devices": [
+                    {
+                        "sn": sn,
+                        "temps": device_series[sn]["temps"],
+                        "hums": device_series[sn]["hums"],
+                    }
+                    for sn in sns
+                ],
+            }
+
+    return JsonResponse(result, safe=True)

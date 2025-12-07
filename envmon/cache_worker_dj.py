@@ -236,7 +236,7 @@ def main(once: bool = False):
 
     # 設定ファイルが読めなくても最低限動くよう、デフォルト値を持っておく
     interval = 300  # デフォルト：5分
-    expire_hours = 168  # デフォルト：7日
+    expire_hours = 720
 
     while True:
         try:

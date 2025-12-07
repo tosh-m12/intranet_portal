@@ -32,11 +32,12 @@
     <!-- JS が読み取る root 要素 -->
     <div id="envmon-root"
          data-api-url="{% url 'envmon:data_api' %}"
+         data-history-url="{% url 'envmon:history_7days' %}"
          data-interval="{{ interval }}">
     </div>
 
-    <!-- JS が倉庫別テーブルを書き込む領域 -->
-    <div id="warehouse-sections"></div>
+    <!-- 倉庫ごとのブロックを JS が動的に生成 -->
+    <div id="warehouse-sections" class="warehouse-container"></div>
 
     <p class="envmon-back-link">
         <a href="{% url 'envmon:all_devices' %}">
@@ -44,8 +45,6 @@
         </a>
     </p>
 </div>
-
-<!-- 外部 JS 読み込み -->
+<script src="{% static 'envmon/chart.umd.min.js' %}"></script>
 <script src="{% static 'envmon/envmon_index.js' %}"></script>
-
 {% endblock %}

@@ -1,4 +1,3 @@
-{# templates/envmon/settings.html #}
 {% extends "portal/base.html" %}
 {% load static %}
 
@@ -22,209 +21,153 @@
 {% endblock %}
 
 {% block content %}
-
 <div class="envmon-page">
-    <h2 class="envmon-section-title">環境モニタ設定</h2>
+
+    <!-- ===========================
+         1. 表示設定（フロント向け）
+         =========================== -->
+    <h2 class="envmon-section-title">表示（フロントエンド）設定</h2>
 
     <form method="post" class="envmon-form">
         {% csrf_token %}
 
         <div class="envmon-form-row">
-            <label>表示更新間隔（秒）:</label>
-            <input type="number" name="interval" value="{{ interval }}" min="1" required>
+            <label>画面の表示更新間隔（秒）:</label>
+            <input type="number" name="interval"
+                   value="{{ interval }}" min="3" required>
+            <span class="envmon-note">※ ゲージとリアルタイム表示の更新間隔</span>
         </div>
 
+        <!-- ===========================
+             2. サーバー設定（バックエンド）
+             =========================== -->
+        <h2 class="envmon-section-title">バックエンド設定（キャッシュ / ログ）</h2>
+
         <div class="envmon-form-row">
-            <label>データキャッシュ取得間隔（秒）:</label>
-            <input type="number" name="cache_interval" value="{{ cache_interval }}" min="1" required>
+            <label>API キャッシュ取得間隔（秒）:</label>
+            <input type="number" name="cache_interval"
+                   value="{{ cache_interval }}" min="10" required>
         </div>
 
         <div class="envmon-form-row">
             <label>キャッシュ保存期間（時間）:</label>
-            <input type="number" name="cache_expire_hours" value="{{ cache_expire_hours }}" min="1" required>
+            <input type="number" name="cache_expire_hours"
+                   value="{{ cache_expire_hours }}" min="1" required>
         </div>
 
         <div class="envmon-form-row">
-            <label>ログ取得時刻（24時間形式、複数指定可）:</label>
+            <label>ログ保存先ディレクトリ:</label>
+            <input type="text" name="log_directory"
+                   value="{{ log_directory }}" required>
+        </div>
+
+        <div class="envmon-form-row">
+            <label>ログ取得時刻（複数可）:</label>
             <div id="log-times-container">
                 {% for t in log_times %}
-                    <div class="log-time-entry">
-                        <input type="time" name="log_times" value="{{ t }}">
-                        <button type="button" onclick="removeTime(this)">削除</button>
-                    </div>
+                <div class="log-time-entry">
+                    <input type="time" name="log_times" value="{{ t }}">
+                    <button type="button" onclick="removeTime(this)">削除</button>
+                </div>
                 {% endfor %}
             </div>
             <button type="button" onclick="addLogTime()">＋ 時刻追加</button>
         </div>
 
         <div class="envmon-form-row">
-            <label>ログ保存先ディレクトリ:</label>
-            <input type="text" name="log_directory" value="{{ log_directory }}" required>
-        </div>
-
-        <div class="envmon-form-row">
-            <label>履歴データ取得時刻（1日1回）:</label>
+            <label>履歴JSON生成時刻（1日1回）:</label>
             <input type="time" name="history_fetch_time"
-                value="{{ history_fetch_time|time:'H:i' }}">
-        </div>        
+                   value="{{ history_fetch_time|time:'H:i' }}">
+            <span class="envmon-note">※ 7日間グラフに使用される履歴JSONの生成時刻</span>
+        </div>
 
         <div class="envmon-form-actions">
             <button type="submit">保存</button>
         </div>
     </form>
 
-    <div class="envmon-links">
-        <p><a href="{% url 'envmon:warehouse_assign' %}">🏷 倉庫割当設定ページへ</a></p>
-        <p><a href="{% url 'envmon:locations' %}">🏭 倉庫名の編集ページへ</a></p>
-        <p><a href="{% url 'envmon:index' %}">← 倉庫別モニターへ戻る</a></p>
-    </div>
+    <!-- ===========================
+         履歴データ管理（CSV）
+         =========================== -->
+    <h2 class="envmon-section-title">履歴データ管理（CSV 出力）</h2>
+
+    <!-- ① デバイス別 -->
+    <h3>■ デバイス別 CSV ダウンロード</h3>
+    <form method="post" action="{% url 'envmon:download_history' %}">
+        {% csrf_token %}
+        <div class="form-row">
+            <label>シリアルナンバー:</label>
+            <select name="sn" required>
+                <option value="">-- SN を選択 --</option>
+                {% for dev in device_choices %}
+                <option value="{{ dev.sn }}">{{ dev.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-actions">
+            <button type="submit">CSV ダウンロード</button>
+        </div>
+    </form>
+
+    <hr>
+
+    <!-- ② 倉庫別 -->
+    <h3>■ 倉庫別 CSV ダウンロード</h3>
+    <form method="post" action="{% url 'envmon:download_history_by_warehouse' %}">
+        {% csrf_token %}
+        <div class="form-row">
+            <label>倉庫ロケーション:</label>
+            <select name="location_code" required>
+                <option value="">-- 倉庫を選択 --</option>
+                {% for loc in locations %}
+                <option value="{{ loc.code }}">{{ loc.code }} / {{ loc.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-row">
+            <label>期間指定:</label>
+            <input type="date" name="date_from"> 〜
+            <input type="date" name="date_to">
+        </div>
+
+        <div class="form-actions">
+            <button type="submit">倉庫別 CSV ダウンロード</button>
+        </div>
+    </form>
+
+    <hr>
+
+    <!-- ③ 全デバイス -->
+    <h3>■ 全デバイス（期間指定）CSV ダウンロード</h3>
+    <form method="post" action="{% url 'envmon:download_history_all_range' %}">
+        {% csrf_token %}
+        <div class="form-row">
+            <label>期間:</label>
+            <input type="date" name="date_from" required> 〜
+            <input type="date" name="date_to" required>
+        </div>
+        <div class="form-actions">
+            <button type="submit">全デバイス CSV ダウンロード</button>
+        </div>
+    </form>
+
 </div>
 
-<hr>
-
-<h2>1weilian 履歴データの取得（全デバイス）</h2>
-<p>
-    現在登録されている全デバイスのシリアルナンバーについて、<br>
-    1weilian の「履歴データ」APIから取得可能な全期間分のデータを取得し、<br>
-    DeviceHistory テーブルに蓄積します。<br>
-    （同じ日時のデータは自動的に重複登録されません）
-</p>
-
-<form method="post" action="{% url 'envmon:fetch_history_all' %}">
-    {% csrf_token %}
-    {% if is_fetching_history %}
-        <button type="submit" disabled>
-            全デバイスの履歴を取得してDBに保存（現在実行中）
-        </button>
-        <p style="color: #c00; margin-top: 4px;">
-            現在、自動または手動の履歴取得処理が実行中です。<br>
-            処理が完了するまでお待ちください。
-        </p>
-    {% else %}
-        <button type="submit">
-            全デバイスの履歴を取得してDBに保存
-        </button>
-    {% endif %}
-</form>
-
-<hr>
-
-<h2>履歴データ CSV ダウンロード（DBから）</h2>
-<p>
-    これまでに DB に蓄積した履歴データから、<br>
-    選択したシリアルナンバーの全期間分を CSV としてダウンロードします。
-</p>
-
-<form method="post" action="{% url 'envmon:fetch_history_all' %}">
-    {% csrf_token %}
-    {% if is_fetching_history %}
-        <button type="submit" disabled>
-            全デバイスの履歴を取得してDBに保存（現在実行中）
-        </button>
-        <p style="color: #c00; margin-top: 4px;">
-            現在、自動または手動の履歴取得処理が実行中です。<br>
-            処理が完了するまでお待ちください。
-        </p>
-    {% else %}
-        <button type="submit">
-            全デバイスの履歴を取得してDBに保存
-        </button>
-    {% endif %}
-</form>
-
-<h2>履歴データ CSV ダウンロード（DBから）</h2>
-<p>
-    これまでに DB に蓄積した履歴データから、<br>
-    選択したシリアルナンバーの全期間分を CSV としてダウンロードします。
-</p>
-
-<form method="post" action="{% url 'envmon:download_history' %}">
-    {% csrf_token %}
-    <div class="form-row">
-        <label>シリアルナンバー (SN):</label>
-        <select name="sn" required>
-            <option value="">-- SN を選択 --</option>
-            {% for dev in device_choices %}
-                <option value="{{ dev.sn }}">{{ dev.label }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="form-actions">
-        <button type="submit">CSV ダウンロード</button>
-    </div>
-</form>
-
-<hr>
-
-{# ② 倉庫単位 CSV ダウンロード #}
-<h2>倉庫別 履歴データ CSV ダウンロード</h2>
-<p>
-    現在の割当情報に基づき、選択した倉庫ロケーションに<br>
-    割り当てられているデバイスの履歴データをまとめて CSV に出力します。
-</p>
-
-<form method="post" action="{% url 'envmon:download_history_by_warehouse' %}">
-    {% csrf_token %}
-    <div class="form-row">
-        <label>倉庫ロケーション:</label>
-        <select name="location_code" required>
-            <option value="">-- 倉庫ロケーションを選択 --</option>
-            {% for loc in locations %}
-                <option value="{{ loc.code }}">
-                    {{ loc.code }} / {{ loc.name }}
-                </option>
-            {% endfor %}
-        </select>
-    </div>
-
-    <div class="form-row">
-        <label>期間指定:</label>
-        <input type="date" name="date_from"> 〜
-        <input type="date" name="date_to">
-        <span class="note">※ どちらか、または両方未入力の場合は全期間</span>
-    </div>
-
-    <div class="form-actions">
-        <button type="submit">倉庫別 CSV ダウンロード</button>
-    </div>
-</form>
-
-<hr>
-
-{# ④ 全デバイス＋期間指定 CSV ダウンロード #}
-<h2>全デバイス 履歴データ CSV（期間指定）</h2>
-<p>
-    DeviceHistory に蓄積された全デバイスの履歴から、<br>
-    指定した期間のデータをまとめて CSV に出力します。
-</p>
-
-<form method="post" action="{% url 'envmon:download_history_all_range' %}">
-    {% csrf_token %}
-    <div class="form-row">
-        <label>期間:</label>
-        <input type="date" name="date_from" required> 〜
-        <input type="date" name="date_to" required>
-    </div>
-    <div class="form-actions">
-        <button type="submit">全デバイス CSV ダウンロード</button>
-    </div>
-</form>
-
 <script>
-    function addLogTime() {
-        const container = document.getElementById("log-times-container");
-        const entry = document.createElement("div");
-        entry.className = "log-time-entry";
-        entry.innerHTML = `
-            <input type="time" name="log_times">
-            <button type="button" onclick="removeTime(this)">削除</button>
-        `;
-        container.appendChild(entry);
-    }
+function addLogTime() {
+    const container = document.getElementById("log-times-container");
+    const entry = document.createElement("div");
+    entry.className = "log-time-entry";
+    entry.innerHTML = `
+        <input type="time" name="log_times">
+        <button type="button" onclick="removeTime(this)">削除</button>
+    `;
+    container.appendChild(entry);
+}
 
-    function removeTime(button) {
-        button.parentElement.remove();
-    }
+function removeTime(button) {
+    button.parentElement.remove();
+}
 </script>
-
 {% endblock %}

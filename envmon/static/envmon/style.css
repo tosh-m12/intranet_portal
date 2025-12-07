@@ -143,13 +143,6 @@
     background: #fff;
 }
 
-/* 左のメイン倉庫ボックス */
-
-.envmon-page .warehouse-main {
-    flex: 1;
-    margin-right: 12px;
-}
-
 /* 外気測定ボックス */
 
 .envmon-page .external-block {
@@ -192,7 +185,7 @@
     box-sizing: border-box;
 }
 
-/* ×ボタン（常時表示にして「出てこない」問題を潰す） */
+/* ×ボタン（常時表示） */
 
 .envmon-page .remove-btn {
     position: absolute;
@@ -205,10 +198,8 @@
     font-size: 12px;
     font-weight: bold;
     cursor: pointer;
-    display: inline-block;  /* ← ここを display:none ではなく常時表示に */
+    display: inline-block;
 }
-
-/* 必要なら hover 強調だけ残す */
 
 .envmon-page .device-tag:hover .remove-btn {
     box-shadow: 0 0 3px rgba(0,0,0,0.3);
@@ -224,4 +215,296 @@
     border-radius: 5px;
     background-color: #f0f0f0;
     box-sizing: border-box;
+}
+
+/* ===============================
+   その他セクション共通
+   =============================== */
+
+.envmon-section {
+    margin: 16px 0;
+    padding: 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+}
+
+/* ===============================
+   倉庫別モニタ index（グラフ + タコメーター）
+   =============================== */
+
+/* ========= 倉庫ブロック全体のレイアウト ========= */
+
+/* 倉庫ごとのコンテナ */
+.warehouse-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* 1倉庫分の枠 */
+.warehouse-section {
+    background: #f8f8f8;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+/* 倉庫名のヘッダ */
+.warehouse-section h2 {
+    margin: 0;
+    padding: 0.75rem 1rem;
+    font-size: 1.1rem;
+    background: #f1f1f1;
+}
+
+/* グラフ＋タコメーター全体 */
+.envmon-page .warehouse-main {
+    display: flex;
+    flex-direction: row-reverse;   /* ★ タコ左・グラフ右 */
+    flex-wrap: nowrap;
+    gap: 1rem;
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+/* 左側：7日間グラフ */
+.envmon-page .chart-wrapper {
+    flex: 1 1 auto;
+    min-width: 360px;
+}
+
+.envmon-page .chart-wrapper canvas {
+    width: 100% !important;
+    height: 260px !important;
+}
+
+/* 右側：タコメーター2連（常に横並び） */
+.envmon-page .gauges-wrapper {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: row;      /* 2連を横並び */
+    flex-wrap: wrap;          /* 狭いときは2段になるのは許容 */
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ==== envmon タコメーター風ゲージ ==== */
+
+.envmon-gauge-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+/* メーター本体 */
+.envmon-gauge {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 45%, #222 0, #000 60%, #111 100%);
+    box-shadow:
+        0 0 10px rgba(0, 0, 0, 0.9),
+        0 0 30px rgba(255, 255, 255, 0.1) inset;
+    overflow: hidden;
+}
+
+/* カラースケールのリング */
+.envmon-gauge-scale {
+    position: absolute;
+    inset: 24px;
+    border-radius: 50%;
+    background:
+        conic-gradient(
+            from 220deg,
+            #0af 0deg,
+            #34f 60deg,
+            #0f8 120deg,
+            #fd0 155deg,
+            #f80 190deg,
+            #f30 230deg,
+            #f30 280deg,
+            transparent 280deg,
+            transparent 360deg
+        );
+}
+
+/* 内側の黒マスク */
+.envmon-gauge-mask {
+    position: absolute;
+    inset: 48px;
+    background: #000;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+/* 外周の白いリング */
+.envmon-gauge-ring {
+    position: absolute;
+    inset: 8px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+/* 周辺の暗いビネット */
+.envmon-gauge-vignette {
+    position: absolute;
+    inset: 56px;
+    border-radius: 50%;
+    pointer-events: none;
+    background: radial-gradient(
+        circle,
+        rgba(0,0,0,0) 0%,
+        rgba(0,0,0,0.8) 70%,
+        rgba(0,0,0,1.0) 100%
+    );
+}
+
+/* 目盛り全体コンテナ */
+.envmon-gauge-ticks {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+}
+
+/* 目盛り線 */
+.envmon-gauge-tick {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 2px;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.85);
+    transform-origin: 50% 50%;
+}
+
+.envmon-gauge-tick.minor {
+    height: 7px;
+    opacity: 0.7;
+}
+
+/* 目盛りの数字 */
+.envmon-gauge-label {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    font-size: 10px;
+    color: #fff;
+    text-shadow: 0 0 3px #000;
+    transform-origin: 50% 50%;
+}
+
+/* 針 */
+.envmon-gauge-needle {
+    position: absolute;
+    left: 50%;
+    bottom: 50%;
+    width: 4px;
+    height: 90px;
+    background: linear-gradient(to top, #f33 0, #f66 40%, #faa 100%);
+    transform-origin: 50% 100%;
+    transform: rotate(0deg);
+    transition: transform 0.4s ease-out;
+    border-radius: 999px;
+    box-shadow: 0 0 6px rgba(255, 0, 0, 0.7);
+}
+
+/* 針のセンターキャップ */
+.envmon-gauge-cap {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 24px;
+    height: 24px;
+    margin-left: -12px;
+    margin-top: -12px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #fcc, #f00);
+    box-shadow:
+        0 0 8px rgba(0, 0, 0, 0.8),
+        0 0 10px rgba(255, 0, 0, 0.8);
+}
+
+/* 中央の数値表示 */
+.envmon-gauge-value {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 150px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: 600;
+    color: #fff;
+    text-shadow: 0 0 6px #000;
+}
+
+/* ラベル (温度 / 湿度) */
+.envmon-gauge-title {
+    margin-top: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* ===========================================
+   幅が狭いときはグラフ上・メーター下の縦並び
+   （例：コンテンツ幅 1400px 以下）
+   =========================================== */
+@media (max-width: 1400px) {
+    .envmon-page .warehouse-main {
+        flex-direction: column;   /* ★ タコ上・グラフ下 */
+        flex-wrap: nowrap;
+    }
+
+    .envmon-page .chart-wrapper {
+        width: 100%;
+    }
+
+    .envmon-page .gauges-wrapper {
+        width: 100%;
+        justify-content: space-around;
+    }
+
+    .envmon-page .gauge-box {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+    }
+}
+
+
+/* スマホなど極端に狭い場合は 1 列表示 */
+@media (max-width: 600px) {
+    .envmon-page .gauges-wrapper {
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .envmon-page .gauge-box {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+
+/* 右側：タコメーター2連（常に横並び） */
+.envmon-page .gauges-wrapper {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;      /* 狭いときは2段になるのは許容 */
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 左右ボックス（温度・湿度用） */
+.envmon-page .gauge-box {
+    flex: 1 1 0;
+    display: flex;
+    justify-content: center;
 }

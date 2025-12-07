@@ -16,8 +16,7 @@
     {% endif %}
 </p>
 
-<div class="app-grid">
-    <!-- 来客予定管理 -->
+<!-- <div class="app-grid">
     <div class="app-card">
         <h2>📅 {% trans "来客予定管理" %}</h2>
         <p>{% trans "本日以降の来訪予定の一覧表示・登録・キャンセル・編集、および毎朝の予定メール送信を管理します。" %}</p>
@@ -25,19 +24,26 @@
         <a class="btn-link" href="{% url 'visitors:settings' %}">⚙ {% trans "メール送信設定を開く" %}</a>
     </div>
 
-    <!-- 温湿度モニタ (将来 Django 化する想定でリンクだけ先に用意) -->
     <div class="app-card">
         <h2>🌡 {% trans "温湿度モニタリング" %}</h2>
-        <p>{% trans "倉庫別の温湿度状況を表示・監視するシステムへのリンク（今後 Django 版を接続予定）。" %}</p>
-        <span style="font-size: 12px; color:#999;">{% trans "※ まだ接続されていません。" %}</span>
-
+        <p>
+            {% trans "倉庫別の温湿度状況を表示・監視するシステムです。リアルタイム表示、全デバイス一覧、倉庫割当、履歴ダウンロードなどを行います。" %}
+        </p>
+        <a class="btn-link" href="{% url 'envmon:index' %}">
+            ▶ {% trans "倉庫別温湿度モニタを開く" %}
+        </a><br>
+        <a class="btn-link" href="{% url 'envmon:all_devices' %}">
+            📋 {% trans "全デバイス稼働状況一覧を開く" %}
+        </a><br>
+        <a class="btn-link" href="{% url 'envmon:settings' %}">
+            ⚙ {% trans "温湿度ログ・履歴設定を開く" %}
+        </a>
     </div>
 
-    <!-- 日報システム -->
     <div class="app-card">
         <h2>📝 {% trans "日報管理システム" %}</h2>
         <p>{% trans "各担当者の日報入力・閲覧・集計を行うシステムへのリンク（現在構築中）。" %}</p>
         <span style="font-size: 12px; color:#999;">{% trans "※ 準備中" %}</span>
     </div>
-</div>
+</div> -->
 {% endblock %}

@@ -77,9 +77,9 @@ class EnvSettings(models.Model):
     システム全体の設定（1レコードのみ想定）
     JSON の settings.json に相当
     """
-    interval = models.IntegerField("表示更新間隔（秒）", default=10)
-    cache_interval = models.IntegerField("キャッシュ取得間隔（秒）", default=300)
-    cache_expire_hours = models.IntegerField("キャッシュ保存期間（時間）", default=168)
+    interval = models.PositiveIntegerField(default=300)
+    cache_interval = models.PositiveIntegerField(default=300)
+    cache_expire_hours = models.PositiveIntegerField(default=720)
     log_directory = models.CharField("ログ保存先ディレクトリ", max_length=255, default="logs")
 
     # Django 5.2 + MySQL 8 であれば JSONField 使用可

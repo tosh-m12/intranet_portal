@@ -1,0 +1,549 @@
+1. 全体コンセプト
+
+リアルタイム値
+
+外部API（1weilian）から 5分おき にサーバー側で取得。
+
+取得したデータは JSONキャッシュに保存。
+
+フロント（index.html）は data_api を通してそのキャッシュを読むだけ。
+
+ページはリロードせず、タコメータ（ゲージ）だけ 5分おきに更新。
+
+7日間グラフ
+
+基本データは DeviceHistory（DB） から取得。
+
+ただし、直近のスロットで DeviceHistory が追いついていない部分は、キャッシュJSONから補完する。
+
+グラフは 倉庫内の全デバイスを個別の折れ線で表示（平均線はオプション扱い／不要なら出さない）。
+
+2. リアルタイム取得 & キャッシュ
+2-1. 取得周期
+
+実際に外部APIを叩くのは cache_worker_dj.py の役目。
+
+起動元は scheduler アプリのバックグラウンドスレッド。
+
+周期は EnvSettings.cache_interval（秒）で管理。
+
+想定初期値：300 秒（5分）
+
+ページを誰も開いていなくても、サーバー側で5分ごとに必ず取得する。
+
+2-2. 保存形式
+
+保存先ディレクトリ：<BASE_DIR>/cache/
+
+ファイル構成（現状の方式を踏襲）：
+
+最新：device_cache_latest.json
+
+過去：device_cache_YYYYMMDDHHMMSS.json を都度作成
+
+保持期間：EnvSettings.cache_expire_hours
+
+初期値を 720時間（30日） にする
+
+期限を過ぎた device_cache_*.json は自動削除
+
+2-3. JSON内容（1 レコード）
+
+キャッシュ1件分の要素例：
+
+{
+  "id": "C00220200AD6",
+  "name": "C00220200AD6_C2-3_07",
+  "temperature": "17.5",
+  "humidity": "41.4",
+  "last_seen": "2025-12-07 12:33:37",
+  "online": true,
+  "location_id": "loc05",
+  "warehouse": "B倉庫FMC"
+}
+
+
+※ location_id / warehouse は DeviceAssignment / Location を付与して保存。
+
+2-4. デバイスのフィルタリング
+
+キャッシュ自体には全デバイスをそのまま保存してOK。
+
+ただし表示側で以下は除外：
+
+warehouse が "未割当" のもの
+
+name が "未登録:" で始まるもの（仕様書に合わせるなら）
+
+3. data_api の役割（リアルタイム表示）
+3-1. やること
+
+外部APIにはアクセスしない。
+
+代わりに device_cache_latest.json を読み込み、
+そこに DeviceAssignment と Location に基づく情報がすでに付いている想定。
+
+JSONをそのままフロントへ返す（配列）。
+
+3-2. 更新周期（フロント）
+
+EnvSettings.interval を envmon/index.html に埋め込み。
+
+envmon_index.js は
+
+setInterval(fetchRealtimeAndUpdate, intervalSeconds * 1000);
+
+
+で /envmon/data_api を叩き、タコメータだけ更新。
+
+運用上、EnvSettings.interval と EnvSettings.cache_interval は 同じ値（5分）に揃える想定。
+
+厳密に同じでなくても動くが、仕様としては「原則同じ」で決めておくと分かりやすい。
+
+4. タコメータ（ゲージ）仕様
+
+表示値のソース：
+
+/envmon/data_api から取得した最新キャッシュ。
+
+倉庫ごとに 複数デバイスの温度・湿度の平均値 を計算し、
+
+その平均値を
+
+左：温度ゲージ
+
+右：湿度ゲージ
+に表示。
+
+設定値：
+
+温度ゲージ：0〜40℃（ゲージのスケールは固定）
+
+湿度ゲージ：0〜100%
+
+値は setTemp(avg.temp), setHum(avg.hum) で更新。
+
+ページリロードなし、ゲージのみ 5分ごとに書き換え。
+
+5. 7日間グラフ仕様（history_7days）
+5-1. 基本
+
+API：/envmon/history_7days
+
+対象期間：直近7日間（今日を含む7日）
+
+スタート：7日前の 00:00
+
+エンド：現在時刻
+
+スロット：3時間ごと
+
+00:00, 03:00, 06:00, … 21:00 の 8 スロット/日 × 7日
+
+5-2. データソース
+
+第1優先：DeviceHistory（DB）
+
+各デバイスごとに、スロット [slot_start, slot_end) の間で最初に記録された1件を採用。
+
+補完：キャッシュJSON
+
+あるスロットで DeviceHistory にデータがない場合、
+
+過去30日の device_cache_*.json から該当デバイス・時刻範囲の値を探し、補填。
+
+探す対象：
+
+直近のファイルから逆順に見て、
+
+last_seen が slot_start ≤ last_seen < slot_end のレコードを採用（最初に見つかったもの）。
+
+※ こうすることで、「履歴APIの実行が1日1回なので DB が最新に追い付いていない時間帯」も、
+キャッシュから直近数時間分を埋めて滑らかに表示できる。
+
+5-3. グラフの描画仕様（Chart.js）
+
+倉庫ごとの戻り値：
+
+{
+  "倉庫名A": {
+    "labels": ["MM/DD HH:MM", ...],   // 実際は "12/01 00:00" など
+    "temps": [23.1, null, ...],       // 倉庫平均（必要なら）
+    "hums":  [45.0, null, ...],
+    "devices": [
+      { "sn": "C00220200A15_47F2-C", "temps": [...], "hums": [...] },
+      ...
+    ]
+  },
+  ...
+}
+
+
+実際のグラフ表示：
+
+デバイスごとに 2 本の線（温度 / 湿度）を描画
+
+温度：実線
+
+湿度：破線
+
+凡例（legend）は非表示。
+
+X 軸：
+
+グリッド線は 00:00 のスロット位置だけ表示。
+
+ラベルは日付のみ表示（"12/01" など）。時間は表示しない。
+
+Y 軸（温度）：
+
+初回描画時に、全倉庫・全デバイスの最高温度を走査。
+
+GLOBAL_TEMP_AXIS_MAX = ceil(maxTemp + 2) とする。
+
+温度軸レンジは 25℃固定 → min = GLOBAL_TEMP_AXIS_MAX - 25。
+
+この max/min はページをリロードするまで固定（リアルタイム更新でグラフY軸が動かないように）。
+
+6. スケジューラの役割分担
+6-1. scheduler アプリ
+
+SchedulerConfig.ready() でバックグラウンドスレッドを起動。
+
+そのスレッド内で 2種類の仕事 をする：
+
+履歴API（DeviceHistory 用）
+
+1日1回、EnvSettings.history_fetch_time に call_command("fetch_env_history")
+
+これはすでに実装済みのロジックを踏襲。
+
+リアルタイムキャッシュ更新
+
+EnvSettings.cache_interval 秒ごとに
+
+python envmon/cache_worker_dj.py --once を subprocess で実行。
+
+成功時に last_cache_run を更新。
+
+失敗時はログにエラーを出して次回まで待つ。
+
+6-2. cache_worker_dj.py
+
+外部APIにログイン → 全デバイス取得 → DeviceAssignment で倉庫名付与。
+
+device_cache_YYYYMMDDHHMMSS.json と device_cache_latest.json を更新。
+
+期限切れキャッシュの削除。
+
+7. キャッシュは JSON か DB か？
+
+今回の仕様では キャッシュは JSON に統一する方針で確定させます。
+
+理由：
+
+リアルタイム値は「監視用」であり、長期保存して分析する対象ではない。
+
+頻繁（5分ごと）に DB INSERT するとテーブルがすぐ膨らむ。
+
+JSONファイルなら：
+
+外部API停止時にもそのまま読める。
+
+30日分だけ残してローテーションできる。
+
+既に cache_worker_dj.py が JSON ベースで動いているので作りがシンプル。
+
+履歴分析やCSVダウンロードなど「ちゃんと残したいデータ」は、既に DeviceHistory で DB 保存するので役割分担は明確です。
+
+8. 仕様として揃えるポイントまとめ
+
+今回の整理で、特に「揃えないとズレる」部分はこのあたりです：
+
+data_api は「キャッシュ読み専用」であること（外部APIは叩かない）
+
+外部API呼び出しは cache_worker_dj.py からのみ行う
+
+scheduler が 5分おきに cache_worker_dj.py --once を起動する
+
+キャッシュ保持期間を 30日（720時間）にする
+
+history_7days は DB + キャッシュで穴埋めする
+
+グラフは「全デバイス分の線」が基本。倉庫平均線はオプション扱い
+
+温度Y軸のレンジ仕様（25℃固定、max は初回計算のみ）を正式仕様として明記
+
+
+
+
+全体方針
+
+外部API叩き係：cache_worker_dj.py
+
+スケジューラ係：scheduler アプリ
+
+① 日次の履歴取得（fetch_env_history）
+
+② 5分おきのリアルタイムキャッシュ更新（cache_worker_dj.py --once）
+
+画面表示係：envmon/views.py + envmon_index.js
+
+リアルタイム値は キャッシュJSONを data_api 経由で読むだけ
+
+グラフは DB（DeviceHistory）＋キャッシュ（JSON）で欠損補完
+
+改修ステップ
+STEP 0. 現状バックアップ & 環境確認
+
+envmon 関係ファイルをバックアップ
+
+envmon/views.py
+
+envmon/cache_worker_dj.py
+
+envmon/static/envmon/envmon_index.js
+
+scheduler/apps.py
+
+EnvSettings の現行値を確認
+
+interval
+
+cache_interval
+
+cache_expire_hours
+
+history_fetch_time
+
+STEP 1. 設定値の整理（EnvSettings）
+
+目的：仕様で決めた値に揃える。
+
+EnvSettings のデフォルト値を見直し
+
+interval：300 秒（5分）
+
+cache_interval：300 秒（5分）
+
+cache_expire_hours：720 時間（30日）
+
+管理画面 or シェル から実値も合わせておく
+（本番運用で数値がズレないように）
+
+STEP 2. cache_worker_dj.py の役割を固定
+
+目的：
+「外部APIを叩く唯一の入口」＋「キャッシュJSONの生成専用」にする。
+
+ループ構造の扱いを整理
+
+既に main(once=True) があるので、
+
+サーバ運用では 常に --once で 1サイクルだけ実行する 前提にする。
+
+ループで常時回す運用はしない（誤起動の原因になるため）。
+
+やることの確認／微調整
+
+ログイン → fetch_all_devices → attach_assignments → キャッシュ保存 の流れを確定。
+
+CACHE_DIR を <BASE_DIR>/cache に統一。
+
+保存形式：
+
+device_cache_YYYYMMDDHHMMSS.json
+
+device_cache_latest.json（上書き）
+
+cleanup_cache(expire_hours) で 30日超の device_cache_*.json を削除することを確認。
+
+フィルタリング
+
+キャッシュファイルには 原則すべてのデバイスを書き込む（未割当含む）。
+
+「未割当」「未登録」は ビュー側で除外する方針に統一。
+
+STEP 3. scheduler アプリから cache_worker_dj を呼び出す
+
+目的：
+ページを開いていない時でも 5分おきにリアルタイムキャッシュが溜まるようにする。
+
+scheduler_loop() に「キャッシュ更新タイミング」の判定を追加
+
+例：
+
+ループの外側 or 内側に last_cache_run = None を用意。
+
+毎ループで now と last_cache_run を見て、
+
+last_cache_run is None または
+now - last_cache_run >= cache_interval のとき実行。
+
+実行内容
+
+EnvSettings から cache_interval を毎回読み直す（設定変更を反映できるように）。
+
+subprocess or call_command 相当で
+python envmon/cache_worker_dj.py --once を呼び出す。
+
+成功したら last_cache_run = now を更新。
+
+例外発生時はログ出力のみでループ継続。
+
+既存の fetch_env_history 日次ジョブはそのまま残す（共存）。
+
+STEP 4. data_api を「キャッシュ読み専用」に変更
+
+目的：
+外部APIを直接叩かず、device_cache_latest.json だけを返すようにする。
+
+data_api のロジックを簡略化
+
+① load_latest_cache() を呼ぶ
+
+② 取得できなかった場合は 500 or 空配列で返す
+
+③ （必要なら）ここで attach_assignments() を呼んで補完するが、
+
+すでに cache_worker_dj 側で付けているなら不要。
+
+④ 未割当や未登録のフィルタリング：
+
+warehouse === "未割当" は除外。
+
+name が [未登録: で始まるものも除外（仕様書に合わせるなら）。
+
+JSONレスポンスは現状の配列形式を維持
+
+[{ id, name, temperature, humidity, last_seen, online, location_id, warehouse }, ...]
+
+STEP 5. envmon_index.js（フロントJS）の調整
+
+目的：
+
+5分おきに data_api を読んでゲージだけ更新
+
+グラフはページロード時の history_7days だけ
+
+interval 周り
+
+const intervalSeconds = parseInt(root.dataset.interval || "10", 10);
+→ デフォルトを「300」にしておく（念のため）
+
+実際には EnvSettings.interval から来る。
+
+リアルタイムデータの扱い
+
+すでに fetchRealtimeAndUpdate() → applyRealtimeToGauges() → computeRealtimeAverages() の流れになっているので、
+
+ここで 未割当／未登録を除外するフィルタを入れる。
+
+if (!wh || wh === "未割当") return;
+
+if (d.name && d.name.startsWith("[未登録:")) return;
+
+グラフには触らず、ゲージのみ更新。
+
+グラフ描画部分
+
+すでに
+
+各デバイスごとの線を描画
+
+凡例非表示
+
+X軸は00:00だけ縦グリッド + 日付ラベルのみ
+
+Y軸レンジは GLOBAL_TEMP_AXIS_MAX & TEMP_AXIS_RANGE で固定
+
+この仕様を そのまま正式仕様として維持。
+
+STEP 6. history_7days にキャッシュ補完ロジックを追加
+
+目的：
+DeviceHistory の直近がまだ追いついていない部分を、キャッシュJSONで穴埋め。
+
+現状の history_7days を確認
+
+直近7日、3時間スロットを作成。
+
+DeviceAssignment から sns を取り、
+
+DeviceHistory から該当期間のデータを sn ごとにリスト化。
+
+スロットごとに「最初に現れたデータ」を拾って temps_series / hums_series を構築。
+
+すでに 倉庫平均 + devices[] の構造で組み立てている。
+
+追加する処理（高レベルな流れ）
+
+事前に キャッシュファイル一覧を読み込む：
+
+対象は cache/device_cache_*.json（latest 含む・含めないはどちらでもOK）。
+
+ファイル名の日付で 30日以内の物だけを対象。
+
+各倉庫・各SN・各スロットで、DeviceHistory に該当データがない場合：
+
+キャッシュ内から
+
+sn が一致
+
+last_seen が slot_start ≤ last_seen < slot_end
+のレコードを探す。
+
+見つかったら、その温度・湿度を device_series[sn] の該当スロットに補填。
+
+最後に、補填後の device_series を元に倉庫平均（temps_series / hums_series）を再計算、または補正。
+
+実装上のポイント
+
+パフォーマンスのために：
+
+キャッシュファイルを 一度だけ読む（ループ外）。
+
+できれば cache_data[sn] = [{dt, temp, hum}, ...] 的な辞書に整理。
+
+DB側のデータとキャッシュ側のデータの 優先順位は DB > キャッシュ とする。
+
+STEP 7. 不要・旧仕様コードの整理（後回しでもOK）
+
+EnvLog など、リアルタイムデータの DB 保存用モデルが残っていれば削除候補。
+
+旧「スナップショット保存」的なコード（コメントアウト含む）は、このタイミングで掃除しておくと、後で混乱しにくい。
+
+STEP 8. 動作確認フロー
+
+cache_worker_dj.py --once を手動実行して、
+cache/ ディレクトリに
+
+device_cache_YYYYMMDDHHMMSS.json
+
+device_cache_latest.json
+が作られるか確認。
+
+/envmon/data_api をブラウザで叩いて、
+
+JSONが返ること
+
+warehouse / location_id が付いていること
+を確認。
+
+python manage.py runserver で開発サーバ起動 → index.html を開く
+
+ゲージが表示されること
+
+コンソールログで fetchRealtimeAndUpdate が interval ごとに走っていること。
+
+グラフが7日分・全デバイス分の線になっていること。
+
+scheduler 起動（本番は waitres + ready() の動き）
+
+ログに envmon scheduler loop start が出ること。
+
+5分おきに cache_worker_dj.py --once が実行されていること（ログで確認）。
+
+DeviceHistory の最新日付を少し未来のデータにずらしたテスト or データ間引きテストで、
+
+history_7days の最後の数スロットがキャッシュ値で補填されているかを確認。
