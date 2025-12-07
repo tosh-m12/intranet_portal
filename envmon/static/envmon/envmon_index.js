@@ -261,7 +261,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         grid: {
                             drawOnChartArea: false,
                         },
-                        min: 0,
+                        min: 20,
                         max: 100,
                     },
                 },

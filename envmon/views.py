@@ -19,6 +19,7 @@ from django.utils.timezone import localtime
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.management import call_command
 from django.http import JsonResponse, HttpRequest, HttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST
@@ -454,18 +455,46 @@ def data_api(request):
 def settings_view(request: HttpRequest) -> HttpResponse:
     env = EnvSettings.get_solo()
 
+    # ★ 管理者専用ガード
+    if not request.user.is_staff:
+        messages.error(
+            request,
+            "環境モニタの設定ページは管理者権限ユーザーのみアクセスできます。"
+        )
+        return redirect("envmon:index")
+
     if request.method == "POST":
         ...
         env.save()
-        return redirect("envmon:index")
+        return redirect("envmon:settings")
 
-    # ==== ここから履歴用 SN リスト作成 ====
+    context = {
+        "interval": env.interval,
+        "cache_interval": env.cache_interval,
+        "cache_expire_hours": env.cache_expire_hours,
+        "log_times": env.log_times,
+        "log_directory": env.log_directory,
+        "history_fetch_time": env.history_fetch_time,
+        "is_fetching_history": env.is_fetching_history,
+    }
+    return render(request, "envmon/settings.html", context)
+
+
+@login_required
+def history_csv_menu(request: HttpRequest) -> HttpResponse:
+    """
+    履歴 CSV ダウンロード専用ページ。
+    一般ユーザーもアクセス可能（ログイン必須）。
+    """
+
+    # ==== 履歴用 SN リスト作成 ====
     history_sns = list(
         DeviceHistory.objects.order_by("sn")
         .values_list("sn", flat=True)
         .distinct()
     )
 
+    # 最新キャッシュから倉庫名をひっぱる
     _dt, devices = load_latest_cache()
     attach_assignments(devices)
 
@@ -482,21 +511,14 @@ def settings_view(request: HttpRequest) -> HttpResponse:
         label = f"{sn}（{wh}）"
         device_choices.append({"sn": sn, "label": label})
 
-    # ★ 倉庫ロケーション一覧を追加
+    # 倉庫ロケーション一覧
     locations = Location.objects.order_by("code")
 
     context = {
-        "interval": env.interval,
-        "cache_interval": env.cache_interval,
-        "cache_expire_hours": env.cache_expire_hours,
-        "log_times": env.log_times,
-        "log_directory": env.log_directory,
         "device_choices": device_choices,
-        "history_fetch_time": env.history_fetch_time,
-        "is_fetching_history": env.is_fetching_history,
-        "locations": locations,   # ★ 追加
+        "locations": locations,
     }
-    return render(request, "envmon/settings.html", context)
+    return render(request, "envmon/history_download.html", context)
 
 
 # ==============================
@@ -539,7 +561,7 @@ def fetch_history_for_sn(
             "regionalId": None,
             "language": 1,
             "isShare": None,
-            "rows": 200,      # 1ページあたりの件数
+            "rows": 500,      # 1ページあたりの件数
             "page": page,     # 0 ベース
             "startTime": "",
             "endTime": "",
@@ -661,168 +683,145 @@ def fetch_history_all_core(from_scheduler: bool = False) -> int:
     全デバイスについて履歴を取得して DeviceHistory に追加する共通ロジック。
     - 通常は「前回記録時刻からの増分」を 1ページだけ取得
     - 前回記録時刻から現在までのギャップが大きい場合は full_mode で全ページ取得
-    - EnvSettings.is_fetching_history で二重起動を防止する
+
+    ※ 実行中フラグ (EnvSettings.is_fetching_history) の ON/OFF は
+       management command 'fetch_env_history' 側で行う。
     """
 
-    # ★★★ 二重起動防止用フラグ制御（トランザクション＆行ロック） ★★★
-    with transaction.atomic():
-        # EnvSettings.get_solo() は id=1 で get_or_create している想定
-        env = EnvSettings.objects.select_for_update().get(pk=EnvSettings.get_solo().pk)
-
-        if env.is_fetching_history:
-            print(f"[envmon] fetch_env_history already running (from_scheduler={from_scheduler}), skip.")
-            return 0
-
-        env.is_fetching_history = True
-        env.save(update_fields=["is_fetching_history"])
+    # ★★★ ここから下は、今まで try ブロックの中にあった本体ロジックだけ残す ★★★
 
     try:
-        # ===== ここからは従来のロジック（ほぼそのまま） =====
-        try:
-            token, user_id = login_and_get_token()
-        except Exception as e:
-            print(f"[envmon] fetch_env_history login failed: {e}")
-            raise
+        token, user_id = login_and_get_token()
+    except Exception as e:
+        print(f"[envmon] fetch_env_history login failed: {e}")
+        raise
 
-        # 現在のキャッシュから SN 一覧を取得
-        _dt, devices = load_latest_cache()
-        sns: list[str] = []
-        for d in devices:
-            sn = d.get("id")
-            if sn and sn not in sns:
-                sns.append(sn)
+    # 現在のキャッシュから SN 一覧を取得
+    _dt, devices = load_latest_cache()
+    sns: list[str] = []
+    for d in devices:
+        sn = d.get("id")
+        if sn and sn not in sns:
+            sns.append(sn)
 
-        total_new = 0
-        now_local = timezone.localtime(timezone.now())
-        GAP_THRESHOLD = timedelta(hours=24)  # ★ 24時間を閾値にする
+    total_new = 0
+    now_local = timezone.localtime(timezone.now())
+    GAP_THRESHOLD = timedelta(hours=24)  # ★ 24時間を閾値にする
 
-        for sn in sns:
-            # その SN の最後の recorded_at を取得
-            last_row = (
-                DeviceHistory.objects.filter(sn=sn)
-                .order_by("-recorded_at")
-                .first()
-            )
+    for sn in sns:
+        # その SN の最後の recorded_at を取得
+        last_row = (
+            DeviceHistory.objects.filter(sn=sn)
+            .order_by("-recorded_at")
+            .first()
+        )
 
-            start_time_str: str | None = None
-            full_mode: bool = False
+        start_time_str: str | None = None
+        full_mode: bool = False
 
-            if last_row:
-                # tz-aware → ローカルタイムに変換
-                last_local = timezone.localtime(last_row.recorded_at)
-                gap = now_local - last_local
+        if last_row:
+            # tz-aware → ローカルタイムに変換
+            last_local = timezone.localtime(last_row.recorded_at)
+            gap = now_local - last_local
 
-                # ★ 常に「最後に取った時刻」から先を取りに行く
-                start_time_str = last_local.strftime("%Y-%m-%d %H:%M:%S")
+            # ★ 常に「最後に取った時刻」から先を取りに行く
+            start_time_str = last_local.strftime("%Y-%m-%d %H:%M:%S")
 
-                if gap > GAP_THRESHOLD:
-                    # ★ ギャップが大きいときは FULL_MODE（= 複数ページ）で追いかける
-                    full_mode = True
-                    print(
-                        f"[HISTORY-DEBUG] sn={sn} startTime={start_time_str} "
-                        f"(gap={gap}) → FULL_MODE で複数ページ取得"
-                    )
-                else:
-                    # ★ 通常運転：1ページだけ
-                    print(
-                        f"[HISTORY-DEBUG] sn={sn} startTime={start_time_str} (gap={gap})"
-                    )
-            else:
-                # DB にまだ一件もない → 初回フル取得（全期間）
+            if gap > GAP_THRESHOLD:
+                # ★ ギャップが大きいときは FULL_MODE（= 複数ページ）で追いかける
                 full_mode = True
-                start_time_str = None  # 全期間
-                print(f"[HISTORY-DEBUG] sn={sn} は初回取得 → FULL_MODE（全期間）")
+                print(
+                    f"[HISTORY-DEBUG] sn={sn} startTime={start_time_str} "
+                    f"(gap={gap}) → FULL_MODE で複数ページ取得"
+                )
+            else:
+                # ★ 通常運転：1ページだけ
+                print(
+                    f"[HISTORY-DEBUG] sn={sn} startTime={start_time_str} (gap={gap})"
+                )
+        else:
+            # DB にまだ一件もない → 初回フル取得（全期間）
+            full_mode = True
+            start_time_str = None  # 全期間
+            print(f"[HISTORY-DEBUG] sn={sn} は初回取得 → FULL_MODE（全期間）")
 
-            # ★ token invalid 対応：SNごとに 1 回だけ再ログインしてリトライ
-            rows: list[dict] = []
-            retry_login = False
+        # ★ token invalid 対応：SNごとに 1 回だけ再ログインしてリトライ
+        rows: list[dict] = []
+        retry_login = False
 
-            while True:
-                try:
-                    rows = fetch_history_for_sn(
-                        token,
-                        user_id,
-                        sn,
-                        start_time_str=start_time_str,
-                        full_mode=full_mode,
-                    )
-                    break  # 正常に取得できたらループ脱出
+        while True:
+            try:
+                rows = fetch_history_for_sn(
+                    token,
+                    user_id,
+                    sn,
+                    start_time_str=start_time_str,
+                    full_mode=full_mode,
+                )
+                break  # 正常に取得できたらループ脱出
 
-                except TokenInvalidError as e:
-                    if retry_login:
-                        print(f"[HISTORY-DEBUG] token invalid 再ログイン後も失敗 sn={sn}: {e}")
-                        rows = []
-                        break
-
-                    print(f"[HISTORY-DEBUG] token invalid → 再ログインしてリトライ sn={sn}")
-                    try:
-                        token, user_id = login_and_get_token()
-                        retry_login = True
-                        continue  # もう一度 fetch_history_for_sn を呼ぶ
-                    except Exception as e2:
-                        print(f"[HISTORY-DEBUG] 再ログイン失敗 sn={sn}: {e2}")
-                        rows = []
-                        break
-
-                except Exception as e:
-                    print(f"[HISTORY-DEBUG] 想定外エラー sn={sn}: {e}")
+            except TokenInvalidError as e:
+                if retry_login:
+                    print(f"[HISTORY-DEBUG] token invalid 再ログイン後も失敗 sn={sn}: {e}")
                     rows = []
                     break
 
-            if not rows:
-                # この SN では何も取得できなかった
-                continue
+                print(f"[HISTORY-DEBUG] token invalid → 再ログインしてリトライ sn={sn}")
+                try:
+                    token, user_id = login_and_get_token()
+                    retry_login = True
+                    continue  # もう一度 fetch_history_for_sn を呼ぶ
+                except Exception as e2:
+                    print(f"[HISTORY-DEBUG] 再ログイン失敗 sn={sn}: {e2}")
+                    rows = []
+                    break
 
-            # DeviceHistory に保存
-            objs = [
-                DeviceHistory(
-                    sn=sn,
-                    recorded_at=row["recorded_at"],
-                    temperature=row.get("temperature"),
-                    humidity=row.get("humidity"),
-                    raw=row.get("raw"),
-                )
-                for row in rows
-            ]
+            except Exception as e:
+                print(f"[HISTORY-DEBUG] 想定外エラー sn={sn}: {e}")
+                rows = []
+                break
 
-            with transaction.atomic():
-                DeviceHistory.objects.bulk_create(
-                    objs,
-                    ignore_conflicts=True,  # UniqueConstraint で重複はスキップ
-                )
+        if not rows:
+            # この SN では何も取得できなかった
+            continue
 
-            total_new += len(objs)
+        # DeviceHistory に保存
+        objs = [
+            DeviceHistory(
+                sn=sn,
+                recorded_at=row["recorded_at"],
+                temperature=row.get("temperature"),
+                humidity=row.get("humidity"),
+                raw=row.get("raw"),
+            )
+            for row in rows
+        ]
 
-        print(f"[envmon] fetch_env_history done (attempted inserts: {total_new})")
-        return total_new
+        with transaction.atomic():
+            DeviceHistory.objects.bulk_create(
+                objs,
+                ignore_conflicts=True,  # UniqueConstraint で重複はスキップ
+            )
 
-    finally:
-        # ★★★ どんな結果でも必ずフラグを解除する ★★★
-        env = EnvSettings.get_solo()
-        env.is_fetching_history = False
-        env.save(update_fields=["is_fetching_history"])
+        total_new += len(objs)
+
+    print(f"[envmon] fetch_env_history done (attempted inserts: {total_new})")
+    return total_new
 
 
 @login_required
 @require_POST
 def fetch_history_all(request: HttpRequest) -> HttpResponse:
     """
-    （手動ボタン用）
+    （旧）手動ボタン用。
+    現在は management command 'fetch_env_history' を呼び出すだけにする。
     """
     try:
-        total_new = fetch_history_all_core()
-
-        if total_new == 0:
-            # 追加データなし or すでに別の処理が動いていてスキップ
-            messages.info(
-                request,
-                "履歴データの追加はありませんでした（既に処理済み、または現在別の取得処理が実行中の可能性があります）。"
-            )
-        else:
-            messages.success(
-                request,
-                f"履歴データの取得処理を実行しました。（投入試行件数: {total_new}）"
-            )
+        call_command("fetch_env_history")
+        messages.success(
+            request,
+            "履歴データの取得処理を実行しました。（旧 fetch_history_all ルート）"
+        )
     except Exception as e:
         messages.error(request, f"履歴データの取得に失敗しました: {e}")
 
@@ -1409,3 +1408,63 @@ def history_7days(request: HttpRequest) -> JsonResponse:
             }
 
     return JsonResponse(result, safe=True)
+
+
+@login_required
+@require_POST
+def manual_fetch_history(request):
+    """
+    設定画面から「履歴データを手動取得」ボタンを押したときに呼ばれる。
+    内部的には management command 'fetch_env_history' を実行する。
+    """
+    env = EnvSettings.get_solo()
+
+    # すでに実行中ならスキップ（多重起動防止）
+    if env.is_fetching_history:
+        messages.warning(
+            request,
+            "履歴データ取得処理がすでに実行中のため、手動実行はスキップしました。"
+        )
+        return redirect("envmon:settings")
+
+    try:
+        # fetch_env_history 側で is_fetching_history フラグの ON/OFF を管理している
+        call_command("fetch_env_history")
+        messages.success(
+            request,
+            "履歴データの取得処理を実行しました。詳細はログを確認してください。"
+        )
+    except Exception as e:
+        messages.error(
+            request,
+            f"履歴データ取得処理中にエラーが発生しました: {e}"
+        )
+
+    return redirect("envmon:settings")
+
+
+@login_required
+@require_POST
+def manual_cache(request):
+    """
+    設定画面から「キャッシュを手動取得」ボタンを押したときに呼ばれる。
+    外部 API から全デバイスのリアルタイムデータを取得して
+    device_cache_latest.json を更新する。
+    """
+    env = EnvSettings.get_solo()
+
+    # ★ 履歴取得中はキャッシュ取得を禁止（token 競合防止）
+    if env.is_fetching_history:
+        messages.warning(
+            request,
+            "現在、履歴データ取得中のためキャッシュ手動取得は実行できません。"
+        )
+        return redirect("envmon:settings")
+
+    try:
+        call_command("run_env_cache")
+        messages.success(request, "キャッシュの手動取得を実行しました。")
+    except Exception as e:
+        messages.error(request, f"キャッシュ手動取得中にエラーが発生しました: {e}")
+
+    return redirect("envmon:settings")

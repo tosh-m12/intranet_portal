@@ -41,13 +41,23 @@ class Command(BaseCommand):
 
         if devices is None:
             devices = []
-        self.stdout.write(f"[run_env_cache] fetched devices count = {len(devices)}")
+        count = len(devices)
+        self.stdout.write(f"[run_env_cache] fetched devices count = {count}")
+
+        # ★★★ ここが重要：0件なら latest キャッシュは壊さないで終了する ★★★
+        if count == 0:
+            self.stderr.write(
+                "[run_env_cache] fetched 0 devices. "
+                "device_cache_latest.json は更新せず、そのまま終了します。"
+            )
+            return
 
         # ==== 3. 倉庫割当情報を付与 ====
         try:
             attach_assignments(devices)
         except Exception as e:
             self.stderr.write(f"[run_env_cache] error in attach_assignments: {e}")
+
 
         # ==== 4. キャッシュ保存 ====
         now = timezone.localtime(timezone.now())

@@ -1,3 +1,4 @@
+{# templates/envmon/settings.html #}
 {% extends "portal/base.html" %}
 {% load static %}
 
@@ -15,17 +16,18 @@
 <div class="subnav">
     <a href="{% url 'envmon:index' %}">📊 倉庫別モニタ</a>
     <a href="{% url 'envmon:all_devices' %}">📋 全デバイス一覧</a>
-    <a href="{% url 'envmon:settings' %}" class="active">⚙ 設定</a>
-    <a href="{% url 'envmon:warehouse_assign' %}">🏷 倉庫割当</a>
+    <a href="{% url 'envmon:history_csv_menu' %}">📥 CSV ダウンロード</a>
+    {% if user.is_staff %}
+        <a href="{% url 'envmon:settings' %}" class="active">⚙ 設定</a>
+        <a href="{% url 'envmon:warehouse_assign' %}">🏷 倉庫割当</a>
+    {% endif %}
 </div>
 {% endblock %}
 
 {% block content %}
 <div class="envmon-page">
 
-    <!-- ===========================
-         1. 表示設定（フロント向け）
-         =========================== -->
+
     <h2 class="envmon-section-title">表示（フロントエンド）設定</h2>
 
     <form method="post" class="envmon-form">
@@ -38,15 +40,16 @@
             <span class="envmon-note">※ ゲージとリアルタイム表示の更新間隔</span>
         </div>
 
-        <!-- ===========================
-             2. サーバー設定（バックエンド）
-             =========================== -->
-        <h2 class="envmon-section-title">バックエンド設定（キャッシュ / ログ）</h2>
+
+        <h2 class="envmon-section-title">バックエンド設定（キャッシュ / 履歴）</h2>
 
         <div class="envmon-form-row">
             <label>API キャッシュ取得間隔（秒）:</label>
             <input type="number" name="cache_interval"
                    value="{{ cache_interval }}" min="10" required>
+            <span class="envmon-note">
+                ※ 外部APIからリアルタイムデータを取得してキャッシュする間隔（5分以上推奨）
+            </span>
         </div>
 
         <div class="envmon-form-row">
@@ -62,23 +65,13 @@
         </div>
 
         <div class="envmon-form-row">
-            <label>ログ取得時刻（複数可）:</label>
-            <div id="log-times-container">
-                {% for t in log_times %}
-                <div class="log-time-entry">
-                    <input type="time" name="log_times" value="{{ t }}">
-                    <button type="button" onclick="removeTime(this)">削除</button>
-                </div>
-                {% endfor %}
-            </div>
-            <button type="button" onclick="addLogTime()">＋ 時刻追加</button>
-        </div>
-
-        <div class="envmon-form-row">
-            <label>履歴JSON生成時刻（1日1回）:</label>
+            <label>履歴データ自動取り込み時刻（1日1回）:</label>
             <input type="time" name="history_fetch_time"
                    value="{{ history_fetch_time|time:'H:i' }}">
-            <span class="envmon-note">※ 7日間グラフに使用される履歴JSONの生成時刻</span>
+            <span class="envmon-note">
+                ※ 1weilian の履歴データを DeviceHistory に取り込む時刻です。<br>
+                ※ 深夜などの時間帯を指定してください（取り込み中はリアルタイムキャッシュ取得を停止します）。
+            </span>
         </div>
 
         <div class="envmon-form-actions">
@@ -86,121 +79,27 @@
         </div>
     </form>
 
-    
 
-    <!-- ===========================
-         履歴データ管理（CSV）
-         =========================== -->
-    <h2 class="envmon-section-title">履歴データ管理（CSV 出力）</h2>
-
-    <!-- ① デバイス別 -->
-    <h3>■ デバイス別 CSV ダウンロード</h3>
-    <form method="post" action="{% url 'envmon:download_history' %}">
-        {% csrf_token %}
-        <div class="form-row">
-            <label>シリアルナンバー:</label>
-            <select name="sn" required>
-                <option value="">-- SN を選択 --</option>
-                {% for dev in device_choices %}
-                <option value="{{ dev.sn }}">{{ dev.label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="form-actions">
-            <button type="submit">CSV ダウンロード</button>
-        </div>
-    </form>
-
-    <hr>
-
-    <!-- ② 倉庫別 -->
-    <h3>■ 倉庫別 CSV ダウンロード</h3>
-    <form method="post" action="{% url 'envmon:download_history_by_warehouse' %}">
-        {% csrf_token %}
-        <div class="form-row">
-            <label>倉庫ロケーション:</label>
-            <select name="location_code" required>
-                <option value="">-- 倉庫を選択 --</option>
-                {% for loc in locations %}
-                <option value="{{ loc.code }}">{{ loc.code }} / {{ loc.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="form-row">
-            <label>期間指定:</label>
-            <input type="date" name="date_from"> 〜
-            <input type="date" name="date_to">
-        </div>
-
-        <div class="form-actions">
-            <button type="submit">倉庫別 CSV ダウンロード</button>
-        </div>
-    </form>
-
-    <hr>
-
-    <!-- ③ 全デバイス -->
-    <h3>■ 全デバイス（期間指定）CSV ダウンロード</h3>
-    <form method="post" action="{% url 'envmon:download_history_all_range' %}">
-        {% csrf_token %}
-        <div class="form-row">
-            <label>期間:</label>
-            <input type="date" name="date_from" required> 〜
-            <input type="date" name="date_to" required>
-        </div>
-        <div class="form-actions">
-            <button type="submit">全デバイス CSV ダウンロード</button>
-        </div>
-    </form>
-
-
-    <!-- ===========================
-     手動実行（キャッシュ / ログ）
-     =========================== -->
     <h2 class="envmon-section-title">手動実行（バックエンド手動トリガー）</h2>
 
     <div class="envmon-section">
-
-        <!-- 手動キャッシュ取得 -->
-        <form method="post" action="{% url 'envmon:manual_cache' %}">
+        <form method="post" action="{% url 'envmon:manual_fetch_history' %}">
             {% csrf_token %}
             <button type="submit" class="btn-manual"
-                    style="padding:8px 16px; margin-bottom:10px;">
-                🔄 キャッシュを手動取得
+                    style="padding:8px 16px; margin-top:10px;"
+                    {% if is_fetching_history %}
+                        disabled
+                    {% endif %}>
+                📥 履歴データを手動取得
             </button>
+            {% if is_fetching_history %}
+                <span class="envmon-note">
+                    ※ 現在、自動または他の手動処理で履歴取得中です。
+                </span>
+            {% endif %}
         </form>
-
-        <!-- 手動ログ取得 -->
-        <form method="post" action="{% url 'envmon:manual_log' %}">
-            {% csrf_token %}
-            <button type="submit" class="btn-manual"
-                    style="padding:8px 16px;">
-                📝 ログを手動取得
-            </button>
-        </form>
-
     </div>
 
-    
-</div>
+</div> 
 
-
-
-<script>
-function addLogTime() {
-    const container = document.getElementById("log-times-container");
-    const entry = document.createElement("div");
-    entry.className = "log-time-entry";
-    entry.innerHTML = `
-        <input type="time" name="log_times">
-        <button type="button" onclick="removeTime(this)">削除</button>
-    `;
-    container.appendChild(entry);
-}
-
-function removeTime(button) {
-    button.parentElement.remove();
-}
-</script>
 {% endblock %}

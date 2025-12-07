@@ -16,8 +16,11 @@
 <div class="subnav">
     <a href="{% url 'envmon:index' %}" class="active">📊 倉庫別モニタ</a>
     <a href="{% url 'envmon:all_devices' %}">📋 全デバイス一覧</a>
-    <a href="{% url 'envmon:settings' %}">⚙ 設定</a>
-    <a href="{% url 'envmon:warehouse_assign' %}">🏷 倉庫割当</a>
+    <a href="{% url 'envmon:history_csv_menu' %}">📥 CSV ダウンロード</a>
+    {% if user.is_staff %}
+        <a href="{% url 'envmon:settings' %}">⚙ 設定</a>
+        <a href="{% url 'envmon:warehouse_assign' %}">🏷 倉庫割当</a>
+    {% endif %}
 </div>
 {% endblock %}
 
@@ -39,11 +42,6 @@
     <!-- 倉庫ごとのブロックを JS が動的に生成 -->
     <div id="warehouse-sections" class="warehouse-container"></div>
 
-    <p class="envmon-back-link">
-        <a href="{% url 'envmon:all_devices' %}">
-            → 全デバイス稼働状況一覧ページへ
-        </a>
-    </p>
 </div>
 <script src="{% static 'envmon/chart.umd.min.js' %}"></script>
 <script src="{% static 'envmon/envmon_index.js' %}"></script>
