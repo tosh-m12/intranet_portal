@@ -1,9 +1,10 @@
 {% extends "portal/base.html" %}
+{% load i18n %}
 
-{% block title %}週報メーリングリスト - CS課題{% endblock %}
+{% block title %}{% trans "週報メーリングリスト" %}{% endblock %}
 
 {% block app_name %}
-<h1>📋 CS課題管理</h1>
+<h1>📋 {% trans "既存業務課題管理" %}</h1>
 {% endblock %}
 
 {% block subnav %}
@@ -11,45 +12,45 @@
 {% endblock %}
 
 {% block content %}
-<div class="page-header"><h2>✉ 週報メーリングリスト</h2></div>
+<div class="page-header"><h2>✉ {% trans "週報メーリングリスト" %}</h2></div>
 
 <form method="post" class="cs-inline-form">
     {% csrf_token %}
     <input type="hidden" name="action" value="add">
-    <input type="text" name="name" placeholder="表示名（任意）">
-    <input type="email" name="email" placeholder="メールアドレス" required>
-    <button type="submit" class="btn btn-primary">追加</button>
+    <input type="text" name="name" placeholder="{% trans "表示名（任意）" %}">
+    <input type="email" name="email" placeholder="{% trans "メールアドレス" %}" required>
+    <button type="submit" class="btn btn-primary">{% trans "追加" %}</button>
 </form>
 
 <table class="visit-table" style="margin-top:10px;">
     <thead>
-        <tr><th>表示名</th><th>メールアドレス</th><th>状態</th><th></th></tr>
+        <tr><th>{% trans "表示名" %}</th><th>{% trans "メールアドレス" %}</th><th>{% trans "状態" %}</th><th></th></tr>
     </thead>
     <tbody>
         {% for e in entries %}
         <tr class="{% if not e.is_active %}task-cancelled{% endif %}">
             <td>{{ e.name|default:"—" }}</td>
             <td>{{ e.email }}</td>
-            <td>{% if e.is_active %}有効{% else %}無効{% endif %}</td>
+            <td>{% if e.is_active %}{% trans "有効" %}{% else %}{% trans "無効" %}{% endif %}</td>
             <td>
                 <form method="post" style="display:inline;">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="toggle">
                     <input type="hidden" name="entry_id" value="{{ e.id }}">
                     <button type="submit" class="btn btn-secondary btn-xs">
-                        {% if e.is_active %}無効化{% else %}有効化{% endif %}
+                        {% if e.is_active %}{% trans "無効化" %}{% else %}{% trans "有効化" %}{% endif %}
                     </button>
                 </form>
                 <form method="post" style="display:inline;">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="delete">
                     <input type="hidden" name="entry_id" value="{{ e.id }}">
-                    <button type="submit" class="btn btn-danger btn-xs">削除</button>
+                    <button type="submit" class="btn btn-danger btn-xs">{% trans "削除" %}</button>
                 </form>
             </td>
         </tr>
         {% empty %}
-        <tr><td colspan="4" class="muted">宛先が登録されていません。</td></tr>
+        <tr><td colspan="4" class="muted">{% trans "宛先が登録されていません。" %}</td></tr>
         {% endfor %}
     </tbody>
 </table>

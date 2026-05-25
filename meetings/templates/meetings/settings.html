@@ -5,7 +5,7 @@
 {% block title %}{% trans "訪問・WEB会議メール設定" %}{% endblock %}
 
 {% block app_name %}
-<h1>📅 訪問・WEB会議予定管理</h1>
+<h1>📅 {% trans "訪問・WEB会議予定管理" %}</h1>
 {% endblock %}
 
 {% block subnav %}
@@ -34,9 +34,9 @@
 
     <!-- ▼ 自動送信の時刻設定 -->
     <h2>{% trans "自動送信の時刻設定" %}</h2>
-    <p>自動で送信する時刻を選択してください。</p>
+    <p>{% trans "自動で送信する時刻を選択してください。" %}</p>
 
-    <label>時：
+    <label>{% trans "時" %}：
         <select name="send_hour">
             {% for h in hours %}
                 <option value="{{ h }}"
@@ -47,7 +47,7 @@
         </select>
     </label>
 
-    <label>分：
+    <label>{% trans "分" %}：
         <select name="send_minute">
             {% for m in minutes %}
                 <option value="{{ m }}"
@@ -62,22 +62,22 @@
 
     <!-- ▼ メーリングリスト -->
     <h2>{% trans "メーリングリスト" %}</h2>
-    <p>メール送信先を 1 行ずつ追加してください。</p>
+    <p>{% trans "メール送信先を 1 行ずつ追加してください。" %}</p>
 
     <table id="email-table">
         {% for email in mailing_list %}
         <tr>
             <td><input type="email" name="emails" value="{{ email }}" style="width:320px;"></td>
-            <td><button type="button" onclick="removeRow(this)">−削除</button></td>
+            <td><button type="button" onclick="removeRow(this)">−{% trans "削除" %}</button></td>
         </tr>
         {% endfor %}
         <tr>
             <td><input type="email" name="emails" value="" style="width:320px;"></td>
-            <td><button type="button" onclick="removeRow(this)">−削除</button></td>
+            <td><button type="button" onclick="removeRow(this)">−{% trans "削除" %}</button></td>
         </tr>
     </table>
 
-    <button type="button" onclick="addEmailRow()">＋追加</button>
+    <button type="button" onclick="addEmailRow()">＋{% trans "追加" %}</button>
 
     <script>
         function addEmailRow() {
@@ -85,7 +85,7 @@
             const row = `
                 <tr>
                     <td><input type="email" name="emails" value="" style="width:320px;"></td>
-                    <td><button type="button" onclick="removeRow(this)">−削除</button></td>
+                    <td><button type="button" onclick="removeRow(this)">−{% trans "削除" %}</button></td>
                 </tr>`;
             tbl.insertAdjacentHTML('beforeend', row);
         }
@@ -98,20 +98,20 @@
 
     <hr>
 
-    <button type="submit">設定を保存</button>
-    <a href="{% url 'meetings:index' %}" class="btn-link" style="margin-left:8px;">一覧へ戻る</a>
+    <button type="submit">{% trans "設定を保存" %}</button>
+    <a href="{% url 'meetings:index' %}" class="btn-link" style="margin-left:8px;">{% trans "一覧へ戻る" %}</a>
 </form>
 
 <hr>
 
-<h2>データメンテナンス（Meeting 一覧）</h2>
+<h2>{% trans "データメンテナンス（Meeting 一覧）" %}</h2>
 
-<p>現在の Meeting 一覧を CSV でエクスポート／インポートできます。</p>
+<p>{% trans "現在の Meeting 一覧を CSV でエクスポート／インポートできます。" %}</p>
 
 <!-- ▼ ダウンロード -->
 <form method="get" action="{% url 'meetings:download_settings_csv' 'meeting_list' %}" style="margin-bottom:8px;">
     <button type="submit" class="btn btn-secondary">
-        💾 Meeting 一覧 CSV をダウンロード
+        💾 {% trans "Meeting 一覧 CSV をダウンロード" %}
     </button>
 </form>
 
@@ -120,30 +120,30 @@
     {% csrf_token %}
     <input type="file" name="csv_file" accept=".csv">
     <button type="submit" class="btn btn-danger">
-        ⬆ Meeting 一覧 CSV をアップロード（全件入れ替え）
+        ⬆ {% trans "Meeting 一覧 CSV をアップロード（全件入れ替え）" %}
     </button>
     <p style="font-size:12px; color:#666; margin-top:4px;">
-        ※ ダウンロードした CSV を編集してアップロードすると、Meeting データが全件入れ替えられます。<br>
-        ※ CSV 内の id カラムは無視され、新しい ID が採番されます。
+        {% trans "※ ダウンロードした CSV を編集してアップロードすると、Meeting データが全件入れ替えられます。" %}<br>
+        {% trans "※ CSV 内の id カラムは無視され、新しい ID が採番されます。" %}
     </p>
 </form>
 
 <hr>
 
-<h2>今すぐメール送信</h2>
-<p>現在の設定で、1回だけ手動でメールを送信します。</p>
+<h2>{% trans "今すぐメール送信" %}</h2>
+<p>{% trans "現在の設定で、1回だけ手動でメールを送信します。" %}</p>
 
 <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
 
     <!-- プレビューボタン（GET） -->
     <form method="get" action="{% url 'meetings:preview_email' %}">
-        <button type="submit">👀 メールプレビュー</button>
+        <button type="submit">👀 {% trans "メールプレビュー" %}</button>
     </form>
 
     <!-- 送信ボタン（POST） -->
     <form method="post" action="{% url 'meetings:run_email' %}">
         {% csrf_token %}
-        <button type="submit">📨 今すぐ送信</button>
+        <button type="submit">📨 {% trans "今すぐ送信" %}</button>
     </form>
 
 </div>

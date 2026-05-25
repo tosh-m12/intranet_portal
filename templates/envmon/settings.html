@@ -1,25 +1,25 @@
 {# templates/envmon/settings.html #}
 {% extends "portal/base.html" %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}設定メニュー - 環境モニタ{% endblock %}
+{% block title %}{% trans "設定メニュー" %}{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'envmon/style.css' %}">
 {% endblock %}
 
 {% block app_name %}
-<h1>⚙ 温湿度モニタ 設定</h1>
+<h1>⚙ {% trans "温湿度モニタ 設定" %}</h1>
 {% endblock %}
 
 {% block subnav %}
 <div class="subnav">
-    <a href="{% url 'envmon:index' %}">📊 倉庫別モニタ</a>
-    <a href="{% url 'envmon:all_devices' %}">📋 全デバイス一覧</a>
-    <a href="{% url 'envmon:history_csv_menu' %}">📥 CSV ダウンロード</a>
+    <a href="{% url 'envmon:index' %}">📊 {% trans "倉庫別モニタ" %}</a>
+    <a href="{% url 'envmon:all_devices' %}">📋 {% trans "全デバイス一覧" %}</a>
+    <a href="{% url 'envmon:history_csv_menu' %}">📥 {% trans "CSV ダウンロード" %}</a>
     {% if user.is_staff %}
-        <a href="{% url 'envmon:settings' %}" class="active">⚙ 設定</a>
-        <a href="{% url 'envmon:warehouse_assign' %}">🏷 倉庫割当</a>
+        <a href="{% url 'envmon:settings' %}" class="active">⚙ {% trans "設定" %}</a>
+        <a href="{% url 'envmon:warehouse_assign' %}">🏷 {% trans "倉庫割当" %}</a>
     {% endif %}
 </div>
 {% endblock %}
@@ -28,59 +28,59 @@
 <div class="envmon-page">
 
 
-    <h2 class="envmon-section-title">表示（フロントエンド）設定</h2>
+    <h2 class="envmon-section-title">{% trans "表示（フロントエンド）設定" %}</h2>
 
     <form method="post" class="envmon-form">
         {% csrf_token %}
 
         <div class="envmon-form-row">
-            <label>画面の表示更新間隔（秒）:</label>
+            <label>{% trans "画面の表示更新間隔（秒）" %}:</label>
             <input type="number" name="interval"
                    value="{{ interval }}" min="3" required>
-            <span class="envmon-note">※ ゲージとリアルタイム表示の更新間隔</span>
+            <span class="envmon-note">{% trans "※ ゲージとリアルタイム表示の更新間隔" %}</span>
         </div>
 
 
-        <h2 class="envmon-section-title">バックエンド設定（キャッシュ / 履歴）</h2>
+        <h2 class="envmon-section-title">{% trans "バックエンド設定（キャッシュ / 履歴）" %}</h2>
 
         <div class="envmon-form-row">
-            <label>API キャッシュ取得間隔（秒）:</label>
+            <label>{% trans "API キャッシュ取得間隔（秒）" %}:</label>
             <input type="number" name="cache_interval"
                    value="{{ cache_interval }}" min="10" required>
             <span class="envmon-note">
-                ※ 外部APIからリアルタイムデータを取得してキャッシュする間隔（5分以上推奨）
+                {% trans "※ 外部APIからリアルタイムデータを取得してキャッシュする間隔（5分以上推奨）" %}
             </span>
         </div>
 
         <div class="envmon-form-row">
-            <label>キャッシュ保存期間（時間）:</label>
+            <label>{% trans "キャッシュ保存期間（時間）" %}:</label>
             <input type="number" name="cache_expire_hours"
                    value="{{ cache_expire_hours }}" min="1" required>
         </div>
 
         <div class="envmon-form-row">
-            <label>ログ保存先ディレクトリ:</label>
+            <label>{% trans "ログ保存先ディレクトリ" %}:</label>
             <input type="text" name="log_directory"
                    value="{{ log_directory }}" required>
         </div>
 
         <div class="envmon-form-row">
-            <label>履歴データ自動取り込み時刻（1日1回）:</label>
+            <label>{% trans "履歴データ自動取り込み時刻（1日1回）" %}:</label>
             <input type="time" name="history_fetch_time"
                    value="{{ history_fetch_time|time:'H:i' }}">
             <span class="envmon-note">
-                ※ 1weilian の履歴データを DeviceHistory に取り込む時刻です。<br>
-                ※ 深夜などの時間帯を指定してください（取り込み中はリアルタイムキャッシュ取得を停止します）。
+                {% trans "※ 1weilian の履歴データを DeviceHistory に取り込む時刻です。" %}<br>
+                {% trans "※ 深夜などの時間帯を指定してください（取り込み中はリアルタイムキャッシュ取得を停止します）。" %}
             </span>
         </div>
 
         <div class="envmon-form-actions">
-            <button type="submit">保存</button>
+            <button type="submit">{% trans "保存" %}</button>
         </div>
     </form>
 
 
-    <h2 class="envmon-section-title">手動実行（バックエンド手動トリガー）</h2>
+    <h2 class="envmon-section-title">{% trans "手動実行（バックエンド手動トリガー）" %}</h2>
 
     <div class="envmon-section">
         <form method="post" action="{% url 'envmon:manual_fetch_history' %}">
@@ -90,16 +90,16 @@
                     {% if is_fetching_history %}
                         disabled
                     {% endif %}>
-                📥 履歴データを手動取得
+                📥 {% trans "履歴データを手動取得" %}
             </button>
             {% if is_fetching_history %}
                 <span class="envmon-note">
-                    ※ 現在、自動または他の手動処理で履歴取得中です。
+                    {% trans "※ 現在、自動または他の手動処理で履歴取得中です。" %}
                 </span>
             {% endif %}
         </form>
     </div>
 
-</div> 
+</div>
 
 {% endblock %}

@@ -12,11 +12,11 @@ def home(request):
     return render(request, "portal/home.html")
 
 
-@login_required
 def switch_language(request, lang_code):
     """
     ポータル共通の言語切替ビュー。
     /lang/ja/, /lang/zh-hans/ から呼ばれる想定。
+    ログイン前（ログイン画面）でも切替できるよう login_required は付けない。
     """
     supported = dict(settings.LANGUAGES).keys()
     if lang_code not in supported:

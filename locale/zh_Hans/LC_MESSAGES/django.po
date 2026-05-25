@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-23 23:23+0800\n"
+"POT-Creation-Date: 2026-05-25 22:00+0800\n"
 "PO-Revision-Date: 2025-07-23 23:45+0800\n"
 "Last-Translator: TMurayama <example@example.com>\n"
 "Language-Team: Chinese Simplified\n"
@@ -18,139 +18,1073 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: .\visitors\templates\visitors\add.html:6
-#: .\visitors\templates\visitors\add.html:11
-msgid "来訪予定登録"
-msgstr "来访预定登记"
+#: authsys/admin.py:23
+msgid "Personal info"
+msgstr "个人信息"
 
-#: .\visitors\templates\visitors\add.html:20
-msgid "訪問日"
-msgstr "访问日期"
+#: authsys/admin.py:24
+msgid "Permissions"
+msgstr "权限"
 
-#: .\visitors\templates\visitors\add.html:21
-#: .\visitors\templates\visitors\edit.html:30
-#: .\visitors\templates\visitors\index.html:21
-msgid "時間"
-msgstr "时间"
+#: authsys/admin.py:25
+msgid "Important dates"
+msgstr "重要日期"
 
-#: .\visitors\templates\visitors\add.html:22
-#: .\visitors\templates\visitors\edit.html:31
-#: .\visitors\templates\visitors\index.html:22
-msgid "未定"
-msgstr "未定"
+#: authsys/templates/authsys/password_change.html:4
+#: authsys/templates/authsys/password_change.html:7
+msgid "パスワード変更"
+msgstr "修改密码"
 
-#: .\visitors\templates\visitors\add.html:23
-#: .\visitors\templates\visitors\edit.html:32
-#: .\visitors\templates\visitors\index.html:23
-msgid "正式会社名"
-msgstr "公司全称"
+#: authsys/templates/authsys/password_change.html:11
+msgid "セキュリティのため、パスワードを変更してください。"
+msgstr "为了安全，请修改密码。"
 
-#: .\visitors\templates\visitors\add.html:24
-#: .\visitors\templates\visitors\edit.html:33
+#: authsys/templates/authsys/password_change.html:16
+msgid "変更する"
+msgstr "修改"
+
+#: authsys/templates/authsys/password_change_done.html:4
+#: authsys/templates/authsys/password_change_done.html:7
+msgid "パスワード変更完了"
+msgstr "密码修改完成"
+
+#: authsys/templates/authsys/password_change_done.html:11
+msgid "パスワードの変更が完了しました。"
+msgstr "密码修改已完成。"
+
+#: authsys/templates/authsys/password_change_done.html:12
+#: authsys/templates/authsys/user_management.html:130
+msgid "ホームに戻る"
+msgstr "返回主页"
+
+#: authsys/templates/authsys/reset_password.html:4
+#: authsys/templates/authsys/reset_password.html:7
+msgid "パスワード再発行"
+msgstr "重新发放密码"
+
+#: authsys/templates/authsys/reset_password.html:11
+msgid ""
+"登録済みの社内メールアドレスを入力してください。新しいパスワードをメールで送"
+"信します。"
+msgstr ""
+
+#: authsys/templates/authsys/reset_password.html:21
+msgid "送信"
+msgstr "发送"
+
+#: authsys/templates/authsys/reset_password.html:25
+msgid "ログイン画面に戻る"
+msgstr "返回登录画面"
+
+#: authsys/templates/authsys/user_management.html:4
+#: authsys/templates/authsys/user_management.html:7
+#: templates/portal/base.html:50
+msgid "ユーザー管理"
+msgstr "用户管理"
+
+#: authsys/templates/authsys/user_management.html:20
+msgid "登録ユーザー一覧"
+msgstr "注册用户一览"
+
+#: authsys/templates/authsys/user_management.html:25
+#: meetings/templates/meetings/add.html:35
+#: visitors/templates/visitors/add.html:34
 msgid "姓"
 msgstr "姓"
 
-#: .\visitors\templates\visitors\add.html:25
-#: .\visitors\templates\visitors\edit.html:34
+#: authsys/templates/authsys/user_management.html:26
+#: meetings/templates/meetings/add.html:36
+#: visitors/templates/visitors/add.html:35
 msgid "名"
 msgstr "名"
 
-#: .\visitors\templates\visitors\add.html:26
-#: .\visitors\templates\visitors\edit.html:35
-#: .\visitors\templates\visitors\index.html:26
-msgid "役職"
-msgstr "职位"
+#: authsys/templates/authsys/user_management.html:27
+msgid "メール"
+msgstr "邮箱"
 
-#: .\visitors\templates\visitors\add.html:27
-#: .\visitors\templates\visitors\edit.html:36
-#: .\visitors\templates\visitors\index.html:27
-msgid "目的"
-msgstr "目的"
+#: authsys/templates/authsys/user_management.html:28
+msgid "権限"
+msgstr "权限"
 
-#: .\visitors\templates\visitors\add.html:28
-#: .\visitors\templates\visitors\edit.html:37
-#: .\visitors\templates\visitors\index.html:28
-msgid "訪問場所"
-msgstr "访问地点"
+#: authsys/templates/authsys/user_management.html:29
+msgid "初回PW"
+msgstr "初始密码"
 
-#: .\visitors\templates\visitors\add.html:29
-#: .\visitors\templates\visitors\edit.html:38
-#: .\visitors\templates\visitors\index.html:29
-msgid "入力者"
-msgstr "填写人"
-
-#: .\visitors\templates\visitors\add.html:30
-#: .\visitors\templates\visitors\edit.html:39
-#: .\visitors\templates\visitors\index.html:30
-msgid "備考"
-msgstr "备注"
-
-#: .\visitors\templates\visitors\add.html:52
-#: .\visitors\templates\visitors\edit.html:58
-msgid "保存"
-msgstr "保存"
-
-#: .\visitors\templates\visitors\add.html:53
-msgid "行を追加"
-msgstr "添加行"
-
-#: .\visitors\templates\visitors\add.html:56
-msgid "一覧に戻る"
-msgstr "返回列表"
-
-#: .\visitors\templates\visitors\edit.html:6
-msgid "来訪予定の編集"
-msgstr "编辑来访预定"
-
-#: .\visitors\templates\visitors\edit.html:22
-msgid "編集ページ"
-msgstr "编辑页面"
-
-#: .\visitors\templates\visitors\edit.html:29
-#: .\visitors\templates\visitors\index.html:20
-msgid "来訪日"
-msgstr "来访日期"
-
-#: .\visitors\templates\visitors\edit.html:61
-msgid "戻る"
-msgstr "返回"
-
-#: .\visitors\templates\visitors\index.html:6
-msgid "本日以降の来訪予定"
-msgstr "今天以后的来访预定"
-
-#: .\visitors\templates\visitors\index.html:15
-msgid "本日以降の来訪予定一覧"
-msgstr "今天以后的来访预定一览"
-
-#: .\visitors\templates\visitors\index.html:24
-msgid "来訪者（姓）"
-msgstr "来访者（姓）"
-
-#: .\visitors\templates\visitors\index.html:25
-msgid "来訪者（名）"
-msgstr "来访者（名）"
-
-#: .\visitors\templates\visitors\index.html:31
+#: authsys/templates/authsys/user_management.html:30
 msgid "操作"
 msgstr "操作"
 
-#: .\visitors\templates\visitors\index.html:50
-msgid "この来訪予定をキャンセルしますか？"
-msgstr "是否取消该来访预定？"
+#: authsys/templates/authsys/user_management.html:58
+msgid "管理者"
+msgstr "管理员"
 
-#: .\visitors\templates\visitors\index.html:51
-msgid "キャンセル"
+#: authsys/templates/authsys/user_management.html:60
+#: authsys/templates/authsys/user_management.html:114
+msgid "一般ユーザー"
+msgstr "普通用户"
+
+#: authsys/templates/authsys/user_management.html:65
+msgid "要変更"
+msgstr "需修改"
+
+#: authsys/templates/authsys/user_management.html:77
+msgid "PW再発行"
+msgstr "重发密码"
+
+#: authsys/templates/authsys/user_management.html:85
+#: cs_tasks/templates/cs_tasks/mailing_list.html:48
+#: meetings/templates/meetings/settings.html:71
+#: meetings/templates/meetings/settings.html:76
+#: meetings/templates/meetings/settings.html:88
+#: visitors/templates/visitors/settings.html:70
+#: visitors/templates/visitors/settings.html:75
+#: visitors/templates/visitors/settings.html:87
+msgid "削除"
+msgstr "删除"
+
+#: authsys/templates/authsys/user_management.html:111
+#: cs_tasks/templates/cs_tasks/mailing_list.html:21
+#: cs_tasks/templates/cs_tasks/mailing_list.html:27
+msgid "メールアドレス"
+msgstr "邮箱地址"
+
+#: authsys/templates/authsys/user_management.html:125
+msgid "行追加"
+msgstr "添加行"
+
+#: cs_tasks/templates/cs_tasks/_subnav.html:6
+msgid "全課題一覧"
+msgstr "全部课题一览"
+
+#: cs_tasks/templates/cs_tasks/_subnav.html:10
+msgid "自分の担当"
+msgstr "我的负责"
+
+#: cs_tasks/templates/cs_tasks/_subnav.html:16
+#: meetings/templates/meetings/settings.html:64
+#: visitors/templates/visitors/settings.html:63
+msgid "メーリングリスト"
+msgstr "邮件列表"
+
+#: cs_tasks/templates/cs_tasks/_subnav.html:20
+msgid "週報"
+msgstr "周报"
+
+#: cs_tasks/templates/cs_tasks/board.html:4
+#: cs_tasks/templates/cs_tasks/board.html:7
+#: cs_tasks/templates/cs_tasks/mailing_list.html:7
+#: cs_tasks/templates/cs_tasks/weekly_report.html:7
+#: templates/portal/base.html:45
+msgid "既存業務課題管理"
+msgstr "现有业务课题管理"
+
+#: cs_tasks/templates/cs_tasks/board.html:23
+msgid "自分の担当課題"
+msgstr "我负责的课题"
+
+#: cs_tasks/templates/cs_tasks/board.html:23
+msgid "課題・進捗一覧"
+msgstr "课题・进度一览"
+
+#: cs_tasks/templates/cs_tasks/board.html:25
+msgid "全件に戻る"
+msgstr "返回全部"
+
+#: cs_tasks/templates/cs_tasks/board.html:30
+msgid "課題追加"
+msgstr "添加课题"
+
+#: cs_tasks/templates/cs_tasks/board.html:50
+msgid "担当"
+msgstr "负责人"
+
+#: cs_tasks/templates/cs_tasks/board.html:51
+msgid "顧客"
+msgstr "客户"
+
+#: cs_tasks/templates/cs_tasks/board.html:52
+msgid "課題および進捗"
+msgstr "课题及进度"
+
+#: cs_tasks/templates/cs_tasks/board.html:53
+msgid "指示・コメント"
+msgstr "指示・评论"
+
+#: cs_tasks/templates/cs_tasks/board.html:54
+msgid "クローズ"
+msgstr "关闭"
+
+#: cs_tasks/templates/cs_tasks/board.html:80
+#: cs_tasks/templates/cs_tasks/board.html:188
+msgid "顧客名"
+msgstr "客户名称"
+
+#: cs_tasks/templates/cs_tasks/board.html:138
+msgid "コメントを追加"
+msgstr "添加评论"
+
+#: cs_tasks/templates/cs_tasks/board.html:169
+msgid "進捗を追加"
+msgstr "添加进度"
+
+#: cs_tasks/templates/cs_tasks/board.html:180
+msgid "課題はありません。「＋課題追加」から登録してください。"
+msgstr "暂无课题。请通过“＋添加课题”进行登记。"
+
+#: cs_tasks/templates/cs_tasks/board.html:192
+msgid "課題（28文字以内）"
+msgstr "课题（28字以内）"
+
+#: cs_tasks/templates/cs_tasks/mailing_list.html:4
+#: cs_tasks/templates/cs_tasks/mailing_list.html:15
+msgid "週報メーリングリスト"
+msgstr "周报邮件列表"
+
+#: cs_tasks/templates/cs_tasks/mailing_list.html:20
+msgid "表示名（任意）"
+msgstr "显示名称（可选）"
+
+#: cs_tasks/templates/cs_tasks/mailing_list.html:22
+#: meetings/templates/meetings/settings.html:80
+#: visitors/templates/visitors/settings.html:79
+msgid "追加"
+msgstr "添加"
+
+#: cs_tasks/templates/cs_tasks/mailing_list.html:27
+msgid "表示名"
+msgstr "显示名称"
+
+#: cs_tasks/templates/cs_tasks/mailing_list.html:27
+#: templates/envmon/all_devices.html:42
+msgid "状態"
+msgstr "状态"
+
+#: cs_tasks/templates/cs_tasks/mailing_list.html:34
+msgid "有効"
+msgstr "有效"
+
+#: cs_tasks/templates/cs_tasks/mailing_list.html:34
+msgid "無効"
+msgstr "无效"
+
+#: cs_tasks/templates/cs_tasks/mailing_list.html:41
+msgid "無効化"
+msgstr "停用"
+
+#: cs_tasks/templates/cs_tasks/mailing_list.html:41
+msgid "有効化"
+msgstr "启用"
+
+#: cs_tasks/templates/cs_tasks/mailing_list.html:53
+msgid "宛先が登録されていません。"
+msgstr "尚未登记收件人。"
+
+#: cs_tasks/templates/cs_tasks/weekly_report.html:4
+#: cs_tasks/templates/cs_tasks/weekly_report.html:16
+msgid "週報プレビュー"
+msgstr "周报预览"
+
+#: cs_tasks/templates/cs_tasks/weekly_report.html:18
+msgid "週報をメーリングリスト宛に今すぐ送信します。よろしいですか？"
+msgstr "将立即向邮件列表发送周报。确定吗？"
+
+#: cs_tasks/templates/cs_tasks/weekly_report.html:21
+#: meetings/templates/meetings/settings.html:146
+#: visitors/templates/visitors/settings.html:145
+msgid "今すぐ送信"
+msgstr "立即发送"
+
+#: cs_tasks/templates/cs_tasks/weekly_report.html:27
+msgid "対象期間"
+msgstr "对象期间"
+
+#: cs_tasks/templates/cs_tasks/weekly_report.html:32
+msgid "当週新規"
+msgstr "本周新增"
+
+#: cs_tasks/templates/cs_tasks/weekly_report.html:36
+#: cs_tasks/templates/cs_tasks/weekly_report.html:45
+#: cs_tasks/templates/cs_tasks/weekly_report.html:54
+#: cs_tasks/templates/cs_tasks/weekly_report.html:64
+#: cs_tasks/templates/cs_tasks/weekly_report.html:70
+msgid "なし"
+msgstr "无"
+
+#: cs_tasks/templates/cs_tasks/weekly_report.html:41
+msgid "当週進捗あり"
+msgstr "本周有进度"
+
+#: cs_tasks/templates/cs_tasks/weekly_report.html:50
+msgid "当週完了"
+msgstr "本周完成"
+
+#: cs_tasks/templates/cs_tasks/weekly_report.html:59
+msgid "期限超過・間近"
+msgstr "已逾期・临近"
+
+#: cs_tasks/templates/cs_tasks/weekly_report.html:60
+msgid "期限超過"
+msgstr "已逾期"
+
+#: cs_tasks/templates/cs_tasks/weekly_report.html:63
+#: cs_tasks/templates/cs_tasks/weekly_report.html:69
+msgid "期限"
+msgstr "期限"
+
+#: cs_tasks/templates/cs_tasks/weekly_report.html:66
+msgid "期限間近"
+msgstr "临近期限"
+
+#: cs_tasks/templates/cs_tasks/weekly_report.html:75
+msgid "サマリー"
+msgstr "汇总"
+
+#: cs_tasks/templates/cs_tasks/weekly_report.html:77
+msgid "進行中"
+msgstr "进行中"
+
+#: cs_tasks/templates/cs_tasks/weekly_report.html:77
+#: cs_tasks/templates/cs_tasks/weekly_report.html:78
+#: cs_tasks/templates/cs_tasks/weekly_report.html:79
+msgid "件"
+msgstr "件"
+
+#: cs_tasks/templates/cs_tasks/weekly_report.html:78
+msgid "完了"
+msgstr "完成"
+
+#: cs_tasks/templates/cs_tasks/weekly_report.html:79
+msgid "中止"
+msgstr "中止"
+
+#: meetings/templates/meetings/_subnav.html:8
+#: visitors/templates/visitors/_subnav.html:7
+msgid "本日以降一覧"
+msgstr "今后一览"
+
+#: meetings/templates/meetings/_subnav.html:13
+#: visitors/templates/visitors/_subnav.html:11
+msgid "過去一覧"
+msgstr "历史一览"
+
+#: meetings/templates/meetings/_subnav.html:18
+#: visitors/templates/visitors/_subnav.html:15
+msgid "新規登録"
+msgstr "新建登记"
+
+#: meetings/templates/meetings/_subnav.html:25
+#: visitors/templates/visitors/_subnav.html:22
+msgid "各種設定"
+msgstr "各项设置"
+
+#: meetings/templates/meetings/add.html:5
+#: meetings/templates/meetings/index.html:5
+msgid "本日以降の訪問・WEB会議予定"
+msgstr "今后的拜访・网络会议预定"
+
+#: meetings/templates/meetings/add.html:8
+#: meetings/templates/meetings/history.html:8
+#: meetings/templates/meetings/index.html:8
+#: meetings/templates/meetings/settings.html:8
+msgid "訪問・WEB会議予定管理"
+msgstr "拜访・网络会议预定管理"
+
+#: meetings/templates/meetings/add.html:19
+msgid "訪問・WEB会議予定新規登録"
+msgstr "拜访・网络会议预定新建登记"
+
+#: meetings/templates/meetings/add.html:31
+#: meetings/templates/meetings/history.html:27
+#: meetings/templates/meetings/index.html:27
+#: visitors/templates/visitors/add.html:30
+#: visitors/templates/visitors/history.html:27
+#: visitors/templates/visitors/index.html:26
+msgid "来訪日"
+msgstr "来访日期"
+
+#: meetings/templates/meetings/add.html:32
+#: meetings/templates/meetings/history.html:28
+#: meetings/templates/meetings/index.html:28
+#: visitors/templates/visitors/add.html:31
+#: visitors/templates/visitors/history.html:28
+#: visitors/templates/visitors/index.html:27
+msgid "未定"
+msgstr "未定"
+
+#: meetings/templates/meetings/add.html:33
+#: meetings/templates/meetings/history.html:29
+#: meetings/templates/meetings/index.html:29
+#: visitors/templates/visitors/add.html:32
+#: visitors/templates/visitors/history.html:29
+#: visitors/templates/visitors/index.html:28
+msgid "時間"
+msgstr "时间"
+
+#: meetings/templates/meetings/add.html:34
+#: meetings/templates/meetings/history.html:30
+#: meetings/templates/meetings/index.html:30
+#: visitors/templates/visitors/add.html:33
+#: visitors/templates/visitors/history.html:30
+#: visitors/templates/visitors/index.html:29
+msgid "正式会社名"
+msgstr "公司全称"
+
+#: meetings/templates/meetings/add.html:37
+#: meetings/templates/meetings/history.html:33
+#: meetings/templates/meetings/index.html:33
+#: visitors/templates/visitors/add.html:36
+#: visitors/templates/visitors/history.html:33
+#: visitors/templates/visitors/index.html:32
+msgid "役職"
+msgstr "职位"
+
+#: meetings/templates/meetings/add.html:38
+#: meetings/templates/meetings/history.html:34
+#: meetings/templates/meetings/index.html:34
+#: visitors/templates/visitors/add.html:37
+#: visitors/templates/visitors/history.html:34
+#: visitors/templates/visitors/index.html:33
+msgid "目的"
+msgstr "目的"
+
+#: meetings/templates/meetings/add.html:39
+#: meetings/templates/meetings/history.html:35
+#: meetings/templates/meetings/index.html:35
+msgid "訪問・WEB"
+msgstr "拜访・网络"
+
+#: meetings/templates/meetings/add.html:40
+#: meetings/templates/meetings/history.html:36
+#: meetings/templates/meetings/index.html:36
+#: visitors/templates/visitors/add.html:39
+#: visitors/templates/visitors/history.html:36
+#: visitors/templates/visitors/index.html:35
+msgid "入力者"
+msgstr "填写人"
+
+#: meetings/templates/meetings/add.html:92
+#: meetings/templates/meetings/add.html:309
+#: meetings/templates/meetings/add.html:443
+#: meetings/templates/meetings/history.html:439
+#: meetings/templates/meetings/index.html:451
+msgid "選択してください"
+msgstr "请选择"
+
+#: meetings/templates/meetings/add.html:110 templates/envmon/locations.html:45
+#: templates/envmon/settings.html:78 visitors/templates/visitors/add.html:99
+msgid "保存"
+msgstr "保存"
+
+#: meetings/templates/meetings/add.html:113
+#: visitors/templates/visitors/add.html:102
+msgid "行を追加"
+msgstr "添加行"
+
+#: meetings/templates/meetings/add.html:384
+#: visitors/templates/visitors/add.html:263
+msgid "一覧に戻る"
+msgstr "返回列表"
+
+#: meetings/templates/meetings/add.html:393
+#: meetings/templates/meetings/history.html:442
+#: meetings/templates/meetings/index.html:454
+msgid "訪問"
+msgstr "拜访"
+
+#: meetings/templates/meetings/add.html:396
+#: meetings/templates/meetings/history.html:445
+#: meetings/templates/meetings/index.html:457
+msgid "WEB会議"
+msgstr "网络会议"
+
+#: meetings/templates/meetings/history.html:5
+#: meetings/templates/meetings/history.html:18
+msgid "過去の訪問・WEB会議予定一覧"
+msgstr "历史拜访・网络会议预定一览"
+
+#: meetings/templates/meetings/history.html:31
+#: meetings/templates/meetings/index.html:31
+#: visitors/templates/visitors/history.html:31
+#: visitors/templates/visitors/index.html:30
+msgid "来訪者（姓）"
+msgstr "来访者（姓）"
+
+#: meetings/templates/meetings/history.html:32
+#: meetings/templates/meetings/index.html:32
+#: visitors/templates/visitors/history.html:32
+#: visitors/templates/visitors/index.html:31
+msgid "来訪者（名）"
+msgstr "来访者（名）"
+
+#: meetings/templates/meetings/history.html:37
+#: meetings/templates/meetings/index.html:37
+#: visitors/templates/visitors/history.html:37
+#: visitors/templates/visitors/index.html:36
+msgid "取消"
 msgstr "取消"
 
-#: .\visitors\templates\visitors\index.html:54
-msgid "編集"
-msgstr "编辑"
+#: meetings/templates/meetings/history.html:153
+msgid "該当する過去の訪問・WEB会議予定はありません。"
+msgstr "没有符合条件的历史拜访・网络会议预定。"
 
-#: .\visitors\templates\visitors\index.html:61
+#: meetings/templates/meetings/index.html:18
+msgid "本日以降の訪問・WEB会議予定一覧"
+msgstr "今后的拜访・网络会议预定一览"
+
+#: meetings/templates/meetings/index.html:153
+msgid "本日以降の訪問・WEB会議予定はありません。"
+msgstr "今后没有拜访・网络会议预定。"
+
+#: meetings/templates/meetings/settings.html:5
+#: meetings/templates/meetings/settings.html:16
+msgid "訪問・WEB会議メール設定"
+msgstr "拜访・网络会议邮件设置"
+
+#: meetings/templates/meetings/settings.html:36
+#: visitors/templates/visitors/settings.html:35
+msgid "自動送信の時刻設定"
+msgstr "自动发送时间设置"
+
+#: meetings/templates/meetings/settings.html:37
+#: visitors/templates/visitors/settings.html:36
+msgid "自動で送信する時刻を選択してください。"
+msgstr "请选择自动发送的时间。"
+
+#: meetings/templates/meetings/settings.html:39
+#: visitors/templates/visitors/settings.html:38
+msgid "時"
+msgstr "时"
+
+#: meetings/templates/meetings/settings.html:50
+#: visitors/templates/visitors/settings.html:49
+msgid "分"
+msgstr "分"
+
+#: meetings/templates/meetings/settings.html:65
+#: visitors/templates/visitors/settings.html:64
+msgid "メール送信先を 1 行ずつ追加してください。"
+msgstr "请逐行添加邮件收件人。"
+
+#: meetings/templates/meetings/settings.html:101
+#: visitors/templates/visitors/settings.html:100
+msgid "設定を保存"
+msgstr "保存设置"
+
+#: meetings/templates/meetings/settings.html:102
+#: visitors/templates/visitors/settings.html:101
+msgid "一覧へ戻る"
+msgstr "返回列表"
+
+#: meetings/templates/meetings/settings.html:107
+msgid "データメンテナンス（Meeting 一覧）"
+msgstr "数据维护（Meeting 一览）"
+
+#: meetings/templates/meetings/settings.html:109
+msgid "現在の Meeting 一覧を CSV でエクスポート／インポートできます。"
+msgstr "可以将当前的 Meeting 一览以 CSV 导出／导入。"
+
+#: meetings/templates/meetings/settings.html:114
+msgid "Meeting 一覧 CSV をダウンロード"
+msgstr "下载 Meeting 一览 CSV"
+
+#: meetings/templates/meetings/settings.html:123
+msgid "Meeting 一覧 CSV をアップロード（全件入れ替え）"
+msgstr "上传 Meeting 一览 CSV（全部替换）"
+
+#: meetings/templates/meetings/settings.html:126
+msgid ""
+"※ ダウンロードした CSV を編集してアップロードすると、Meeting データが全件入れ"
+"替えられます。"
+msgstr ""
+
+#: meetings/templates/meetings/settings.html:127
+#: visitors/templates/visitors/settings.html:126
+msgid "※ CSV 内の id カラムは無視され、新しい ID が採番されます。"
+msgstr "※ CSV 中的 id 列将被忽略，并重新分配新的 ID。"
+
+#: meetings/templates/meetings/settings.html:133
+#: visitors/templates/visitors/settings.html:132
+msgid "今すぐメール送信"
+msgstr "立即发送邮件"
+
+#: meetings/templates/meetings/settings.html:134
+#: visitors/templates/visitors/settings.html:133
+msgid "現在の設定で、1回だけ手動でメールを送信します。"
+msgstr "以当前设置手动发送一次邮件。"
+
+#: meetings/templates/meetings/settings.html:140
+#: visitors/templates/visitors/settings.html:139
+msgid "メールプレビュー"
+msgstr "邮件预览"
+
+#: templates/authsys/login.html:4 templates/authsys/login.html:7
+#: templates/authsys/login.html:23 templates/portal/base.html:36
+msgid "ログイン"
+msgstr "登录"
+
+#: templates/authsys/login.html:10
+msgid "メールアドレスまたはパスワードが正しくありません"
+msgstr "邮箱地址或密码不正确"
+
+#: templates/authsys/login.html:27
+msgid "パスワードを忘れた場合はこちら"
+msgstr "忘记密码请点击这里"
+
+#: templates/authsys/profile.html:4 templates/authsys/profile.html:7
+msgid "プロフィール"
+msgstr "个人资料"
+
+#: templates/authsys/profile.html:8
+msgid "ログイン中のユーザー"
+msgstr "当前登录用户"
+
+#: templates/authsys/profile.html:10
+msgid "メニュー"
+msgstr "菜单"
+
+#: templates/authsys/profile.html:12
+msgid "（ここに）来客予定ページへのリンク"
+msgstr "（此处）来客预定页面的链接"
+
+#: templates/authsys/profile.html:13
+msgid "（ここに）日報ページへのリンク"
+msgstr "（此处）日报页面的链接"
+
+#: templates/authsys/profile.html:14
+msgid "（ここに）温湿度管理ページへのリンク"
+msgstr "（此处）温湿度管理页面的链接"
+
+#: templates/authsys/profile.html:17
+msgid "※ ここから各アプリの画面へリンクを追加していきます。"
+msgstr "※ 今后将从这里添加各应用页面的链接。"
+
+#: templates/envmon/all_devices.html:4 templates/envmon/all_devices.html:11
+msgid "全デバイス稼働状況一覧"
+msgstr "全部设备运行状态一览"
+
+#: templates/envmon/all_devices.html:16
+#: templates/envmon/history_download.html:17 templates/envmon/index.html:17
+#: templates/envmon/locations.html:17 templates/envmon/settings.html:17
+#: templates/envmon/warehouse_assign.html:16
+msgid "倉庫別モニタ"
+msgstr "各仓库监控"
+
+#: templates/envmon/all_devices.html:17
+#: templates/envmon/history_download.html:18 templates/envmon/index.html:18
+#: templates/envmon/locations.html:18 templates/envmon/settings.html:18
+#: templates/envmon/warehouse_assign.html:17
+msgid "全デバイス一覧"
+msgstr "全部设备一览"
+
+#: templates/envmon/all_devices.html:18
+#: templates/envmon/history_download.html:19
+#: templates/envmon/history_download.html:50 templates/envmon/index.html:19
+#: templates/envmon/locations.html:19 templates/envmon/settings.html:19
+#: templates/envmon/warehouse_assign.html:18
+msgid "CSV ダウンロード"
+msgstr "CSV 下载"
+
+#: templates/envmon/all_devices.html:20
+#: templates/envmon/history_download.html:21 templates/envmon/index.html:21
+#: templates/envmon/locations.html:21 templates/envmon/settings.html:21
+#: templates/envmon/warehouse_assign.html:20
+msgid "設定"
+msgstr "设置"
+
+#: templates/envmon/all_devices.html:21
+#: templates/envmon/history_download.html:22 templates/envmon/index.html:22
+#: templates/envmon/locations.html:22 templates/envmon/settings.html:22
+#: templates/envmon/warehouse_assign.html:21
+msgid "倉庫割当"
+msgstr "仓库分配"
+
+#: templates/envmon/all_devices.html:31
+msgid "最終キャッシュ更新時刻"
+msgstr "最后缓存更新时间"
+
+#: templates/envmon/all_devices.html:37
+#: templates/envmon/history_download.html:41
+msgid "シリアルナンバー"
+msgstr "序列号"
+
+#: templates/envmon/all_devices.html:38
+msgid "倉庫"
+msgstr "仓库"
+
+#: templates/envmon/all_devices.html:39
+msgid "温度"
+msgstr "温度"
+
+#: templates/envmon/all_devices.html:40
+msgid "湿度"
+msgstr "湿度"
+
+#: templates/envmon/all_devices.html:41
+msgid "最終更新"
+msgstr "最后更新"
+
+#: templates/envmon/history_download.html:5
+msgid "履歴CSVダウンロード"
+msgstr "历史CSV下载"
+
+#: templates/envmon/history_download.html:12
+msgid "温湿度履歴 CSV ダウンロード"
+msgstr "温湿度历史 CSV 下载"
+
+#: templates/envmon/history_download.html:31
+msgid "温湿度の履歴データを CSV 形式でダウンロードできます。"
+msgstr "可以将温湿度历史数据以 CSV 格式下载。"
+
+#: templates/envmon/history_download.html:34
+msgid "履歴データ管理（CSV 出力）"
+msgstr "历史数据管理（CSV 导出）"
+
+#: templates/envmon/history_download.html:37
+msgid "デバイス別 CSV ダウンロード"
+msgstr "按设备 CSV 下载"
+
+#: templates/envmon/history_download.html:43
+msgid "-- SN を選択 --"
+msgstr "-- 选择序列号 --"
+
+#: templates/envmon/history_download.html:57
+#: templates/envmon/history_download.html:80
+msgid "倉庫別 CSV ダウンロード"
+msgstr "按仓库 CSV 下载"
+
+#: templates/envmon/history_download.html:61
+msgid "倉庫ロケーション"
+msgstr "仓库位置"
+
+#: templates/envmon/history_download.html:63
+msgid "-- 倉庫を選択 --"
+msgstr "-- 选择仓库 --"
+
+#: templates/envmon/history_download.html:71
+msgid "期間指定"
+msgstr "指定期间"
+
+#: templates/envmon/history_download.html:75
+msgid "※ 未指定の場合は全期間（その倉庫の履歴全体）が対象になります。"
+msgstr "※ 未指定时，将以全部期间（该仓库的全部历史）为对象。"
+
+#: templates/envmon/history_download.html:87
+msgid "全デバイス（期間指定）CSV ダウンロード"
+msgstr "全部设备（指定期间）CSV 下载"
+
+#: templates/envmon/history_download.html:91
+msgid "期間"
+msgstr "期间"
+
+#: templates/envmon/history_download.html:96
+msgid "全デバイス CSV ダウンロード"
+msgstr "全部设备 CSV 下载"
+
+#: templates/envmon/index.html:5 templates/envmon/index.html:12
+msgid "温湿度モニタ（倉庫別）"
+msgstr "温湿度监控（按仓库）"
+
+#: templates/envmon/index.html:31
+#, python-format
+msgid "リアルタイム表示 / 更新間隔: %(interval)s 秒"
+msgstr "实时显示 / 更新间隔: %(interval)s 秒"
+
+#: templates/envmon/index.html:32
+msgid "表示更新時刻"
+msgstr "显示更新时间"
+
+#: templates/envmon/locations.html:5 templates/envmon/locations.html:12
+#: templates/envmon/locations.html:30
+msgid "倉庫名の編集"
+msgstr "编辑仓库名称"
+
+#: templates/envmon/locations.html:39
+msgid "(外気測定用)"
+msgstr "(室外测量用)"
+
+#: templates/envmon/locations.html:50
+msgid "設定メニューに戻る"
+msgstr "返回设置菜单"
+
+#: templates/envmon/settings.html:5
+msgid "設定メニュー"
+msgstr "设置菜单"
+
+#: templates/envmon/settings.html:12
+msgid "温湿度モニタ 設定"
+msgstr "温湿度监控 设置"
+
+#: templates/envmon/settings.html:31
+msgid "表示（フロントエンド）設定"
+msgstr "显示（前端）设置"
+
+#: templates/envmon/settings.html:37
+msgid "画面の表示更新間隔（秒）"
+msgstr "画面显示更新间隔（秒）"
+
+#: templates/envmon/settings.html:40
+msgid "※ ゲージとリアルタイム表示の更新間隔"
+msgstr "※ 仪表盘与实时显示的更新间隔"
+
+#: templates/envmon/settings.html:44
+msgid "バックエンド設定（キャッシュ / 履歴）"
+msgstr "后端设置（缓存 / 历史）"
+
+#: templates/envmon/settings.html:47
+msgid "API キャッシュ取得間隔（秒）"
+msgstr "API 缓存获取间隔（秒）"
+
+#: templates/envmon/settings.html:51
+msgid ""
+"※ 外部APIからリアルタイムデータを取得してキャッシュする間隔（5分以上推奨）"
+msgstr ""
+
+#: templates/envmon/settings.html:56
+msgid "キャッシュ保存期間（時間）"
+msgstr "缓存保存期限（小时）"
+
+#: templates/envmon/settings.html:62
+msgid "ログ保存先ディレクトリ"
+msgstr "日志保存目录"
+
+#: templates/envmon/settings.html:68
+msgid "履歴データ自動取り込み時刻（1日1回）"
+msgstr "历史数据自动导入时间（每日一次）"
+
+#: templates/envmon/settings.html:72
+msgid "※ 1weilian の履歴データを DeviceHistory に取り込む時刻です。"
+msgstr "※ 将 1weilian 的历史数据导入 DeviceHistory 的时间。"
+
+#: templates/envmon/settings.html:73
+msgid ""
+"※ 深夜などの時間帯を指定してください（取り込み中はリアルタイムキャッシュ取得"
+"を停止します）。"
+msgstr ""
+
+#: templates/envmon/settings.html:83
+msgid "手動実行（バックエンド手動トリガー）"
+msgstr "手动执行（后端手动触发）"
+
+#: templates/envmon/settings.html:93
+msgid "履歴データを手動取得"
+msgstr "手动获取历史数据"
+
+#: templates/envmon/settings.html:97
+msgid "※ 現在、自動または他の手動処理で履歴取得中です。"
+msgstr "※ 当前正在通过自动或其他手动处理获取历史数据。"
+
+#: templates/envmon/warehouse_assign.html:4
+msgid "倉庫ごとのデバイス割当"
+msgstr "各仓库的设备分配"
+
+#: templates/envmon/warehouse_assign.html:11
+msgid "温湿度モニタ - 倉庫ごとのデバイス割当"
+msgstr "温湿度监控 - 各仓库的设备分配"
+
+#: templates/envmon/warehouse_assign.html:31
+msgid "タグをドラッグ＆ドロップしてデバイスの所属倉庫を変更できます。"
+msgstr "通过拖放标签可以更改设备所属仓库。"
+
+#: templates/envmon/warehouse_assign.html:48
+msgid "外気測定用"
+msgstr "室外测量用"
+
+#: templates/envmon/warehouse_assign.html:60
+msgid "割当なしデバイス"
+msgstr "未分配设备"
+
+#: templates/envmon/warehouse_assign.html:71
+msgid "設定画面に戻る"
+msgstr "返回设置画面"
+
+#: templates/portal/base.html:33
+msgid "ログアウト"
+msgstr "退出登录"
+
+#: templates/portal/base.html:41
+msgid "ホーム"
+msgstr "主页"
+
+#: templates/portal/base.html:42
+msgid "来客予定"
+msgstr "来客预定"
+
+#: templates/portal/base.html:43
+msgid "客先訪問・WEB会議"
+msgstr "客户拜访・网络会议"
+
+#: templates/portal/base.html:44
+msgid "温湿度モニター"
+msgstr "温湿度监控"
+
+#: templates/portal/base.html:46
+msgid "日報"
+msgstr "日报"
+
+#: templates/portal/base.html:46
+msgid "準備中"
+msgstr "准备中"
+
+#: templates/portal/home.html:4
+msgid "ポータルトップ"
+msgstr "门户首页"
+
+#: templates/portal/home.html:7
+msgid "社内ポータル ホーム"
+msgstr "公司内部门户 主页"
+
+#: templates/portal/home.html:11
+#, python-format
+msgid ""
+"\n"
+"        %(email)s さん、ようこそ。\n"
+"        "
+msgstr ""
+
+#: templates/portal/home.html:15
+msgid "ログインしてご利用ください。"
+msgstr "请登录后使用。"
+
+#: templates/portal/home.html:21 visitors/templates/visitors/add.html:7
+#: visitors/templates/visitors/history.html:8
+#: visitors/templates/visitors/index.html:7
+#: visitors/templates/visitors/settings.html:7
+msgid "来客予定管理"
+msgstr "来客预定管理"
+
+#: templates/portal/home.html:22
+msgid ""
+"本日以降の来訪予定の一覧表示・登録・キャンセル・編集、および毎朝の予定メール"
+"送信を管理します。"
+msgstr ""
+
+#: templates/portal/home.html:23
+msgid "来客予定画面を開く"
+msgstr "打开来客预定页面"
+
+#: templates/portal/home.html:24
+msgid "メール送信設定を開く"
+msgstr "打开邮件发送设置"
+
+#: templates/portal/home.html:28
+msgid "温湿度モニタリング"
+msgstr "温湿度监控"
+
+#: templates/portal/home.html:30
+msgid ""
+"倉庫別の温湿度状況を表示・監視するシステムです。リアルタイム表示、全デバイス"
+"一覧、倉庫割当、履歴ダウンロードなどを行います。"
+msgstr ""
+
+#: templates/portal/home.html:33
+msgid "倉庫別温湿度モニタを開く"
+msgstr "打开各仓库温湿度监控"
+
+#: templates/portal/home.html:36
+msgid "全デバイス稼働状況一覧を開く"
+msgstr "打开全部设备运行状态一览"
+
+#: templates/portal/home.html:39
+msgid "温湿度ログ・履歴設定を開く"
+msgstr "打开温湿度日志・历史设置"
+
+#: templates/portal/home.html:44
+msgid "日報管理システム"
+msgstr "日报管理系统"
+
+#: templates/portal/home.html:45
+msgid "各担当者の日報入力・閲覧・集計を行うシステムへのリンク（現在構築中）。"
+msgstr "用于各负责人填写・查看・汇总日报的系统链接（建设中）。"
+
+#: templates/portal/home.html:46
+msgid "※ 準備中"
+msgstr "※ 准备中"
+
+#: visitors/templates/visitors/add.html:4
+msgid "来訪予定登録"
+msgstr "来访预定登记"
+
+#: visitors/templates/visitors/add.html:18
+msgid "来客予定新規登録"
+msgstr "来客预定新建登记"
+
+#: visitors/templates/visitors/add.html:38
+#: visitors/templates/visitors/history.html:35
+#: visitors/templates/visitors/index.html:34
+msgid "訪問場所"
+msgstr "访问地点"
+
+#: visitors/templates/visitors/history.html:5
+#: visitors/templates/visitors/history.html:18
+msgid "過去の来客予定一覧"
+msgstr "历史来客预定一览"
+
+#: visitors/templates/visitors/history.html:148
+msgid "該当する過去の来訪者はありません。"
+msgstr "没有符合条件的历史来访者。"
+
+#: visitors/templates/visitors/index.html:4
+msgid "本日以降の来客予定"
+msgstr "今后的来客预定"
+
+#: visitors/templates/visitors/index.html:17
+msgid "本日以降の来客予定一覧"
+msgstr "今后的来客预定一览"
+
+#: visitors/templates/visitors/index.html:152
 msgid "本日以降の来訪予定はありません。"
 msgstr "今天以后没有来访预定。"
 
-#: .\visitors\templates\visitors\index.html:64
-msgid "来訪予定を登録する"
-msgstr "登记来访预定"
+#: visitors/templates/visitors/settings.html:4
+#: visitors/templates/visitors/settings.html:15
+msgid "来客予定メール設定"
+msgstr "来客预定邮件设置"
+
+#: visitors/templates/visitors/settings.html:106
+msgid "データメンテナンス（Visitor 一覧）"
+msgstr "数据维护（Visitor 一览）"
+
+#: visitors/templates/visitors/settings.html:108
+msgid "現在の Visitor 一覧を CSV でエクスポート／インポートできます。"
+msgstr "可以将当前的 Visitor 一览以 CSV 导出／导入。"
+
+#: visitors/templates/visitors/settings.html:113
+msgid "Visitor 一覧 CSV をダウンロード"
+msgstr "下载 Visitor 一览 CSV"
+
+#: visitors/templates/visitors/settings.html:122
+msgid "Visitor 一覧 CSV をアップロード（全件入れ替え）"
+msgstr "上传 Visitor 一览 CSV（全部替换）"
+
+#: visitors/templates/visitors/settings.html:125
+msgid ""
+"※ ダウンロードした CSV を編集してアップロードすると、Visitor データが全件入れ"
+"替えられます。"
+msgstr ""
+
+#~ msgid "CS課題"
+#~ msgstr "CS课题"
+
+#~ msgid "備考"
+#~ msgstr "备注"
+
+#~ msgid "来訪予定の編集"
+#~ msgstr "编辑来访预定"
+
+#~ msgid "編集ページ"
+#~ msgstr "编辑页面"
+
+#~ msgid "戻る"
+#~ msgstr "返回"
+
+#~ msgid "この来訪予定をキャンセルしますか？"
+#~ msgstr "是否取消该来访预定？"
+
+#~ msgid "キャンセル"
+#~ msgstr "取消"
+
+#~ msgid "編集"
+#~ msgstr "编辑"
+
+#~ msgid "来訪予定を登録する"
+#~ msgstr "登记来访预定"

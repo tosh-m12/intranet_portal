@@ -15,31 +15,39 @@
 
 <!-- ======== サイドバー ======== -->
 <div class="sidebar">
-    <div class="title">NGLS-CS Portal</div>
+    <div class="title-row">
+        <div class="title">NGLS-CS Portal</div>
+        <div class="lang-toggle" role="group" aria-label="language switch">
+            <a href="{% url 'switch_language' 'ja' %}"
+               class="lang-opt {% if LANGUAGE_CODE == 'ja' %}active{% endif %}">日</a>
+            <a href="{% url 'switch_language' 'zh-hans' %}"
+               class="lang-opt {% if LANGUAGE_CODE == 'zh-hans' %}active{% endif %}">中</a>
+        </div>
+    </div>
 
     <div class="user-info">
         {% if user.is_authenticated %}
             {{ user.email }}<br>
             <form method="post" action="{% url 'logout' %}" style="display:inline;">
                 {% csrf_token %}
-                <button type="submit" class="logout-link-button">ログアウト</button>
+                <button type="submit" class="logout-link-button">{% trans "ログアウト" %}</button>
             </form>
         {% else %}
-            <a href="{% url 'authsys:login' %}" style="color:#ffddaa;">ログイン</a>
+            <a href="{% url 'authsys:login' %}" style="color:#ffddaa;">{% trans "ログイン" %}</a>
         {% endif %}
     </div>
 
     <nav>
-        <a href="{% url 'home' %}">🏠 ホーム</a>
-        <a href="{% url 'visitors:index' %}">📅 来客予定</a>
-        <a href="{% url 'meetings:index' %}">📅 客先訪問・WEB会議</a>
-        <a href="{% url 'envmon:index' %}">🌡 温湿度モニター</a>
-        <a href="{% url 'cs_tasks:index' %}">📋 CS課題</a>
-        <a href="#">📝 日報<br>（準備中）</a>
+        <a href="{% url 'home' %}">🏠 {% trans "ホーム" %}</a>
+        <a href="{% url 'visitors:index' %}">📅 {% trans "来客予定" %}</a>
+        <a href="{% url 'meetings:index' %}">📅 {% trans "客先訪問・WEB会議" %}</a>
+        <a href="{% url 'envmon:index' %}">🌡 {% trans "温湿度モニター" %}</a>
+        <a href="{% url 'cs_tasks:index' %}">📋 {% trans "既存業務課題管理" %}</a>
+        <a href="#">📝 {% trans "日報" %}<br>（{% trans "準備中" %}）</a>
 
         {# ▼ 管理者だけ「ユーザー管理」を表示 #}
         {% if user.is_superuser or user.is_staff %}
-            <a href="{% url 'authsys:user_management' %}">👥 ユーザー管理</a>
+            <a href="{% url 'authsys:user_management' %}">👥 {% trans "ユーザー管理" %}</a>
         {% endif %}
     </nav>
 </div>

@@ -1,25 +1,25 @@
 {# templates/envmon/index.html #}
 {% extends "portal/base.html" %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}温湿度モニタ（倉庫別）{% endblock %}
+{% block title %}{% trans "温湿度モニタ（倉庫別）" %}{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'envmon/style.css' %}">
 {% endblock %}
 
 {% block app_name %}
-<h1>🌡️ 温湿度モニタ（倉庫別）</h1>
+<h1>🌡️ {% trans "温湿度モニタ（倉庫別）" %}</h1>
 {% endblock %}
 
 {% block subnav %}
 <div class="subnav">
-    <a href="{% url 'envmon:index' %}" class="active">📊 倉庫別モニタ</a>
-    <a href="{% url 'envmon:all_devices' %}">📋 全デバイス一覧</a>
-    <a href="{% url 'envmon:history_csv_menu' %}">📥 CSV ダウンロード</a>
+    <a href="{% url 'envmon:index' %}" class="active">📊 {% trans "倉庫別モニタ" %}</a>
+    <a href="{% url 'envmon:all_devices' %}">📋 {% trans "全デバイス一覧" %}</a>
+    <a href="{% url 'envmon:history_csv_menu' %}">📥 {% trans "CSV ダウンロード" %}</a>
     {% if user.is_staff %}
-        <a href="{% url 'envmon:settings' %}">⚙ 設定</a>
-        <a href="{% url 'envmon:warehouse_assign' %}">🏷 倉庫割当</a>
+        <a href="{% url 'envmon:settings' %}">⚙ {% trans "設定" %}</a>
+        <a href="{% url 'envmon:warehouse_assign' %}">🏷 {% trans "倉庫割当" %}</a>
     {% endif %}
 </div>
 {% endblock %}
@@ -28,8 +28,8 @@
 <div class="envmon-page">
 
     <p class="envmon-desc">
-        リアルタイム表示 / 更新間隔: {{ interval }} 秒<br>
-        表示更新時刻: <span id="envmon-realtime-updated">--</span>
+        {% blocktrans %}リアルタイム表示 / 更新間隔: {{ interval }} 秒{% endblocktrans %}<br>
+        {% trans "表示更新時刻" %}: <span id="envmon-realtime-updated">--</span>
     </p>
 
     <!-- JS が読み取る root 要素 -->
