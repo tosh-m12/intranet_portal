@@ -1,0 +1,27 @@
+# cs_tasks/urls.py
+from django.urls import path
+from . import views
+
+app_name = "cs_tasks"
+
+urlpatterns = [
+    path("", views.index, name="index"),
+    path("my/", views.my_tasks, name="my"),
+    path("new/", views.task_new, name="new"),
+    path("add/", views.task_add_inline, name="task_add_inline"),
+    path("<int:task_id>/edit/", views.task_edit, name="edit"),
+    path("<int:task_id>/title/", views.edit_title, name="edit_title"),
+    path("client/", views.edit_client, name="edit_client"),
+    path("<int:task_id>/progress/", views.add_progress, name="add_progress"),
+    path("<int:task_id>/complete/", views.toggle_complete, name="toggle_complete"),
+    path("<int:task_id>/cancel/", views.toggle_cancel, name="toggle_cancel"),
+    path("progress/<int:progress_id>/edit/", views.edit_progress, name="edit_progress"),
+    path("progress/<int:progress_id>/comment/", views.add_comment, name="add_comment"),
+    path(
+        "progress/<int:progress_id>/close/",
+        views.toggle_progress_close,
+        name="toggle_progress_close",
+    ),
+    path("mailing-list/", views.mailing_list, name="mailing_list"),
+    path("weekly-report/", views.weekly_report, name="weekly_report"),
+]

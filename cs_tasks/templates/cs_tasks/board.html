@@ -1,0 +1,202 @@
+{% extends "portal/base.html" %}
+{% load static %}
+
+{% block title %}{{ board_title }} - 社内ポータル{% endblock %}
+
+{% block app_name %}
+<h1>📋 CS課題管理</h1>
+{% endblock %}
+
+{% block subnav %}
+    {% include "cs_tasks/_subnav.html" with active_tab=is_my_view|yesno:"my,index" %}
+{% endblock %}
+
+{% block content %}
+{% if messages %}
+<ul class="cs-messages">
+    {% for m in messages %}<li class="{{ m.tags }}">{{ m }}</li>{% endfor %}
+</ul>
+{% endif %}
+
+<div class="page-header">
+    <div>
+        <h2 style="margin:0;">{{ board_title }}</h2>
+        {% if filtered_user and not is_my_view %}
+            <a class="btn btn-secondary btn-xs" href="{% url 'cs_tasks:index' %}">▶ 全件に戻る</a>
+        {% endif %}
+    </div>
+    <div>
+        <span id="nt-warning" class="nt-warning" style="display:none;"></span>
+        <button type="button" class="btn btn-primary" id="show-new-task">＋課題追加</button>
+    </div>
+</div>
+
+{# 課題インライン追加用フォーム（実体。表内の input は form 属性で紐付け） #}
+<form id="ntf" method="post" action="{% url 'cs_tasks:task_add_inline' %}" autocomplete="off">{% csrf_token %}</form>
+
+<div class="table-wrapper">
+<table class="cs-board">
+    <colgroup>
+        <col class="cg-assignee">
+        <col class="cg-client">
+        <col class="cg-date">
+        <col class="cg-progress">
+        <col class="cg-date">
+        <col class="cg-comment">
+        <col class="cg-close">
+    </colgroup>
+    <thead>
+        <tr>
+            <th class="col-assignee">担当</th>
+            <th class="col-client">顧客</th>
+            <th colspan="2">課題および進捗</th>
+            <th colspan="2">指示・コメント</th>
+            <th class="col-close">クローズ</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for group in groups %}
+            {% for client in group.clients %}
+                {% for task in client.tasks %}
+                {# ===== 課題タイトル行 ===== #}
+                <tr data-task-id="{{ task.id }}" class="task-title-row {% if task.is_closed %}task-closed{% endif %}">
+                    {% if forloop.parentloop.first and forloop.first %}
+                    <td class="col-assignee" rowspan="{{ group.total_rows }}">
+                        <a href="{% url 'cs_tasks:index' %}?assignee={{ group.assignee_id|default:'' }}">
+                            {{ group.assignee_name }}
+                        </a>
+                    </td>
+                    {% endif %}
+                    {% comment %}顧客名は課題ごとに個別編集。重複（同一顧客の2件目以降）は普段非表示、顧客列ホバーでうっすら表示。{% endcomment %}
+                    <td class="col-client client-cell {% if not forloop.first %}client-dup{% endif %} {% if not forloop.last %}client-merge-down{% endif %}"
+                        rowspan="{{ task.row_count }}">
+                        {% if task.can_edit %}
+                        <form method="post" action="{% url 'cs_tasks:edit_client' %}" class="add-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <input type="hidden" name="task_ids" value="{{ task.id }}">
+                            <input type="text" name="cs_cust" class="add-input client-input"
+                                   value="{{ task.client_name }}" placeholder="顧客名" autocomplete="off">
+                        </form>
+                        {% else %}
+                            <span class="client-text">{{ task.client_name|default:"—" }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="col-task" colspan="4">
+                        {% if task.can_edit %}
+                        <form method="post" action="{% url 'cs_tasks:edit_title' task.id %}" class="add-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <input type="text" name="cs_subj" class="add-input task-title-input"
+                                   value="{{ task.title }}" maxlength="28" autocomplete="off">
+                        </form>
+                        {% else %}
+                            <span class="task-title">{{ task.title }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="col-close">
+                        {% if is_admin %}
+                        <label class="switch">
+                            <input type="checkbox" class="close-toggle task-toggle"
+                                   {% if task.is_closed %}checked{% endif %}
+                                   data-url="{% url 'cs_tasks:toggle_complete' task.id %}"
+                                   data-task-id="{{ task.id }}">
+                            <span class="slider round"></span>
+                        </label>
+                        {% endif %}
+                    </td>
+                </tr>
+
+                {# ===== 進捗行（進捗 ↔ コメント 1:1） ===== #}
+                {% for p in task.progress_list %}
+                <tr data-task-id="{{ task.id }}" data-progress-id="{{ p.id }}"
+                    class="progress-row {% if task.is_closed %}task-closed{% endif %} {% if p.is_closed %}prog-closed{% endif %}">
+                    {# 進捗の日付（初回投稿日。編集しても変えない） #}
+                    <td class="col-date">{{ p.created_at|date:"n/j/Y" }}</td>
+                    <td class="col-progress">
+                        {% if task.can_edit %}
+                            <form method="post" action="{% url 'cs_tasks:edit_progress' p.id %}" class="add-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                <textarea name="content" class="add-input edit-input" rows="1">{{ p.content }}</textarea>
+                            </form>
+                        {% else %}
+                            {{ p.content|linebreaksbr }}
+                        {% endif %}
+                    </td>
+                    {# コメントの日付 #}
+                    <td class="col-date">
+                        {% if p.comment %}{{ p.comment.created_at|date:"n/j/Y" }}{% endif %}
+                    </td>
+                    <td class="col-comment">
+                        {% if is_admin %}
+                            <form method="post" action="{% url 'cs_tasks:add_comment' p.id %}" class="add-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                <textarea name="content" class="add-input edit-input" rows="1"
+                                          placeholder="＋コメントを追加">{% if p.comment %}{{ p.comment.content }}{% endif %}</textarea>
+                            </form>
+                        {% elif p.comment %}
+                            {{ p.comment.content|linebreaksbr }}
+                        {% else %}
+                            <span class="muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="col-close">
+                        {% if is_admin %}
+                        <label class="switch">
+                            <input type="checkbox" class="close-toggle progress-toggle"
+                                   {% if p.is_closed %}checked{% endif %}
+                                   data-url="{% url 'cs_tasks:toggle_progress_close' p.id %}"
+                                   data-progress-id="{{ p.id }}">
+                            <span class="slider round"></span>
+                        </label>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+
+                {# ===== 進捗追加行（各列のセルを持たせ、罫線を最初から表示） ===== #}
+                <tr data-task-id="{{ task.id }}" class="add-progress-row {% if task.is_closed %}task-closed{% endif %}">
+                    <td class="col-date"></td>
+                    <td class="col-progress">
+                        {% if task.can_edit %}
+                        <form method="post" action="{% url 'cs_tasks:add_progress' task.id %}" class="add-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <textarea name="content" class="add-input" rows="1"
+                                      placeholder="＋進捗を追加"></textarea>
+                        </form>
+                        {% endif %}
+                    </td>
+                    <td class="col-date"></td>
+                    <td class="col-comment"></td>
+                    <td class="col-close"></td>
+                </tr>
+                {% endfor %}
+            {% endfor %}
+        {% empty %}
+            <tr><td colspan="7" class="empty-message">課題はありません。「＋課題追加」から登録してください。</td></tr>
+        {% endfor %}
+
+        {# ===== 課題のインライン追加（罫線付きの行を1行追加。顧客名・課題のみ） ===== #}
+        <tr class="new-task-row" style="display:none;">
+            <td class="col-assignee">{{ user.last_name }} {{ user.first_name|default:user.email }}</td>
+            <td class="col-client">
+                <input type="text" form="ntf" name="cs_cust" class="add-input nt-cell"
+                       placeholder="顧客名" autocomplete="off">
+            </td>
+            <td class="col-task" colspan="4">
+                <input type="text" form="ntf" name="cs_subj" class="add-input nt-cell nt-title"
+                       placeholder="課題（28文字以内）" maxlength="28" required autocomplete="off">
+            </td>
+            <td class="col-close"></td>
+        </tr>
+    </tbody>
+</table>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<script defer src="{% static 'cs_tasks/board.js' %}"></script>
+{% endblock %}

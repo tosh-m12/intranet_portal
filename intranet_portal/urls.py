@@ -24,4 +24,5 @@ urlpatterns = [
         name='logout',
     ),
     path("envmon/", include("envmon.urls")),
+    path("cs-tasks/", include("cs_tasks.urls")),
 ]
