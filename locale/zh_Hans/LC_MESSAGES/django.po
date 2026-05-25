@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-25 21:42+0800\n"
+"POT-Creation-Date: 2026-05-25 22:00+0800\n"
 "PO-Revision-Date: 2025-07-23 23:45+0800\n"
 "Last-Translator: TMurayama <example@example.com>\n"
 "Language-Team: Chinese Simplified\n"
@@ -174,16 +174,17 @@ msgstr "周报"
 #: cs_tasks/templates/cs_tasks/board.html:7
 #: cs_tasks/templates/cs_tasks/mailing_list.html:7
 #: cs_tasks/templates/cs_tasks/weekly_report.html:7
-msgid "CS課題管理"
-msgstr "CS课题管理"
+#: templates/portal/base.html:45
+msgid "既存業務課題管理"
+msgstr "现有业务课题管理"
 
 #: cs_tasks/templates/cs_tasks/board.html:23
 msgid "自分の担当課題"
 msgstr "我负责的课题"
 
 #: cs_tasks/templates/cs_tasks/board.html:23
-msgid "CS課題・進捗一覧"
-msgstr "CS课题・进度一览"
+msgid "課題・進捗一覧"
+msgstr "课题・进度一览"
 
 #: cs_tasks/templates/cs_tasks/board.html:25
 msgid "全件に戻る"
@@ -916,10 +917,6 @@ msgstr "客户拜访・网络会议"
 msgid "温湿度モニター"
 msgstr "温湿度监控"
 
-#: templates/portal/base.html:45
-msgid "CS課題"
-msgstr "CS课题"
-
 #: templates/portal/base.html:46
 msgid "日報"
 msgstr "日报"
@@ -1064,6 +1061,9 @@ msgid ""
 "※ ダウンロードした CSV を編集してアップロードすると、Visitor データが全件入れ"
 "替えられます。"
 msgstr ""
+
+#~ msgid "CS課題"
+#~ msgstr "CS课题"
 
 #~ msgid "備考"
 #~ msgstr "备注"

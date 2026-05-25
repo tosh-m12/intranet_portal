@@ -1,10 +1,10 @@
 {% extends "portal/base.html" %}
 {% load static i18n %}
 
-{% block title %}{% trans "CS課題管理" %}{% endblock %}
+{% block title %}{% trans "既存業務課題管理" %}{% endblock %}
 
 {% block app_name %}
-<h1>📋 {% trans "CS課題管理" %}</h1>
+<h1>📋 {% trans "既存業務課題管理" %}</h1>
 {% endblock %}
 
 {% block subnav %}
@@ -20,7 +20,7 @@
 
 <div class="page-header">
     <div>
-        <h2 style="margin:0;">{% if is_my_view %}{% trans "自分の担当課題" %}{% else %}{% trans "CS課題・進捗一覧" %}{% endif %}</h2>
+        <h2 style="margin:0;">{% if is_my_view %}{% trans "自分の担当課題" %}{% else %}{% trans "課題・進捗一覧" %}{% endif %}</h2>
         {% if filtered_user and not is_my_view %}
             <a class="btn btn-secondary btn-xs" href="{% url 'cs_tasks:index' %}">▶ {% trans "全件に戻る" %}</a>
         {% endif %}
