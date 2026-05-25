@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'mailcenter',
     'envmon',
     'scheduler.apps.SchedulerConfig',
+    'cs_tasks.apps.CsTasksConfig',
 ]
 
 MIDDLEWARE = [

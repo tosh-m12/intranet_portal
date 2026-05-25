@@ -1,0 +1,25 @@
+# 機密情報
+*.env
+.env.*
+secrets/
+local_settings.py
+
+# 大量データ・ログ
+*.log
+cache/
+__pycache__/
+*.pyc
+db.sqlite3
+node_modules/
+
+# 仮想環境
+venv/
+.venv/
+
+# macOS
+.DS_Store
+
+# 運用データ
+visitor_list.csv
+envmon_locations_assignments.json
+device_cache_*.json

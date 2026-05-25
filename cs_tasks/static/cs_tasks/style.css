@@ -1,0 +1,320 @@
+/* cs_tasks/static/cs_tasks/style.css */
+
+/* ======== 課題・進捗ボード（来客予定/訪問予定表とデザイン統一） ======== */
+.cs-board {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 4px;
+    font-size: 13px;
+    table-layout: fixed;
+    /* 表の背景はページ全体（body の #f5f5f5）に合わせるため透過 */
+    background-color: transparent;
+}
+.cs-board th,
+.cs-board td {
+    border: 1px solid #ddd;
+    padding: 6px 8px;
+    text-align: left;
+    vertical-align: top;
+    word-break: break-word;
+    background-color: transparent;   /* ページ背景に同化 */
+}
+
+/* ★ 濃いグレーにするのは一番上の見出し行（thead）のみ */
+.cs-board thead th {
+    background-color: #d9d9d9;
+    text-align: center;
+    white-space: nowrap;
+    font-weight: bold;
+}
+
+/* 列幅は colgroup で固定（table-layout: fixed と併用）。
+   日付・担当・顧客・クローズを最小限に固定し、進捗/コメント欄を最大化。 */
+.cs-board .cg-assignee { width: 90px; }
+.cs-board .cg-client { width: 150px; }
+.cs-board .cg-date { width: 74px; }
+.cs-board .cg-close { width: 68px; }
+/* cg-progress / cg-comment は幅指定なし → 残り幅を均等に確保 */
+
+.cs-board .col-date {
+    padding-left: 4px;
+    padding-right: 4px;
+    white-space: nowrap;
+    text-align: center;
+    color: #2f6fb0;
+}
+.cs-board .col-close { text-align: center; }
+/* トグルスイッチはセル内で上下中央に配置 */
+.cs-board td.col-close { vertical-align: middle; }
+.cs-board td.col-close .switch { vertical-align: middle; }
+
+/* 担当・顧客セルは太字（背景はページ背景のまま） */
+.cs-board td.col-assignee,
+.cs-board td.col-client {
+    font-weight: bold;
+    vertical-align: top;
+}
+
+/* 課題タイトル行は他セルと同じ背景（濃いグレーにしない） */
+.cs-board .task-title { font-weight: bold; }
+/* 課題名のその場編集は太字（通常時は枠なしテキスト風） */
+.cs-board .task-title-input { font-weight: bold; }
+.cs-board td.col-client .client-input,
+.cs-board td.col-client .client-text { font-weight: bold; }
+
+/* 顧客名：重複（同一顧客の2件目以降）は普段非表示。
+   顧客列にカーソルを合わせるとうっすら表示。クリック（focus）で通常表示し編集可。 */
+.cs-board td.col-client.client-dup .client-input { color: transparent; }
+.cs-board.show-client-dups td.col-client.client-dup .client-input { color: #c2c2c2; }
+.cs-board td.col-client.client-dup .client-input:focus { color: #333; }
+
+/* 同じ顧客名のセル同士は横罫線を引かない（結合して見せる） */
+.cs-board td.col-client.client-dup { border-top: none; }
+.cs-board td.col-client.client-merge-down { border-bottom: none; }
+.cs-board .progress-row .col-progress { padding-left: 16px; }
+
+/* 行内の追加フォーム（visit-table の枠なし入力と統一） */
+.add-inline { margin: 0; }
+.add-input {
+    display: block;
+    width: 100%;
+    border: none;
+    background: transparent;
+    padding: 2px 4px;
+    font-size: 13px;
+    font-family: inherit;
+    line-height: 1.5;
+    color: #333;
+    box-sizing: border-box;
+}
+.add-input::placeholder { color: #aaa; }
+.add-input:focus {
+    outline: none;
+    background: #fff9e6;   /* visit-table のホバー色に合わせる */
+}
+/* textarea は高さ自動調整（JS）。手動リサイズ・横スクロールは無効化し、
+   入力中の全文が折り返して見えるようにする。 */
+textarea.add-input {
+    resize: none;
+    overflow: hidden;
+    min-height: 1.5em;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* クローズ・トグルは visitors の .switch を流用。
+   キャンセル(赤)と区別するため ON は青にする。 */
+.cs-board .switch { width: 44px; height: 22px; }
+.cs-board .switch input:checked + .slider {
+    background-color: #007bff;
+}
+.cs-board .switch input:checked + .slider:before {
+    transform: translateX(22px);
+}
+
+/* クローズされた行のグレーアウト。
+   対象は課題本体＋ぶら下がる進捗のみ。担当/顧客の結合セルは除外し、
+   クローズ列のセルもしっかりグレーにする。 */
+.cs-board tr.task-closed td:not(.col-assignee):not(.col-client),
+.cs-board tr.prog-closed td:not(.col-assignee):not(.col-client) {
+    background-color: #ececec;
+    color: #999;
+}
+.cs-board tr.task-closed .task-title { color: #999; }
+.cs-board tr.task-closed td:not(.col-assignee):not(.col-client) a,
+.cs-board tr.prog-closed td:not(.col-assignee):not(.col-client) a { color: #999; }
+.cs-board tr.task-closed .add-input,
+.cs-board tr.prog-closed .add-input {
+    color: #999;
+    background: transparent;
+}
+
+/* 課題インライン追加（罫線付きの行。セルは枠なしのクリック入力） */
+.cs-board tr.new-task-row td.col-assignee { vertical-align: top; }
+
+/* 新規追加の未入力警告 */
+.nt-warning {
+    color: #c0392b;
+    font-size: 13px;
+    margin-right: 10px;
+}
+
+.cs-messages { list-style: none; padding: 0; margin: 0 0 10px; }
+.cs-messages li {
+    padding: 6px 10px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+}
+.cs-messages li.success { background: #e6f4ea; color: #1e7e34; }
+.cs-messages li.error { background: #fdecea; color: #c0392b; }
+
+.cs-task-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+}
+.cs-task-table th,
+.cs-task-table td {
+    border: 1px solid #ddd;
+    padding: 6px 10px;
+    text-align: left;
+    font-size: 14px;
+}
+.cs-task-table th {
+    background: #f4f6f8;
+}
+
+/* 完了・中止の行はグレーアウト */
+.cs-task-table tr.task-closed td,
+.cs-task-table tr.task-cancelled td {
+    color: #999;
+    background: #f3f3f3;
+}
+.cs-task-table tr.task-cancelled td a,
+.cs-task-table tr.task-closed td a {
+    color: #999;
+}
+.cs-task-table tr.task-cancelled td {
+    text-decoration: line-through;
+}
+
+/* 状態バッジ */
+.badge {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    color: #fff;
+}
+.badge-open { background: #2f80ed; }
+.badge-closed { background: #27ae60; }
+.badge-cancelled { background: #999; }
+
+.muted { color: #999; }
+
+/* ページヘッダ */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 8px;
+}
+
+/* ボタン類 */
+.btn-link {
+    display: inline-block;
+    padding: 6px 14px;
+    background: #2f80ed;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 14px;
+}
+.btn-link:hover { background: #1f6fd0; }
+.btn-small {
+    display: inline-block;
+    padding: 3px 10px;
+    background: #eee;
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 13px;
+}
+.btn-small:hover { background: #ddd; }
+
+/* フォーム */
+.cs-form .form-row,
+.form-row {
+    margin-bottom: 12px;
+}
+.cs-form label,
+.form-row label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+.form-input,
+.cs-form input[type="text"],
+.cs-form input[type="email"],
+.cs-form input[type="date"],
+.cs-form textarea,
+.cs-form select {
+    width: 100%;
+    max-width: 480px;
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+.form-actions { margin-top: 16px; }
+.field-error { color: #c0392b; font-size: 12px; }
+
+.cs-inline-form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin: 10px 0;
+    flex-wrap: wrap;
+}
+.cs-inline-form input[type="text"],
+.cs-inline-form input[type="email"] {
+    padding: 5px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* 詳細メタ */
+.cs-detail-meta dl {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 4px 12px;
+    margin: 0 0 12px;
+}
+.cs-detail-meta dt { font-weight: bold; color: #555; }
+.cs-description {
+    background: #f9f9f9;
+    border: 1px solid #eee;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.cs-actions { margin: 14px 0; display: flex; gap: 8px; }
+
+.cs-section {
+    margin-top: 24px;
+    padding-top: 8px;
+    border-top: 1px solid #eee;
+}
+.cs-section h3 { margin-bottom: 8px; }
+
+.cs-todo-list { list-style: none; padding-left: 0; }
+.cs-todo-list li { padding: 4px 0; display: flex; align-items: center; gap: 8px; }
+.cs-todo-list li.done .todo-content {
+    text-decoration: line-through;
+    color: #999;
+}
+.todo-check {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.cs-progress-list,
+.cs-comment-list {
+    list-style: none;
+    padding-left: 0;
+}
+.cs-progress-list li,
+.cs-comment-list li {
+    border-left: 3px solid #ddd;
+    padding: 4px 10px;
+    margin-bottom: 8px;
+}
+.cs-meta { font-size: 12px; color: #888; }
+.cs-body { white-space: pre-wrap; }

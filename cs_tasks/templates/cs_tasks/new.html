@@ -1,0 +1,30 @@
+{% extends "portal/base.html" %}
+
+{% block title %}課題追加 - 社内ポータル{% endblock %}
+
+{% block app_name %}
+<h1>📋 CS課題管理</h1>
+{% endblock %}
+
+{% block subnav %}
+    {% include "cs_tasks/_subnav.html" with active_tab="new" %}
+{% endblock %}
+
+{% block content %}
+<div class="page-header"><h2>➕ 課題を追加</h2></div>
+
+<form method="post" class="cs-form">
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="form-row">
+        <label>{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<div class="field-error">{{ field.errors }}</div>{% endif %}
+    </div>
+    {% endfor %}
+    <div class="form-action-buttons">
+        <a class="btn btn-secondary" href="{% url 'cs_tasks:index' %}">キャンセル</a>
+        <button type="submit" class="btn btn-primary">登録</button>
+    </div>
+</form>
+{% endblock %}

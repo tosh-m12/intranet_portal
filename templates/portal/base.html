@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>{% block title %}NGLS-CS Portal{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'visitors/style.css' %}">
+    <link rel="stylesheet" href="{% static 'cs_tasks/style.css' %}">
 
 
     {% block extra_head %}{% endblock %}
@@ -33,6 +34,7 @@
         <a href="{% url 'visitors:index' %}">📅 来客予定</a>
         <a href="{% url 'meetings:index' %}">📅 客先訪問・WEB会議</a>
         <a href="{% url 'envmon:index' %}">🌡 温湿度モニター</a>
+        <a href="{% url 'cs_tasks:index' %}">📋 CS課題</a>
         <a href="#">📝 日報<br>（準備中）</a>
 
         {# ▼ 管理者だけ「ユーザー管理」を表示 #}

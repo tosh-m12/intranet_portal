@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>CS課題 週次レポート</title>
+</head>
+<body style="font-family: sans-serif; color:#333; line-height:1.6;">
+    <h2 style="border-bottom:2px solid #444; padding-bottom:4px;">
+        CS課題 週次レポート
+    </h2>
+    <p>対象期間: {{ week_start|date:"Y/m/d" }} 〜 {{ week_end|date:"Y/m/d" }}</p>
+
+    {% comment %} 共通の課題リスト描画マクロ的に繰り返す {% endcomment %}
+
+    <h3 style="background:#eef; padding:4px 8px;">① 当週新規</h3>
+    {% if new_tasks %}
+    <ul>
+        {% for t in new_tasks %}
+        <li>{{ t.title }}（{{ t.client_name|default:"客先未設定" }} / 担当:
+            {{ t.assignee.last_name }} {{ t.assignee.first_name|default:"未割当" }}）</li>
+        {% endfor %}
+    </ul>
+    {% else %}<p>なし</p>{% endif %}
+
+    <h3 style="background:#eef; padding:4px 8px;">② 当週進捗あり</h3>
+    {% if progressed_tasks %}
+    <ul>
+        {% for t in progressed_tasks %}
+        <li>{{ t.title }}（{{ t.client_name|default:"客先未設定" }}）</li>
+        {% endfor %}
+    </ul>
+    {% else %}<p>なし</p>{% endif %}
+
+    <h3 style="background:#efe; padding:4px 8px;">③ 当週完了</h3>
+    {% if completed_tasks %}
+    <ul>
+        {% for t in completed_tasks %}
+        <li>{{ t.title }}（{{ t.client_name|default:"客先未設定" }}）</li>
+        {% endfor %}
+    </ul>
+    {% else %}<p>なし</p>{% endif %}
+
+    <h3 style="background:#fee; padding:4px 8px;">④ 期限超過・間近</h3>
+    {% if overdue_tasks %}
+    <p style="margin:4px 0;"><strong>期限超過</strong></p>
+    <ul>
+        {% for t in overdue_tasks %}
+        <li>{{ t.title }}（期限: {{ t.due_date|date:"Y/m/d" }} / 担当:
+            {{ t.assignee.last_name }} {{ t.assignee.first_name|default:"未割当" }}）</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% if due_soon_tasks %}
+    <p style="margin:4px 0;"><strong>期限間近</strong></p>
+    <ul>
+        {% for t in due_soon_tasks %}
+        <li>{{ t.title }}（期限: {{ t.due_date|date:"Y/m/d" }}）</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% if not overdue_tasks and not due_soon_tasks %}<p>なし</p>{% endif %}
+
+    <h3 style="background:#f4f4f4; padding:4px 8px;">⑤ サマリー</h3>
+    <ul>
+        <li>進行中: {{ summary.in_progress }} 件</li>
+        <li>完了: {{ summary.closed }} 件</li>
+        <li>中止: {{ summary.cancelled }} 件</li>
+    </ul>
+
+    <hr>
+    <p style="font-size:12px; color:#888;">
+        本メールは社内ポータル CS課題管理から自動送信されています。
+    </p>
+</body>
+</html>
