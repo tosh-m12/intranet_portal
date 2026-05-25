@@ -58,6 +58,7 @@ body {
     flex: 1;
     padding: 20px 30px;
     overflow-y: auto;
+    background-color: #fff;   /* 左ナビ以外のページ背景は白 */
 }
 
 footer {
