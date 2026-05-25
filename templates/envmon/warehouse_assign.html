@@ -1,24 +1,24 @@
 {% extends "portal/base.html" %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}倉庫ごとのデバイス割当 - 環境モニタ{% endblock %}
+{% block title %}{% trans "倉庫ごとのデバイス割当" %}{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'envmon/style.css' %}">
 {% endblock %}
 
 {% block app_name %}
-<h1>🌡️ 温湿度モニタ - 倉庫ごとのデバイス割当</h1>
+<h1>🌡️ {% trans "温湿度モニタ - 倉庫ごとのデバイス割当" %}</h1>
 {% endblock %}
 
 {% block subnav %}
 <div class="subnav">
-    <a href="{% url 'envmon:index' %}">📊 倉庫別モニタ</a>
-    <a href="{% url 'envmon:all_devices' %}">📋 全デバイス一覧</a>
-    <a href="{% url 'envmon:history_csv_menu' %}">📥 CSV ダウンロード</a>
+    <a href="{% url 'envmon:index' %}">📊 {% trans "倉庫別モニタ" %}</a>
+    <a href="{% url 'envmon:all_devices' %}">📋 {% trans "全デバイス一覧" %}</a>
+    <a href="{% url 'envmon:history_csv_menu' %}">📥 {% trans "CSV ダウンロード" %}</a>
     {% if user.is_staff %}
-        <a href="{% url 'envmon:settings' %}">⚙ 設定</a>
-        <a href="{% url 'envmon:warehouse_assign' %}" class="active">🏷 倉庫割当</a>
+        <a href="{% url 'envmon:settings' %}">⚙ {% trans "設定" %}</a>
+        <a href="{% url 'envmon:warehouse_assign' %}" class="active">🏷 {% trans "倉庫割当" %}</a>
     {% endif %}
 </div>
 {% endblock %}
@@ -28,7 +28,7 @@
 <div class="envmon-page">
 
     <p class="envmon-desc">
-        タグをドラッグ＆ドロップしてデバイスの所属倉庫を変更できます。
+        {% trans "タグをドラッグ＆ドロップしてデバイスの所属倉庫を変更できます。" %}
     </p>
 
     <div class="container"><!-- ★ Flask と同じクラス名だが envmon-page でスコープする -->
@@ -45,7 +45,7 @@
                     </div>
                 </div>
                 <div class="external-block">
-                    <h4>外気測定用</h4>
+                    <h4>{% trans "外気測定用" %}</h4>
                     <div class="device-list"
                          ondrop="drop(event, 'external_{{ loc.code }}')"
                          ondragover="allowDrop(event)"
@@ -57,7 +57,7 @@
         </div>
 
         <div class="unassigned-area">
-            <h3>割当なしデバイス</h3>
+            <h3>{% trans "割当なしデバイス" %}</h3>
             <div class="device-list"
                  ondrop="drop(event, '')"
                  ondragover="allowDrop(event)"
@@ -68,7 +68,7 @@
     </div>
 
     <p class="envmon-back-link">
-        <a href="{% url 'envmon:settings' %}">← 設定画面に戻る</a>
+        <a href="{% url 'envmon:settings' %}">← {% trans "設定画面に戻る" %}</a>
     </p>
 
 </div><!-- /.envmon-page -->

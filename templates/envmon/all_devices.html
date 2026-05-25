@@ -1,24 +1,24 @@
 {% extends "portal/base.html" %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}全デバイス稼働状況一覧 - 環境モニタ{% endblock %}
+{% block title %}{% trans "全デバイス稼働状況一覧" %}{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'envmon/style.css' %}">
 {% endblock %}
 
 {% block app_name %}
-<h1>📋 全デバイス稼働状況一覧</h1>
+<h1>📋 {% trans "全デバイス稼働状況一覧" %}</h1>
 {% endblock %}
 
 {% block subnav %}
 <div class="subnav">
-    <a href="{% url 'envmon:index' %}">📊 倉庫別モニタ</a>
-    <a href="{% url 'envmon:all_devices' %}" class="active">📋 全デバイス一覧</a>
-    <a href="{% url 'envmon:history_csv_menu' %}">📥 CSV ダウンロード</a>
+    <a href="{% url 'envmon:index' %}">📊 {% trans "倉庫別モニタ" %}</a>
+    <a href="{% url 'envmon:all_devices' %}" class="active">📋 {% trans "全デバイス一覧" %}</a>
+    <a href="{% url 'envmon:history_csv_menu' %}">📥 {% trans "CSV ダウンロード" %}</a>
     {% if user.is_staff %}
-        <a href="{% url 'envmon:settings' %}">⚙ 設定</a>
-        <a href="{% url 'envmon:warehouse_assign' %}">🏷 倉庫割当</a>
+        <a href="{% url 'envmon:settings' %}">⚙ {% trans "設定" %}</a>
+        <a href="{% url 'envmon:warehouse_assign' %}">🏷 {% trans "倉庫割当" %}</a>
     {% endif %}
 </div>
 {% endblock %}
@@ -28,18 +28,18 @@
 <div class="envmon-page">
 
     <p class="envmon-desc">
-        最終キャッシュ更新時刻: {{ last_updated }}
+        {% trans "最終キャッシュ更新時刻" %}: {{ last_updated }}
     </p>
 
     <table class="envmon-table">
         <thead>
             <tr>
-                <th>シリアルナンバー</th>
-                <th>倉庫</th>
-                <th>温度</th>
-                <th>湿度</th>
-                <th>最終更新</th>
-                <th>状態</th>
+                <th>{% trans "シリアルナンバー" %}</th>
+                <th>{% trans "倉庫" %}</th>
+                <th>{% trans "温度" %}</th>
+                <th>{% trans "湿度" %}</th>
+                <th>{% trans "最終更新" %}</th>
+                <th>{% trans "状態" %}</th>
             </tr>
         </thead>
         <tbody>

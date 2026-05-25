@@ -1,25 +1,25 @@
 {# templates/envmon/history_download.html #}
 {% extends "portal/base.html" %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}履歴CSVダウンロード - 環境モニタ{% endblock %}
+{% block title %}{% trans "履歴CSVダウンロード" %}{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'envmon/style.css' %}">
 {% endblock %}
 
 {% block app_name %}
-<h1>📥 温湿度履歴 CSV ダウンロード</h1>
+<h1>📥 {% trans "温湿度履歴 CSV ダウンロード" %}</h1>
 {% endblock %}
 
 {% block subnav %}
 <div class="subnav">
-    <a href="{% url 'envmon:index' %}">📊 倉庫別モニタ</a>
-    <a href="{% url 'envmon:all_devices' %}">📋 全デバイス一覧</a>
-    <a href="{% url 'envmon:history_csv_menu' %}" class="active">📥 CSV ダウンロード</a>
+    <a href="{% url 'envmon:index' %}">📊 {% trans "倉庫別モニタ" %}</a>
+    <a href="{% url 'envmon:all_devices' %}">📋 {% trans "全デバイス一覧" %}</a>
+    <a href="{% url 'envmon:history_csv_menu' %}" class="active">📥 {% trans "CSV ダウンロード" %}</a>
     {% if user.is_staff %}
-        <a href="{% url 'envmon:settings' %}">⚙ 設定</a>
-        <a href="{% url 'envmon:warehouse_assign' %}">🏷 倉庫割当</a>
+        <a href="{% url 'envmon:settings' %}">⚙ {% trans "設定" %}</a>
+        <a href="{% url 'envmon:warehouse_assign' %}">🏷 {% trans "倉庫割当" %}</a>
     {% endif %}
 </div>
 {% endblock %}
@@ -28,39 +28,39 @@
 <div class="envmon-page">
 
     <p class="envmon-desc">
-        温湿度の履歴データを CSV 形式でダウンロードできます。
+        {% trans "温湿度の履歴データを CSV 形式でダウンロードできます。" %}
     </p>
 
-    <h2 class="envmon-section-title">履歴データ管理（CSV 出力）</h2>
+    <h2 class="envmon-section-title">{% trans "履歴データ管理（CSV 出力）" %}</h2>
 
     {# ① デバイス別 #}
-    <h3>■ デバイス別 CSV ダウンロード</h3>
+    <h3>■ {% trans "デバイス別 CSV ダウンロード" %}</h3>
     <form method="post" action="{% url 'envmon:download_history' %}">
         {% csrf_token %}
         <div class="form-row">
-            <label>シリアルナンバー:</label>
+            <label>{% trans "シリアルナンバー" %}:</label>
             <select name="sn" required>
-                <option value="">-- SN を選択 --</option>
+                <option value="">{% trans "-- SN を選択 --" %}</option>
                 {% for dev in device_choices %}
                 <option value="{{ dev.sn }}">{{ dev.label }}</option>
                 {% endfor %}
             </select>
         </div>
         <div class="form-actions">
-            <button type="submit">CSV ダウンロード</button>
+            <button type="submit">{% trans "CSV ダウンロード" %}</button>
         </div>
     </form>
 
     <hr>
 
     {# ② 倉庫別 #}
-    <h3>■ 倉庫別 CSV ダウンロード</h3>
+    <h3>■ {% trans "倉庫別 CSV ダウンロード" %}</h3>
     <form method="post" action="{% url 'envmon:download_history_by_warehouse' %}">
         {% csrf_token %}
         <div class="form-row">
-            <label>倉庫ロケーション:</label>
+            <label>{% trans "倉庫ロケーション" %}:</label>
             <select name="location_code" required>
-                <option value="">-- 倉庫を選択 --</option>
+                <option value="">{% trans "-- 倉庫を選択 --" %}</option>
                 {% for loc in locations %}
                 <option value="{{ loc.code }}">{{ loc.code }} / {{ loc.name }}</option>
                 {% endfor %}
@@ -68,32 +68,32 @@
         </div>
 
         <div class="form-row">
-            <label>期間指定:</label>
+            <label>{% trans "期間指定" %}:</label>
             <input type="date" name="date_from"> 〜
             <input type="date" name="date_to">
             <span class="envmon-note">
-                ※ 未指定の場合は全期間（その倉庫の履歴全体）が対象になります。
+                {% trans "※ 未指定の場合は全期間（その倉庫の履歴全体）が対象になります。" %}
             </span>
         </div>
 
         <div class="form-actions">
-            <button type="submit">倉庫別 CSV ダウンロード</button>
+            <button type="submit">{% trans "倉庫別 CSV ダウンロード" %}</button>
         </div>
     </form>
 
     <hr>
 
     {# ③ 全デバイス #}
-    <h3>■ 全デバイス（期間指定）CSV ダウンロード</h3>
+    <h3>■ {% trans "全デバイス（期間指定）CSV ダウンロード" %}</h3>
     <form method="post" action="{% url 'envmon:download_history_all_range' %}">
         {% csrf_token %}
         <div class="form-row">
-            <label>期間:</label>
+            <label>{% trans "期間" %}:</label>
             <input type="date" name="date_from" required> 〜
             <input type="date" name="date_to" required>
         </div>
         <div class="form-actions">
-            <button type="submit">全デバイス CSV ダウンロード</button>
+            <button type="submit">{% trans "全デバイス CSV ダウンロード" %}</button>
         </div>
     </form>
 

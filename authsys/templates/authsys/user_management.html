@@ -1,10 +1,10 @@
 {% extends "portal/base.html" %}
 {% load i18n %}
 
-{% block title %}ユーザー管理 - 社内ポータル{% endblock %}
+{% block title %}{% trans "ユーザー管理" %}{% endblock %}
 
 {% block app_name %}
-<h1>👥 ユーザー管理</h1>
+<h1>👥 {% trans "ユーザー管理" %}</h1>
 {% endblock %}
 
 {% block content %}
@@ -17,17 +17,17 @@
   </ul>
 {% endif %}
 
-<h2>登録ユーザー一覧</h2>
+<h2>{% trans "登録ユーザー一覧" %}</h2>
 
 <table class="table table-bordered table-striped">
     <thead>
         <tr>
-            <th>姓</th>
-            <th>名</th>
-            <th>メール</th>
-            <th>権限</th>
-            <th>初回PW</th>
-            <th>操作</th>
+            <th>{% trans "姓" %}</th>
+            <th>{% trans "名" %}</th>
+            <th>{% trans "メール" %}</th>
+            <th>{% trans "権限" %}</th>
+            <th>{% trans "初回PW" %}</th>
+            <th>{% trans "操作" %}</th>
         </tr>
     </thead>
 
@@ -55,14 +55,14 @@
             </td>
             <td>
                 {% if u.is_superuser or u.is_staff %}
-                    管理者
+                    {% trans "管理者" %}
                 {% else %}
-                    一般ユーザー
+                    {% trans "一般ユーザー" %}
                 {% endif %}
             </td>
             <td>
                 {% if u.must_change_password %}
-                    要変更
+                    {% trans "要変更" %}
                 {% else %}
                     -
                 {% endif %}
@@ -74,7 +74,7 @@
                       style="display:inline;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-sm btn-warning">
-                        PW再発行
+                        {% trans "PW再発行" %}
                     </button>
                 </form>
 
@@ -82,7 +82,7 @@
                 {% if not u.is_superuser and u.id != request.user.id %}
                     <button type="button"
                             class="btn btn-sm btn-danger user-delete-btn">
-                        削除
+                        {% trans "削除" %}
                     </button>
                 {% endif %}
             </td>
@@ -108,10 +108,10 @@
                 <input type="email"
                        class="form-control form-control-sm user-input user-email"
                        value=""
-                       placeholder="メールアドレス">
+                       placeholder="{% trans "メールアドレス" %}">
             </td>
             <td>
-                一般ユーザー
+                {% trans "一般ユーザー" %}
             </td>
             <td>
                 {# 新規行にはPW再発行ボタン・削除ボタンは最初は無し #}
@@ -122,12 +122,12 @@
 
 <div style="margin-top: 10px;">
     <button type="button" id="add-row-btn" class="btn btn-sm btn-success">
-        ＋行追加
+        ＋{% trans "行追加" %}
     </button>
 </div>
 
 <p style="margin-top:10px;">
-    <a href="{% url 'home' %}">ホームに戻る</a>
+    <a href="{% url 'home' %}">{% trans "ホームに戻る" %}</a>
 </p>
 
 {# ==== 自動保存 & 行追加用のスクリプト ==== #}

@@ -1,25 +1,25 @@
 {# templates/envmon/locations.html #}
 {% extends "portal/base.html" %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}倉庫名の編集 - 環境モニタ{% endblock %}
+{% block title %}{% trans "倉庫名の編集" %}{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'envmon/style.css' %}">
 {% endblock %}
 
 {% block app_name %}
-<h1>🏭 倉庫名の編集</h1>
+<h1>🏭 {% trans "倉庫名の編集" %}</h1>
 {% endblock %}
 
 {% block subnav %}
 <div class="subnav">
-    <a href="{% url 'envmon:index' %}">📊 倉庫別モニタ</a>
-    <a href="{% url 'envmon:all_devices' %}">📋 全デバイス一覧</a>
-    <a href="{% url 'envmon:history_csv_menu' %}">📥 CSV ダウンロード</a>
+    <a href="{% url 'envmon:index' %}">📊 {% trans "倉庫別モニタ" %}</a>
+    <a href="{% url 'envmon:all_devices' %}">📋 {% trans "全デバイス一覧" %}</a>
+    <a href="{% url 'envmon:history_csv_menu' %}">📥 {% trans "CSV ダウンロード" %}</a>
     {% if user.is_staff %}
-        <a href="{% url 'envmon:settings' %}">⚙ 設定</a>
-        <a href="{% url 'envmon:warehouse_assign' %}">🏷 倉庫割当</a>
+        <a href="{% url 'envmon:settings' %}">⚙ {% trans "設定" %}</a>
+        <a href="{% url 'envmon:warehouse_assign' %}">🏷 {% trans "倉庫割当" %}</a>
     {% endif %}
 </div>
 {% endblock %}
@@ -27,7 +27,7 @@
 {% block content %}
 
 <div class="envmon-page">
-    <h2 class="envmon-section-title">倉庫名の編集</h2>
+    <h2 class="envmon-section-title">{% trans "倉庫名の編集" %}</h2>
 
     <form method="post" class="envmon-form">
         {% csrf_token %}
@@ -36,18 +36,18 @@
                 <label>
                     {{ loc.code }}:
                     <input type="text" name="loc_{{ loc.code }}" value="{{ loc.name }}">
-                    {% if loc.is_external %}<span class="envmon-note">(外気測定用)</span>{% endif %}
+                    {% if loc.is_external %}<span class="envmon-note">{% trans "(外気測定用)" %}</span>{% endif %}
                 </label>
             </div>
         {% endfor %}
 
         <div class="envmon-form-actions">
-            <button type="submit">保存</button>
+            <button type="submit">{% trans "保存" %}</button>
         </div>
     </form>
 
     <p class="envmon-back-link">
-        <a href="{% url 'envmon:settings' %}">← 設定メニューに戻る</a>
+        <a href="{% url 'envmon:settings' %}">← {% trans "設定メニューに戻る" %}</a>
     </p>
 </div>
 

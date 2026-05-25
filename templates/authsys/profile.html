@@ -1,17 +1,18 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}プロフィール{% endblock %}
+{% block title %}{% trans "プロフィール" %}{% endblock %}
 
 {% block content %}
-<h2>プロフィール</h2>
-<p>ログイン中のユーザー:{{ request.user.mail }}</p>
+<h2>{% trans "プロフィール" %}</h2>
+<p>{% trans "ログイン中のユーザー" %}:{{ request.user.mail }}</p>
 
-<h3>メニュー</h3>
+<h3>{% trans "メニュー" %}</h3>
 <ul>
-    <li>（ここに）来客予定ページへのリンク</li>
-    <li>（ここに）日報ページへのリンク</li>
-    <li>（ここに）温湿度管理ページへのリンク</li>
+    <li>{% trans "（ここに）来客予定ページへのリンク" %}</li>
+    <li>{% trans "（ここに）日報ページへのリンク" %}</li>
+    <li>{% trans "（ここに）温湿度管理ページへのリンク" %}</li>
 </ul>
 
-<p>※ ここから各アプリの画面へリンクを追加していきます。</p>
+<p>{% trans "※ ここから各アプリの画面へリンクを追加していきます。" %}</p>
 {% endblock %}
