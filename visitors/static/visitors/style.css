@@ -25,8 +25,44 @@ body {
 .sidebar .title {
     font-size: 18px;
     font-weight: bold;
+}
+
+/* タイトル行：タイトル＋言語トグルを横並び */
+.sidebar .title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
     padding: 0 10px;
     margin-bottom: 10px;
+}
+
+/* 言語トグル（日／中） */
+.lang-toggle {
+    display: inline-flex;
+    border: 1px solid #cce0ff;
+    border-radius: 12px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.lang-toggle .lang-opt {
+    padding: 2px 9px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #cce0ff;
+    text-decoration: none;
+    background: transparent;
+}
+.lang-toggle .lang-opt + .lang-opt {
+    border-left: 1px solid #cce0ff;
+}
+.lang-toggle .lang-opt.active {
+    background: #cce0ff;
+    color: #003366;
+    font-weight: bold;
+}
+.lang-toggle .lang-opt:not(.active):hover {
+    background: #004080;
 }
 
 .sidebar .user-info {

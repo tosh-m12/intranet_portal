@@ -1,22 +1,23 @@
 {# cs_tasks/_subnav.html #}
+{% load i18n %}
 <div class="subnav">
     <a href="{% url 'cs_tasks:index' %}"
        class="{% if active_tab == 'index' %}active{% endif %}">
-        📋 全課題一覧
+        📋 {% trans "全課題一覧" %}
     </a>
     <a href="{% url 'cs_tasks:my' %}"
        class="{% if active_tab == 'my' %}active{% endif %}">
-        🙋 自分の担当
+        🙋 {% trans "自分の担当" %}
     </a>
 
     {% if request.user.is_superuser or request.user.is_staff %}
         <a href="{% url 'cs_tasks:mailing_list' %}"
            class="{% if active_tab == 'mailing_list' %}active{% endif %}">
-            ✉ メーリングリスト
+            ✉ {% trans "メーリングリスト" %}
         </a>
         <a href="{% url 'cs_tasks:weekly_report' %}"
            class="{% if active_tab == 'weekly_report' %}active{% endif %}">
-            📊 週報
+            📊 {% trans "週報" %}
         </a>
     {% endif %}
 </div>

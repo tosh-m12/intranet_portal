@@ -1,9 +1,10 @@
 {% extends "portal/base.html" %}
+{% load i18n %}
 
-{% block title %}週報プレビュー - CS課題{% endblock %}
+{% block title %}{% trans "週報プレビュー" %}{% endblock %}
 
 {% block app_name %}
-<h1>📋 CS課題管理</h1>
+<h1>📋 {% trans "CS課題管理" %}</h1>
 {% endblock %}
 
 {% block subnav %}
@@ -12,70 +13,70 @@
 
 {% block content %}
 <div class="page-header">
-    <div><h2>📊 週報プレビュー</h2></div>
+    <div><h2>📊 {% trans "週報プレビュー" %}</h2></div>
     <div>
-        <form method="post" onsubmit="return confirm('週報をメーリングリスト宛に今すぐ送信します。よろしいですか？');">
+        <form method="post" onsubmit="return confirm('{% trans "週報をメーリングリスト宛に今すぐ送信します。よろしいですか？" %}');">
             {% csrf_token %}
             <input type="hidden" name="action" value="send">
-            <button type="submit" class="btn btn-primary">📨 今すぐ送信</button>
+            <button type="submit" class="btn btn-primary">📨 {% trans "今すぐ送信" %}</button>
         </form>
     </div>
 </div>
 
 <p class="muted">
-    対象期間: {{ report.week_start|date:"Y/m/d" }} 〜 {{ report.week_end|date:"Y/m/d" }}
+    {% trans "対象期間" %}: {{ report.week_start|date:"Y/m/d" }} 〜 {{ report.week_end|date:"Y/m/d" }}
 </p>
 
 <div class="cs-report-preview">
     <section class="cs-section">
-        <h3>① 当週新規</h3>
+        <h3>① {% trans "当週新規" %}</h3>
         <ul>
             {% for t in report.new_tasks %}
             <li>{{ t.title }}（{{ t.client_name|default:"客先未設定" }}）</li>
-            {% empty %}<li class="muted">なし</li>{% endfor %}
+            {% empty %}<li class="muted">{% trans "なし" %}</li>{% endfor %}
         </ul>
     </section>
 
     <section class="cs-section">
-        <h3>② 当週進捗あり</h3>
+        <h3>② {% trans "当週進捗あり" %}</h3>
         <ul>
             {% for t in report.progressed_tasks %}
             <li>{{ t.title }}（{{ t.client_name|default:"客先未設定" }}）</li>
-            {% empty %}<li class="muted">なし</li>{% endfor %}
+            {% empty %}<li class="muted">{% trans "なし" %}</li>{% endfor %}
         </ul>
     </section>
 
     <section class="cs-section">
-        <h3>③ 当週完了</h3>
+        <h3>③ {% trans "当週完了" %}</h3>
         <ul>
             {% for t in report.completed_tasks %}
             <li>{{ t.title }}（{{ t.client_name|default:"客先未設定" }}）</li>
-            {% empty %}<li class="muted">なし</li>{% endfor %}
+            {% empty %}<li class="muted">{% trans "なし" %}</li>{% endfor %}
         </ul>
     </section>
 
     <section class="cs-section">
-        <h3>④ 期限超過・間近</h3>
-        <p><strong>期限超過</strong></p>
+        <h3>④ {% trans "期限超過・間近" %}</h3>
+        <p><strong>{% trans "期限超過" %}</strong></p>
         <ul>
             {% for t in report.overdue_tasks %}
-            <li>{{ t.title }}（期限: {{ t.due_date|date:"Y/m/d" }}）</li>
-            {% empty %}<li class="muted">なし</li>{% endfor %}
+            <li>{{ t.title }}（{% trans "期限" %}: {{ t.due_date|date:"Y/m/d" }}）</li>
+            {% empty %}<li class="muted">{% trans "なし" %}</li>{% endfor %}
         </ul>
-        <p><strong>期限間近</strong></p>
+        <p><strong>{% trans "期限間近" %}</strong></p>
         <ul>
             {% for t in report.due_soon_tasks %}
-            <li>{{ t.title }}（期限: {{ t.due_date|date:"Y/m/d" }}）</li>
-            {% empty %}<li class="muted">なし</li>{% endfor %}
+            <li>{{ t.title }}（{% trans "期限" %}: {{ t.due_date|date:"Y/m/d" }}）</li>
+            {% empty %}<li class="muted">{% trans "なし" %}</li>{% endfor %}
         </ul>
     </section>
 
     <section class="cs-section">
-        <h3>⑤ サマリー</h3>
+        <h3>⑤ {% trans "サマリー" %}</h3>
         <ul>
-            <li>進行中: {{ report.summary.in_progress }} 件</li>
-            <li>完了: {{ report.summary.closed }} 件</li>
-            <li>中止: {{ report.summary.cancelled }} 件</li>
+            <li>{% trans "進行中" %}: {{ report.summary.in_progress }} {% trans "件" %}</li>
+            <li>{% trans "完了" %}: {{ report.summary.closed }} {% trans "件" %}</li>
+            <li>{% trans "中止" %}: {{ report.summary.cancelled }} {% trans "件" %}</li>
         </ul>
     </section>
 </div>
