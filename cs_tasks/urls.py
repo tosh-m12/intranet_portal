@@ -17,6 +17,7 @@ urlpatterns = [
     path("<int:task_id>/cancel/", views.toggle_cancel, name="toggle_cancel"),
     path("progress/<int:progress_id>/edit/", views.edit_progress, name="edit_progress"),
     path("progress/<int:progress_id>/comment/", views.add_comment, name="add_comment"),
+    path("comment/<int:comment_id>/edit/", views.edit_comment, name="edit_comment"),
     path(
         "progress/<int:progress_id>/close/",
         views.toggle_progress_close,

@@ -56,7 +56,7 @@ def _build_board(user, assignee_id=None):
         .select_related("owner", "assignee")
         .prefetch_related(
             "progress_updates__author",
-            "progress_updates__comment__author",
+            "progress_updates__comments__author",
         )
         .order_by("created_at", "id")
     )
@@ -69,13 +69,30 @@ def _build_board(user, assignee_id=None):
         except (User.DoesNotExist, ValueError):
             filtered_user = None
 
+    admin = is_admin(user)
+
     # 担当者ID -> {顧客名 -> 課題リスト}
     groups_map = {}
     order = []
     for t in tasks_qs:
         t.progress_list = list(t.progress_updates.all())
-        # 行数 = タイトル行(1) + 進捗行 + 進捗追加行(1)
-        t.row_count = 1 + len(t.progress_list) + 1
+        # 各進捗の行数を算出（コメント行 + 末尾の「＋コメントを追加」行）
+        progress_rows_total = 0
+        for p in t.progress_list:
+            comment_list = list(p.comments.all())
+            for c in comment_list:
+                c.author_name = _display_name(c.author)
+            # 表示行の組み立て：上長はコメント群＋追加行、一般はコメント（無ければ「—」1行）
+            rows = [{"type": "comment", "obj": c} for c in comment_list]
+            if admin:
+                rows.append({"type": "add"})
+            elif not rows:
+                rows.append({"type": "none"})
+            p.rows = rows
+            p.comment_rows = len(rows)
+            progress_rows_total += p.comment_rows
+        # 行数 = タイトル行(1) + 進捗の全行 + 進捗追加行(1)
+        t.row_count = 1 + progress_rows_total + 1
         t.can_edit = can_edit_task(user, t)
 
         akey = t.assignee_id  # None も可
@@ -294,7 +311,7 @@ def edit_progress(request, progress_id):
 
 
 # =========================================================
-# 上長コメント追記・編集（進捗1件に対して1件・POST, is_staff のみ）
+# 上長コメント追記（進捗1件に対して複数可・POST, is_staff のみ）
 # =========================================================
 @login_required
 @require_POST
@@ -305,12 +322,26 @@ def add_comment(request, progress_id):
 
     content = (request.POST.get("content") or "").strip()
     if content:
-        SupervisorComment.objects.update_or_create(
-            progress=progress,
-            defaults={"author": request.user, "content": content},
+        SupervisorComment.objects.create(
+            progress=progress, author=request.user, content=content
         )
-    else:
-        messages.error(request, "コメントを入力してください。")
+    return redirect(request.POST.get("next") or "cs_tasks:index")
+
+
+# =========================================================
+# 上長コメントの編集（その場編集・POST, is_staff のみ）。投稿者は変更しない。
+# =========================================================
+@login_required
+@require_POST
+def edit_comment(request, comment_id):
+    comment = get_object_or_404(SupervisorComment, pk=comment_id)
+    if not can_comment(request.user):
+        return HttpResponseForbidden("コメントを編集する権限がありません。")
+
+    content = (request.POST.get("content") or "").strip()
+    if content:
+        comment.content = content
+        comment.save(update_fields=["content"])
     return redirect(request.POST.get("next") or "cs_tasks:index")
 
 

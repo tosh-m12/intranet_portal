@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-25 22:00+0800\n"
+"POT-Creation-Date: 2026-05-26 12:34+0800\n"
 "PO-Revision-Date: 2025-07-23 23:45+0800\n"
 "Last-Translator: TMurayama <example@example.com>\n"
 "Language-Team: Chinese Simplified\n"
@@ -53,7 +53,7 @@ msgid "パスワードの変更が完了しました。"
 msgstr "密码修改已完成。"
 
 #: authsys/templates/authsys/password_change_done.html:12
-#: authsys/templates/authsys/user_management.html:130
+#: authsys/templates/authsys/user_management.html:133
 msgid "ホームに戻る"
 msgstr "返回主页"
 
@@ -115,11 +115,16 @@ msgid "操作"
 msgstr "操作"
 
 #: authsys/templates/authsys/user_management.html:58
+msgid "スーパーユーザーの権限は変更できません"
+msgstr "无法更改超级用户的权限"
+
+#: authsys/templates/authsys/user_management.html:59
+#: authsys/templates/authsys/user_management.html:115
 msgid "管理者"
 msgstr "管理员"
 
 #: authsys/templates/authsys/user_management.html:60
-#: authsys/templates/authsys/user_management.html:114
+#: authsys/templates/authsys/user_management.html:116
 msgid "一般ユーザー"
 msgstr "普通用户"
 
@@ -148,7 +153,7 @@ msgstr "删除"
 msgid "メールアドレス"
 msgstr "邮箱地址"
 
-#: authsys/templates/authsys/user_management.html:125
+#: authsys/templates/authsys/user_management.html:128
 msgid "行追加"
 msgstr "添加行"
 
@@ -215,23 +220,23 @@ msgid "クローズ"
 msgstr "关闭"
 
 #: cs_tasks/templates/cs_tasks/board.html:80
-#: cs_tasks/templates/cs_tasks/board.html:188
+#: cs_tasks/templates/cs_tasks/board.html:207
 msgid "顧客名"
 msgstr "客户名称"
 
-#: cs_tasks/templates/cs_tasks/board.html:138
+#: cs_tasks/templates/cs_tasks/board.html:155
 msgid "コメントを追加"
 msgstr "添加评论"
 
-#: cs_tasks/templates/cs_tasks/board.html:169
+#: cs_tasks/templates/cs_tasks/board.html:188
 msgid "進捗を追加"
 msgstr "添加进度"
 
-#: cs_tasks/templates/cs_tasks/board.html:180
+#: cs_tasks/templates/cs_tasks/board.html:199
 msgid "課題はありません。「＋課題追加」から登録してください。"
 msgstr "暂无课题。请通过“＋添加课题”进行登记。"
 
-#: cs_tasks/templates/cs_tasks/board.html:192
+#: cs_tasks/templates/cs_tasks/board.html:211
 msgid "課題（28文字以内）"
 msgstr "课题（28字以内）"
 
