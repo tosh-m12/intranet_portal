@@ -107,53 +107,72 @@
                     </td>
                 </tr>
 
-                {# ===== 進捗行（進捗 ↔ コメント 1:1） ===== #}
+                {# ===== 進捗行（進捗 ↔ コメント 1:多。コメント数だけ行を分割） ===== #}
                 {% for p in task.progress_list %}
-                <tr data-task-id="{{ task.id }}" data-progress-id="{{ p.id }}"
-                    class="progress-row {% if task.is_closed %}task-closed{% endif %} {% if p.is_closed %}prog-closed{% endif %}">
-                    {# 進捗の日付（初回投稿日。編集しても変えない） #}
-                    <td class="col-date">{{ p.created_at|date:"n/j/Y" }}</td>
-                    <td class="col-progress">
-                        {% if task.can_edit %}
-                            <form method="post" action="{% url 'cs_tasks:edit_progress' p.id %}" class="add-inline">
-                                {% csrf_token %}
-                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                                <textarea name="content" class="add-input edit-input" rows="1">{{ p.content }}</textarea>
-                            </form>
-                        {% else %}
-                            {{ p.content|linebreaksbr }}
+                    {% for row in p.rows %}
+                    <tr data-task-id="{{ task.id }}" data-progress-id="{{ p.id }}"
+                        class="progress-row {% if task.is_closed %}task-closed{% endif %} {% if p.is_closed %}prog-closed{% endif %}">
+                        {% if forloop.first %}
+                        {# 進捗の日付・本文・クローズは複数コメント行に跨って結合 #}
+                        <td class="col-date" rowspan="{{ p.comment_rows }}">{{ p.created_at|date:"n/j/Y" }}</td>
+                        <td class="col-progress" rowspan="{{ p.comment_rows }}">
+                            {% if task.can_edit %}
+                                <form method="post" action="{% url 'cs_tasks:edit_progress' p.id %}" class="add-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                    <textarea name="content" class="add-input edit-input" rows="1">{{ p.content }}</textarea>
+                                </form>
+                            {% else %}
+                                {{ p.content|linebreaksbr }}
+                            {% endif %}
+                        </td>
                         {% endif %}
-                    </td>
-                    {# コメントの日付 #}
-                    <td class="col-date">
-                        {% if p.comment %}{{ p.comment.created_at|date:"n/j/Y" }}{% endif %}
-                    </td>
-                    <td class="col-comment">
-                        {% if is_admin %}
-                            <form method="post" action="{% url 'cs_tasks:add_comment' p.id %}" class="add-inline">
-                                {% csrf_token %}
-                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                                <textarea name="content" class="add-input edit-input" rows="1"
-                                          placeholder="＋{% trans "コメントを追加" %}">{% if p.comment %}{{ p.comment.content }}{% endif %}</textarea>
-                            </form>
-                        {% elif p.comment %}
-                            {{ p.comment.content|linebreaksbr }}
-                        {% else %}
-                            <span class="muted">—</span>
+
+                        {# コメントの日付 #}
+                        <td class="col-date">
+                            {% if row.type == "comment" %}{{ row.obj.created_at|date:"n/j/Y" }}{% endif %}
+                        </td>
+
+                        {# 上長コメント本文 #}
+                        <td class="col-comment">
+                            {% if row.type == "comment" %}
+                                {% if is_admin %}
+                                    <form method="post" action="{% url 'cs_tasks:edit_comment' row.obj.id %}" class="add-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                        <textarea name="content" class="add-input edit-input" rows="1">{{ row.obj.content }}</textarea>
+                                    </form>
+                                {% else %}
+                                    {{ row.obj.content|linebreaksbr }}
+                                {% endif %}
+                                <div class="comment-by">by {{ row.obj.author_name }}</div>
+                            {% elif row.type == "add" %}
+                                <form method="post" action="{% url 'cs_tasks:add_comment' p.id %}" class="add-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                    <textarea name="content" class="add-input" rows="1"
+                                              placeholder="＋{% trans "コメントを追加" %}"></textarea>
+                                </form>
+                            {% else %}
+                                <span class="muted">—</span>
+                            {% endif %}
+                        </td>
+
+                        {% if forloop.first %}
+                        <td class="col-close" rowspan="{{ p.comment_rows }}">
+                            {% if is_admin %}
+                            <label class="switch">
+                                <input type="checkbox" class="close-toggle progress-toggle"
+                                       {% if p.is_closed %}checked{% endif %}
+                                       data-url="{% url 'cs_tasks:toggle_progress_close' p.id %}"
+                                       data-progress-id="{{ p.id }}">
+                                <span class="slider round"></span>
+                            </label>
+                            {% endif %}
+                        </td>
                         {% endif %}
-                    </td>
-                    <td class="col-close">
-                        {% if is_admin %}
-                        <label class="switch">
-                            <input type="checkbox" class="close-toggle progress-toggle"
-                                   {% if p.is_closed %}checked{% endif %}
-                                   data-url="{% url 'cs_tasks:toggle_progress_close' p.id %}"
-                                   data-progress-id="{{ p.id }}">
-                            <span class="slider round"></span>
-                        </label>
-                        {% endif %}
-                    </td>
-                </tr>
+                    </tr>
+                    {% endfor %}
                 {% endfor %}
 
                 {# ===== 進捗追加行（各列のセルを持たせ、罫線を最初から表示） ===== #}

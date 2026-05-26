@@ -98,11 +98,11 @@ class ProgressUpdate(models.Model):
 
 
 class SupervisorComment(models.Model):
-    """上長指示・コメント。進捗1件に対し1件（1:1）。付与は is_staff のみ。"""
-    progress = models.OneToOneField(
+    """上長指示・コメント。進捗1件に対し複数可（1:多）。付与は is_staff のみ。"""
+    progress = models.ForeignKey(
         ProgressUpdate,
         on_delete=models.CASCADE,
-        related_name="comment",
+        related_name="comments",
         verbose_name="進捗",
     )
     author = models.ForeignKey(

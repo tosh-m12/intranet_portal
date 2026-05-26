@@ -68,9 +68,12 @@
                             if (crow) crow.classList.toggle("prog-closed", closed);
                         });
                 } else {
-                    // 進捗行のみ → prog-closed（課題クローズとは独立）
-                    const row = input.closest("tr");
-                    if (row) applyClass([row], "prog-closed", closed);
+                    // 進捗（複数コメント行に跨る）→ その進捗の全行に prog-closed
+                    const pid = input.dataset.progressId;
+                    const rows = document.querySelectorAll(
+                        'tr[data-progress-id="' + pid + '"]'
+                    );
+                    applyClass(Array.prototype.slice.call(rows), "prog-closed", closed);
                 }
             })
             .catch(function () {

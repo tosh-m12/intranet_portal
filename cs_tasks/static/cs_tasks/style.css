@@ -73,6 +73,14 @@
 .cs-board td.col-client.client-merge-down { border-bottom: none; }
 .cs-board .progress-row .col-progress { padding-left: 16px; }
 
+/* 上長コメントの投稿者表示（コメント末尾に薄いグレーで by XXXX） */
+.cs-board .comment-by {
+    margin-top: 2px;
+    font-size: 11px;
+    color: #999;
+    text-align: right;
+}
+
 /* 行内の追加フォーム（visit-table の枠なし入力と統一） */
 .add-inline { margin: 0; }
 .add-input {
