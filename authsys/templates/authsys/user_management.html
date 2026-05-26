@@ -54,11 +54,11 @@
                        value="{{ u.email }}">
             </td>
             <td>
-                {% if u.is_superuser or u.is_staff %}
-                    {% trans "管理者" %}
-                {% else %}
-                    {% trans "一般ユーザー" %}
-                {% endif %}
+                <select class="form-control form-control-sm user-input user-role"
+                        {% if u.is_superuser %}disabled title="{% trans "スーパーユーザーの権限は変更できません" %}"{% endif %}>
+                    <option value="admin" {% if u.is_superuser or u.is_staff %}selected{% endif %}>{% trans "管理者" %}</option>
+                    <option value="user" {% if not u.is_superuser and not u.is_staff %}selected{% endif %}>{% trans "一般ユーザー" %}</option>
+                </select>
             </td>
             <td>
                 {% if u.must_change_password %}
@@ -111,7 +111,10 @@
                        placeholder="{% trans "メールアドレス" %}">
             </td>
             <td>
-                {% trans "一般ユーザー" %}
+                <select class="form-control form-control-sm user-input user-role">
+                    <option value="admin">{% trans "管理者" %}</option>
+                    <option value="user" selected>{% trans "一般ユーザー" %}</option>
+                </select>
             </td>
             <td>
                 {# 新規行にはPW再発行ボタン・削除ボタンは最初は無し #}
@@ -170,6 +173,8 @@
         const lastName = row.querySelector(".user-last-name").value.trim();
         const firstName = row.querySelector(".user-first-name").value.trim();
         const email = row.querySelector(".user-email").value.trim();
+        const roleSel = row.querySelector(".user-role");
+        const role = roleSel ? roleSel.value : "user";
 
         let action;
         if (userId) {
@@ -190,6 +195,7 @@
         params.append("last_name", lastName);
         params.append("first_name", firstName);
         params.append("email", email);
+        params.append("role", role);
 
         fetch(window.location.pathname, {
             method: "POST",

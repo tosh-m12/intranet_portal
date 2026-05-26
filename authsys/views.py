@@ -43,10 +43,17 @@ def user_management(request):
             target.last_name = request.POST.get("last_name", "").strip()
             target.first_name = request.POST.get("first_name", "").strip()
             target.email = request.POST.get("email", "").strip().lower()
+
+            # 権限（管理者/一般ユーザー）の付与・解除。
+            # ・スーパーユーザーの権限は変更しない（is_staff を維持）
+            role = request.POST.get("role")
+            if role in ("admin", "user") and not target.is_superuser:
+                target.is_staff = (role == "admin")
+
             target.save()
 
             if is_ajax:
-                return JsonResponse({"status": "ok", "id": target.id})
+                return JsonResponse({"status": "ok", "id": target.id, "is_staff": target.is_staff})
             messages.success(request, f"{target.last_name} {target.first_name} さんを更新しました。")
             return redirect("authsys:user_management")
 
@@ -89,8 +96,11 @@ def user_management(request):
                 password=raw_password,
             )
 
+            # 権限（管理者として作成するか）
+            role = request.POST.get("role", "user")
+            user.is_staff = (role == "admin")
             user.must_change_password = True
-            user.save(update_fields=["must_change_password"])
+            user.save(update_fields=["must_change_password", "is_staff"])
 
             subject = "【社内ポータル】アカウントが作成されました"
             message = (
@@ -110,7 +120,8 @@ def user_management(request):
             return redirect("authsys:user_management")
 
     # GET / 再表示
-    users = User.objects.all().order_by("last_name", "first_name")
+    # superuser はこの画面の管理対象外（Django admin 等で別管理）。
+    users = User.objects.filter(is_superuser=False).order_by("last_name", "first_name")
     return render(request, "authsys/user_management.html", {"users": users})
 
 
