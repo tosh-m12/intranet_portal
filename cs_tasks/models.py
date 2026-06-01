@@ -5,9 +5,24 @@ from django.conf import settings
 from django.db import models
 
 
+def pick_lang(primary, ja, lang):
+    """言語に応じて表示文言を選ぶ。
+
+    lang == 'ja' かつ日本語版が非空なら日本語、そうでなければ原文(中国語)を返す。
+    翻訳ブリッジで *_ja を埋めても、既存データ(空)は原文にフォールバックする。
+    """
+    if lang == "ja" and (ja or "").strip():
+        return ja
+    return primary
+
+
 class Task(models.Model):
     title = models.CharField(verbose_name="課題名", max_length=255)
+    title_ja = models.CharField(
+        verbose_name="課題名(日本語)", max_length=255, blank=True
+    )
     description = models.TextField(verbose_name="詳細", blank=True)
+    description_ja = models.TextField(verbose_name="詳細(日本語)", blank=True)
     client_name = models.CharField(verbose_name="客先名", max_length=255, blank=True)
 
     owner = models.ForeignKey(
@@ -56,6 +71,12 @@ class Task(models.Model):
     def __str__(self):
         return f"{self.title}（{self.client_name}）" if self.client_name else self.title
 
+    def display_title(self, lang="zh"):
+        return pick_lang(self.title, self.title_ja, lang)
+
+    def display_description(self, lang="zh"):
+        return pick_lang(self.description, self.description_ja, lang)
+
 
 class ProgressUpdate(models.Model):
     """進捗追記（時系列で履歴保持）。各行は個別にクローズ可能（上長のみ）。"""
@@ -74,6 +95,7 @@ class ProgressUpdate(models.Model):
         verbose_name="記入者",
     )
     content = models.TextField(verbose_name="進捗内容")
+    content_ja = models.TextField(verbose_name="進捗内容(日本語)", blank=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="記入日時")
 
     # 行単位のクローズ（上長のみ）
@@ -96,6 +118,9 @@ class ProgressUpdate(models.Model):
     def __str__(self):
         return f"{self.task_id}: {self.content[:20]}"
 
+    def display_content(self, lang="zh"):
+        return pick_lang(self.content, self.content_ja, lang)
+
 
 class SupervisorComment(models.Model):
     """上長指示・コメント。進捗1件に対し複数可（1:多）。付与は is_staff のみ。"""
@@ -114,6 +139,7 @@ class SupervisorComment(models.Model):
         verbose_name="上長",
     )
     content = models.TextField(verbose_name="コメント")
+    content_ja = models.TextField(verbose_name="コメント(日本語)", blank=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="記入日時")
 
     class Meta:
@@ -123,6 +149,9 @@ class SupervisorComment(models.Model):
 
     def __str__(self):
         return f"{self.progress_id}: {self.content[:20]}"
+
+    def display_content(self, lang="zh"):
+        return pick_lang(self.content, self.content_ja, lang)
 
 
 class WeeklyReportMailingList(models.Model):
@@ -186,3 +215,33 @@ class WeeklyReportConfig(models.Model):
     def __str__(self):
         weekday = dict(self.WEEKDAY_CHOICES).get(self.send_weekday, "")
         return f"毎週{weekday} {self.send_time.strftime('%H:%M')} / mode={self.mode}"
+
+
+# =========================================================
+# 翻訳ブリッジ: 復路(Mac→社内)受信処理の冪等性・リプレイ防止
+# =========================================================
+class BridgeProcessedMessage(models.Model):
+    """処理済みの書き戻しメール(nonce単位)。同一メールの再適用を防ぐ。"""
+    nonce = models.CharField(verbose_name="メッセージnonce", max_length=128, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="処理日時")
+
+    class Meta:
+        verbose_name = "ブリッジ処理済みメッセージ"
+        verbose_name_plural = "ブリッジ処理済みメッセージ"
+
+    def __str__(self):
+        return self.nonce
+
+
+class BridgeProcessedOperation(models.Model):
+    """処理済みの個別操作(op_id単位)。同一操作の二重適用を防ぐ。"""
+    op_id = models.CharField(verbose_name="操作ID", max_length=128, unique=True)
+    action = models.CharField(verbose_name="操作種別", max_length=40)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="適用日時")
+
+    class Meta:
+        verbose_name = "ブリッジ処理済み操作"
+        verbose_name_plural = "ブリッジ処理済み操作"
+
+    def __str__(self):
+        return f"{self.action}:{self.op_id}"

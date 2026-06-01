@@ -24,3 +24,8 @@ Thumbs.db
 
 # VSCode
 .vscode/
+
+# Local environment (secrets / HMAC keys / IMAP passwords 等)
+.env
+.env.*
+!.env.example

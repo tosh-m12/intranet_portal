@@ -167,6 +167,38 @@ EMAIL_USE_SSL = False  # ← SSLは使わない
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
+# =========================================================
+# CS課題 翻訳ブリッジ(管理者用Macアプリ連携)
+# 機密値(HMAC鍵・受信箱パスワード)は環境変数から読む。
+# リポジトリにはコミットしないこと。
+# =========================================================
+# 復路メールの署名検証用 共有秘密鍵(必須。未設定なら受信は全拒否)
+CS_BRIDGE_HMAC_SECRET = os.environ.get('CS_BRIDGE_HMAC_SECRET', '')
+
+# 復路メールで受け付ける差出人(カンマ区切り)。空なら差出人限定なし(HMACのみ)
+CS_BRIDGE_ALLOWED_SENDERS = [
+    s.strip() for s in os.environ.get('CS_BRIDGE_ALLOWED_SENDERS', '').split(',') if s.strip()
+]
+
+# 往路 同期メールの宛先(Mac側Gmail。カンマ区切り)
+CS_BRIDGE_SYNC_RECIPIENTS = [
+    s.strip() for s in os.environ.get('CS_BRIDGE_SYNC_RECIPIENTS', '').split(',') if s.strip()
+]
+
+# ブリッジ起票/反映の操作主体にするユーザー(email)。空ならauthor=null
+CS_BRIDGE_AUTHOR_EMAIL = os.environ.get('CS_BRIDGE_AUTHOR_EMAIL', '')
+
+# 送信に使う MailAccount.code(未設定時は cs_report → 共通へフォールバック)
+CS_BRIDGE_MAIL_ACCOUNT = os.environ.get('CS_BRIDGE_MAIL_ACCOUNT', 'cs_report')
+
+# 復路 受信箱(IMAP)。未設定なら cs_inbound_poll は安全にスキップ
+CS_BRIDGE_INTAKE_IMAP_HOST = os.environ.get('CS_BRIDGE_INTAKE_IMAP_HOST', '')
+CS_BRIDGE_INTAKE_IMAP_PORT = int(os.environ.get('CS_BRIDGE_INTAKE_IMAP_PORT', '993'))
+CS_BRIDGE_INTAKE_IMAP_USER = os.environ.get('CS_BRIDGE_INTAKE_IMAP_USER', '')
+CS_BRIDGE_INTAKE_IMAP_PASSWORD = os.environ.get('CS_BRIDGE_INTAKE_IMAP_PASSWORD', '')
+CS_BRIDGE_INTAKE_IMAP_SSL = os.environ.get('CS_BRIDGE_INTAKE_IMAP_SSL', '1') not in ('0', 'false', 'False', '')
+CS_BRIDGE_INTAKE_MAILBOX = os.environ.get('CS_BRIDGE_INTAKE_MAILBOX', 'INBOX')
+
 VISITORS_SCHEDULER_MODE = 'windows'  # 'windows' / 'django' / 'none'
 
 LOGGING = {
