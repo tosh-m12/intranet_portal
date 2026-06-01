@@ -259,3 +259,80 @@ class OutboundSnapshotTests(TestCase):
         Task.objects.create(title="取消", is_cancelled=True)
         snap = outbound.build_snapshot()
         self.assertEqual(len(snap["tasks"]), 0)
+
+    def test_schema_version_is_v2(self):
+        """v2 への昇格を明示的に確認。"""
+        self.assertEqual(payload.SCHEMA_VERSION, 2)
+        snap = outbound.build_snapshot()
+        self.assertEqual(snap["schema"], 2)
+
+    def test_snapshot_includes_assignee_candidates(self):
+        """Mac 側の担当者ドロップダウン用に meta.assignees が含まれる。
+        is_active=True かつ非 superuser だけが対象。"""
+        User.objects.create_user(
+            email="active@ngls.sh.cn", password="x",
+            last_name="活動", first_name="太郎",
+        )
+        User.objects.create_user(
+            email="staff@ngls.sh.cn", password="x", is_staff=True,
+            last_name="上長", first_name="花子",
+        )
+        # 除外されるべきユーザー
+        User.objects.create_user(
+            email="su@ngls.sh.cn", password="x",
+            is_staff=True, is_superuser=True,
+        )
+        inactive = User.objects.create_user(
+            email="inactive@ngls.sh.cn", password="x",
+        )
+        inactive.is_active = False
+        inactive.save(update_fields=["is_active"])
+
+        snap = outbound.build_snapshot()
+        self.assertIn("meta", snap)
+        self.assertIn("assignees", snap["meta"])
+        emails = {a["email"] for a in snap["meta"]["assignees"]}
+        self.assertIn("active@ngls.sh.cn", emails)
+        self.assertIn("staff@ngls.sh.cn", emails)
+        self.assertNotIn("su@ngls.sh.cn", emails)
+        self.assertNotIn("inactive@ngls.sh.cn", emails)
+        # display_name / is_staff の形状を確認
+        staff_entry = next(
+            a for a in snap["meta"]["assignees"] if a["email"] == "staff@ngls.sh.cn"
+        )
+        self.assertEqual(staff_entry["display_name"], "上長 花子")
+        self.assertTrue(staff_entry["is_staff"])
+
+
+class SchemaCompatibilityTests(TestCase):
+    """復路の schema 受け入れ範囲(v1/v2)を確認。"""
+
+    @override_settings(
+        CS_BRIDGE_HMAC_SECRET=SECRET,
+        CS_BRIDGE_ALLOWED_SENDERS=[SENDER],
+        CS_BRIDGE_AUTHOR_EMAIL="boss@ngls.sh.cn",
+    )
+    def test_v1_writeback_still_accepted(self):
+        User.objects.create_user(email="boss@ngls.sh.cn", password="x", is_staff=True)
+        task = Task.objects.create(title="t", client_name="c")
+        prog = ProgressUpdate.objects.create(task=task, content="x")
+        p = {
+            "schema": 1,  # 旧バージョンの書き戻し
+            "nonce": "v1-nonce",
+            "issued_at": "2026-06-01T18:30:00+09:00",
+            "ops": [{
+                "op_id": "v1-op", "action": "add_comment",
+                "progress_id": prog.id,
+                "content_zh": "a", "content_ja": "あ",
+            }],
+        }
+        res = inbound.apply_writeback(p, signed(p), sender=SENDER)
+        self.assertTrue(res["ok"], res)
+        self.assertEqual(res["applied"], ["v1-op"])
+
+    @override_settings(CS_BRIDGE_HMAC_SECRET=SECRET, CS_BRIDGE_ALLOWED_SENDERS=[SENDER])
+    def test_unknown_schema_rejected(self):
+        p = {"schema": 99, "nonce": "n", "issued_at": "x", "ops": []}
+        res = inbound.apply_writeback(p, signed(p), sender=SENDER)
+        self.assertFalse(res["ok"])
+        self.assertIn("schema", res["reason"])

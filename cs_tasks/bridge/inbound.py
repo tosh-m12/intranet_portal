@@ -122,7 +122,7 @@ def apply_writeback(payload, signature, sender=None):
         result["reason"] = "payload が見つかりません。"
         return result
 
-    if payload.get("schema") != pl.SCHEMA_VERSION:
+    if payload.get("schema") not in pl.SUPPORTED_INBOUND_SCHEMAS:
         result["reason"] = f"未対応のschema: {payload.get('schema')}"
         return result
 

@@ -9,6 +9,7 @@ import logging
 from datetime import datetime
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.utils.timezone import localtime
 
@@ -30,6 +31,25 @@ def _user_label(user):
     first = (getattr(user, "first_name", "") or "").strip()
     name = (last + " " + first).strip()
     return name or user.get_username()
+
+
+def _build_assignees():
+    """Mac 側で担当者ドロップダウンに使う候補リスト。
+    is_active=True かつ superuser を除く(社内 UI と同方針)。
+    """
+    User = get_user_model()
+    qs = (
+        User.objects.filter(is_active=True, is_superuser=False)
+        .order_by("last_name", "first_name", "email")
+    )
+    return [
+        {
+            "email": u.email,
+            "display_name": _user_label(u),
+            "is_staff": bool(u.is_staff),
+        }
+        for u in qs
+    ]
 
 
 def build_snapshot(since=None):
@@ -100,6 +120,10 @@ def build_snapshot(since=None):
         "seq": int(now.timestamp()),
         "generated_at": now.isoformat(),
         "since": _iso(since) if since else None,
+        "meta": {
+            # Mac 側で add_task / edit_task の担当者ドロップダウンに使う
+            "assignees": _build_assignees(),
+        },
         "tasks": tasks,
     }
 

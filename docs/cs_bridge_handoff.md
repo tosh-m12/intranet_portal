@@ -37,23 +37,28 @@ Mac は社内LAN(`10.214.80.86`)に到達できないため、連携路はメー
 
 ## 3. データ契約(メールでもAPIでも同一構造)
 
-正本は `cs_tasks/bridge/payload.py`。
+正本は `cs_tasks/bridge/payload.py`。**現行 `SCHEMA_VERSION=2`**。
+復路は `SUPPORTED_INBOUND_SCHEMAS={1, 2}` で旧版も無停止受け入れ。
 
 往路(社内→Mac, 本文埋め込み):
 ```
 -----CS-SYNC-BEGIN-----
-{ "type":"snapshot","schema":1,"seq":<int>,"generated_at":...,"since":...,
+{ "type":"snapshot","schema":2,"seq":<int>,"generated_at":...,"since":...,
+  "meta":{ "assignees":[ { "email","display_name","is_staff" } ] },
   "tasks":[{ "id","title","title_ja","description","description_ja","client_name",
              "assignee","assignee_email","due_date","is_closed",
              "progress_updates":[{ "id","author","content","content_ja","created_at","is_closed",
                "comments":[{ "id","content","content_ja","created_at" }] }] }] }
 -----CS-SYNC-END-----
 ```
+- `meta.assignees`(v2 で追加): Mac 側の `add_task`/`edit_task` 担当者ドロップダウンに使う候補リスト。
+  `User.objects.filter(is_active=True, is_superuser=False)` で生成。Mac 側は選んだ `email` を
+  書き戻し op の `assignee_email` に入れる。サーバ側のユーザー追加/削除は次回送信で自動反映。
 
 復路(Mac→社内, 本文埋め込み + 署名):
 ```
 -----CS-WB-BEGIN-----
-{ "schema":1, "nonce":"<一意>", "issued_at":...,
+{ "schema":2, "nonce":"<一意>", "issued_at":...,
   "ops":[
     {"op_id":"<一意>","action":"add_comment","progress_id":<id>,"content_zh":"...","content_ja":"..."},
     {"op_id":...,"action":"edit_progress","progress_id":<id>,"content_zh":"...","content_ja":"..."},
@@ -91,30 +96,43 @@ Mac は社内LAN(`10.214.80.86`)に到達できないため、連携路はメー
 
 ## 5. これからの作業(未実装)
 
-### 5.1 Mac側アプリ(Cowork側。リポジトリ外の運用構築)
-- Gmailコネクタ接続 → 定時タスクで `[CS-SYNC]` メール取得 → 本文JSON保存
-- Claude が中→日翻訳 → レビュー画面(ライブ artifact)で原文+訳を並記
-- 日本語で 上長コメント追加 / タスク欄 修正・追加
-- 日→中翻訳 → 復路JSON生成 → HMAC付与 → **Gmail下書き作成**
-  (公式Gmailコネクタは送信不可。下書き→人手で送信=最終承認ゲート)
+### 5.1 Mac 側アプリ(リポジトリ外。本仕様の中心)
+方針(2026-06 決定):
+- **接続方式**: 公式 Gmail コネクタは使わず、**IMAP+SMTP 直接実装**。Gmail のアプリパスワードを発行して使用。
+- **同期アカウント**: 社内側=`cs_info@ngls.sh.cn`(既存)、Mac 側=`tosh.m909@gmail.com`(当面)。件名 `[CS-SYNC]`(往路)/ `[CS-WB]`(復路)で分離。
+- **MVP 対象**: 全機能(`add_comment` / `edit_progress` / `edit_task` / `add_task`)を最初から扱う。社内側は実装済み。
+- **誤送信防止**: コネクタによる下書きゲートが無くなるので、Mac 側 UI に「送信前プレビュー+承認ボタン」を必ず置く。
+- **担当者ドロップダウン**: 往路スナップショットの `meta.assignees`(SCHEMA_VERSION=2 で追加)からそのまま選択 UI を作る。
+
+作業項目:
+- IMAP で `[CS-SYNC]` を定期取得 → 本文マーカー間の JSON を保存(`seq` で取りこぼし検知)
+- Claude が中→日翻訳 → レビュー画面で原文(中)+訳(日)を並記
+- 日本語で 上長コメント追加 / タスク編集・新規追加 / 進捗編集 / 担当者割当
+- 日→中翻訳 → 復路 JSON(`-----CS-WB-*-----` マーカー) + HMAC 署名 → SMTP 送信(プレビュー承認後)
 
 ### 5.2 フェーズ2(準リアルタイム)
 - `cs_tasks/signals.py` を新設し `post_save`(Task/ProgressUpdate/SupervisorComment)で
   往路の差分送信を即時トリガー(デバウンス推奨)。`apps.ready()` で接続。
-- Mac側取得間隔の短縮。
+- Mac 側取得間隔の短縮。
 
 ### 5.3 フェーズ3 / 将来構想
-- 完全自動送信(Gmailアプリパスワードで SMTP 直送)。
-- リアルタイム連動(spec 14章): Tailscale等で接続路を作り、メール→API+SSE/WebSocketへ。
-  JSON契約は流用、経路だけ差し替え。
-- Claudeによる課題・進捗の自動起票(spec 15章): 復路opに `add_progress` を追加。
-  必ず承認ゲート経由。Claude起票が分かる印を付け監査可能に。
+- リアルタイム連動(spec 14章): Tailscale 等で接続路を作り、メール→API+SSE/WebSocket へ。
+  JSON 契約は流用、経路だけ差し替え。
+- Claude による課題・進捗の自動起票(spec 15章): 復路 op に `add_progress` を追加。
+  必ず承認ゲート経由。Claude 起票が分かる印を付け監査可能に。
 
-## 6. 未決事項(実装前に決める)
-- 同期用Gmailアドレス(週報用と分けるか / 専用受信箱の用意)
-- Mac取得の具体間隔(数分の目安)
-- `content_ja` をサーバ表示でどこまで使うか(キャッシュ留め or トグルUI作り込み)
-- 完全自動送信を入れるか、人手の送信ゲートを恒久化するか
+## 6. 未決事項
+### 6.1 決定済み
+- 同期用 Gmail: 社内 `cs_info@ngls.sh.cn` / Mac `tosh.m909@gmail.com`
+- Mac 接続方式: IMAP+SMTP 直接
+- Mac の MVP スコープ: 全機能
+- 担当者リスト配信: 往路スナップショット `meta.assignees`(SCHEMA_VERSION=2)
+
+### 6.2 残課題
+- Mac 取得間隔の確定値(初期 5 分推奨)
+- HMAC 秘密鍵のローテーション運用方針(初期は手動・必要時のみ)
+- `content_ja` をサーバ表示でどこまで使うか(現状キャッシュ用途のみ)
+- 復路適用結果(成功/スキップ/エラー)を Mac 側に戻す経路(当面はサーバログ閲覧で代替)
 
 ## 7. テスト/開発メモ
 - テスト: `python manage.py test cs_tasks`(venv は Python 3.14)。
