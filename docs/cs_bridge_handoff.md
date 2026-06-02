@@ -65,7 +65,8 @@ Mac は社内LAN(`10.214.80.86`)に到達できないため、連携路はメー
     {"op_id":...,"action":"edit_comment","comment_id":<id>,"content_zh":"...","content_ja":"..."},
     {"op_id":...,"action":"edit_task","task_id":<id>,"fields":{
         "title_zh","title_ja","description_zh","description_ja","client_name","due_date","assignee_email"}},
-    {"op_id":...,"action":"add_task","fields":{ 同上。title_zh 必須 }}
+    {"op_id":...,"action":"add_task","fields":{ 同上。title_zh 必須 }},
+    {"op_id":...,"action":"delete","target":"task|progress|comment","id":<int>}
   ] }
 -----CS-WB-END-----
 -----CS-WB-SIG-----
@@ -101,7 +102,8 @@ Mac は社内LAN(`10.214.80.86`)に到達できないため、連携路はメー
 方針(2026-06 決定):
 - **接続方式**: 公式 Gmail コネクタは使わず、**IMAP+SMTP 直接実装**。Gmail のアプリパスワードを発行して使用。
 - **同期アカウント**: 社内側=`cs_info@ngls.sh.cn`(既存)、Mac 側=`tosh.m909@gmail.com`(当面)。件名 `[CS-SYNC]`(往路)/ `[CS-WB]`(復路)で分離。
-- **MVP 対象**: 全機能(`add_comment` / `edit_progress` / `edit_comment` / `edit_task` / `add_task`)を最初から扱う。社内側は実装済み(`edit_comment` は v2.1 で追加)。
+- **MVP 対象**: 全機能(`add_comment` / `edit_progress` / `edit_comment` / `edit_task` / `add_task` / `delete`)を最初から扱う。社内側は実装済み(`edit_comment` は v2.1、`delete` は v2.2 で追加)。
+- **削除運用**: 社内側 UI には削除動線を置かない(メンバーは追加・修正のみ)。**削除は上長 = Mac からのみ**。delete op で task は論理削除(`is_cancelled=True`)、progress / comment は物理削除。
 - **誤送信防止**: コネクタによる下書きゲートが無くなるので、Mac 側 UI に「送信前プレビュー+承認ボタン」を必ず置く。
 - **担当者ドロップダウン**: 往路スナップショットの `meta.assignees`(SCHEMA_VERSION=2 で追加)からそのまま選択 UI を作る。
 

@@ -15,6 +15,7 @@ from email.utils import parseaddr
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.utils import timezone
 
 from .. import models as m
 from . import payload as pl
@@ -23,7 +24,15 @@ from . import security
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
-VALID_ACTIONS = {"add_comment", "edit_progress", "edit_task", "add_task", "edit_comment"}
+VALID_ACTIONS = {
+    "add_comment", "edit_progress", "edit_task", "add_task", "edit_comment",
+    "delete",
+}
+
+# delete action の target → 削除方式
+# Task は既存運用に合わせて論理削除(is_cancelled=True)。
+# ProgressUpdate / SupervisorComment は物理削除。
+_DELETE_TARGETS = {"task", "progress", "comment"}
 
 # edit_task / add_task の fields キー → Task の属性名
 _TASK_FIELD_MAP = {
@@ -114,6 +123,27 @@ def _apply_op(op, author):
         if not (task.title or "").strip():
             raise ValueError("add_task には title(title_zh) が必要です。")
         task.save()
+
+    elif action == "delete":
+        target = op.get("target")
+        target_id = op.get("id")
+        if target not in _DELETE_TARGETS:
+            raise ValueError(f"delete の target が不正: {target!r}")
+        if not isinstance(target_id, int):
+            raise ValueError("delete には id(int) が必要です。")
+
+        if target == "task":
+            # 既存の論理削除運用に合わせる。往路スナップショットは
+            # is_cancelled=False のみ送るため、以後 Mac からも消える。
+            m.Task.objects.filter(pk=target_id).update(
+                is_cancelled=True,
+                cancelled_at=timezone.now(),
+            )
+        elif target == "progress":
+            m.ProgressUpdate.objects.filter(pk=target_id).delete()
+        elif target == "comment":
+            m.SupervisorComment.objects.filter(pk=target_id).delete()
+        # 対象が無くても filter() は黙って no-op。op_id 冪等で重複適用は防がれる。
 
 
 def apply_writeback(payload, signature, sender=None):
