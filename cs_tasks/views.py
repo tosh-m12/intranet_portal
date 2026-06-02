@@ -1,4 +1,6 @@
 # cs_tasks/views.py
+import re
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -38,6 +40,31 @@ def _display_name(user):
 
 def _is_ajax(request):
     return request.headers.get("x-requested-with") == "XMLHttpRequest"
+
+
+# =========================================================
+# 入力言語の自動判定とフィールド振り分け
+#   - ひらがな/カタカナを含めば JA、それ以外は ZH（簡易ヒューリスティック）
+#   - 検出側のフィールドに保存し、逆側を空にする
+#   - 逆側が空 → Mac 側翻訳ワークフローが「翻訳依頼」として検出する
+# =========================================================
+_KANA_RE = re.compile("[぀-ゟ゠-ヿ]")  # ひらがな + カタカナ
+
+
+def _detect_lang(text):
+    """ひらがな・カタカナを含めば 'ja'、それ以外は 'zh'。"""
+    return "ja" if _KANA_RE.search(text or "") else "zh"
+
+
+def _route_text(text):
+    """入力テキストを (zh_field_value, ja_field_value) に振り分ける。
+
+    検出言語側に text、逆側を空にする。Mac 側はこの「逆側 空」を見て
+    翻訳が必要なエントリと判定する。
+    """
+    if _detect_lang(text) == "ja":
+        return ("", text)
+    return (text, "")
 
 
 def _build_board(user, assignee_id=None):
@@ -209,14 +236,19 @@ def task_add_inline(request):
         messages.error(request, "課題名を入力してください。")
         return redirect("cs_tasks:index")
 
+    title_zh, title_ja = _route_text(title)
     task = Task.objects.create(
-        title=title,
+        title=title_zh,
+        title_ja=title_ja,
         client_name=client_name,
         owner=request.user,
         assignee=request.user,
     )
     if progress:
-        ProgressUpdate.objects.create(task=task, author=request.user, content=progress)
+        p_zh, p_ja = _route_text(progress)
+        ProgressUpdate.objects.create(
+            task=task, author=request.user, content=p_zh, content_ja=p_ja
+        )
 
     return redirect("cs_tasks:index")
 
@@ -253,7 +285,10 @@ def add_progress(request, task_id):
 
     content = (request.POST.get("content") or "").strip()
     if content:
-        ProgressUpdate.objects.create(task=task, author=request.user, content=content)
+        c_zh, c_ja = _route_text(content)
+        ProgressUpdate.objects.create(
+            task=task, author=request.user, content=c_zh, content_ja=c_ja
+        )
     return redirect(request.POST.get("next") or "cs_tasks:index")
 
 
@@ -269,8 +304,10 @@ def edit_title(request, task_id):
 
     title = (request.POST.get("cs_subj") or "").strip()[:28]
     if title:
-        task.title = title
-        task.save(update_fields=["title", "updated_at"])
+        t_zh, t_ja = _route_text(title)
+        task.title = t_zh
+        task.title_ja = t_ja
+        task.save(update_fields=["title", "title_ja", "updated_at"])
     return redirect(request.POST.get("next") or "cs_tasks:index")
 
 
@@ -305,8 +342,10 @@ def edit_progress(request, progress_id):
     content = (request.POST.get("content") or "").strip()
     if content:
         # content のみ更新（created_at は auto_now_add のため不変）
-        progress.content = content
-        progress.save(update_fields=["content"])
+        c_zh, c_ja = _route_text(content)
+        progress.content = c_zh
+        progress.content_ja = c_ja
+        progress.save(update_fields=["content", "content_ja"])
     return redirect(request.POST.get("next") or "cs_tasks:index")
 
 
@@ -322,8 +361,12 @@ def add_comment(request, progress_id):
 
     content = (request.POST.get("content") or "").strip()
     if content:
+        c_zh, c_ja = _route_text(content)
         SupervisorComment.objects.create(
-            progress=progress, author=request.user, content=content
+            progress=progress,
+            author=request.user,
+            content=c_zh,
+            content_ja=c_ja,
         )
     return redirect(request.POST.get("next") or "cs_tasks:index")
 
@@ -340,8 +383,10 @@ def edit_comment(request, comment_id):
 
     content = (request.POST.get("content") or "").strip()
     if content:
-        comment.content = content
-        comment.save(update_fields=["content"])
+        c_zh, c_ja = _route_text(content)
+        comment.content = c_zh
+        comment.content_ja = c_ja
+        comment.save(update_fields=["content", "content_ja"])
     return redirect(request.POST.get("next") or "cs_tasks:index")
 
 

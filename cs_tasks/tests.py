@@ -11,6 +11,7 @@ from .models import (
     pick_lang,
 )
 from .bridge import security, payload, inbound, outbound
+from .views import _detect_lang, _route_text
 
 User = get_user_model()
 
@@ -41,6 +42,15 @@ class PickLangTests(TestCase):
 
     def test_zh_default(self):
         self.assertEqual(pick_lang("中文", "日本語", "zh"), "中文")
+
+    def test_zh_falls_back_to_ja_when_primary_empty(self):
+        # 双方向フォールバック: JA だけ埋まっている時、ZH モードでも JA を出す
+        self.assertEqual(pick_lang("", "日本語", "zh"), "日本語")
+        self.assertEqual(pick_lang("   ", "日本語", "zh"), "日本語")
+
+    def test_both_empty(self):
+        self.assertEqual(pick_lang("", "", "ja"), "")
+        self.assertEqual(pick_lang("", "", "zh"), "")
 
 
 class SecurityTests(TestCase):
@@ -136,6 +146,42 @@ class InboundApplyTests(TestCase):
         self.progress.refresh_from_db()
         self.assertEqual(self.progress.content, "改后")
         self.assertEqual(self.progress.content_ja, "修正後")
+
+    def test_edit_comment(self):
+        c = SupervisorComment.objects.create(
+            progress=self.progress, author=self.boss,
+            content="旧中文", content_ja="",
+        )
+        res = self._apply(
+            [{
+                "op_id": "op-ec", "action": "edit_comment",
+                "comment_id": c.id,
+                "content_zh": "新中文", "content_ja": "新日本語",
+            }]
+        )
+        self.assertTrue(res["ok"])
+        self.assertEqual(res["applied"], ["op-ec"])
+        c.refresh_from_db()
+        self.assertEqual(c.content, "新中文")
+        self.assertEqual(c.content_ja, "新日本語")
+
+    def test_edit_comment_partial(self):
+        # 片側だけ送る → 送られた側だけ更新（Mac の翻訳穴埋め経路の主用途）
+        c = SupervisorComment.objects.create(
+            progress=self.progress, author=self.boss,
+            content="原文中文", content_ja="",
+        )
+        res = self._apply(
+            [{
+                "op_id": "op-ec2", "action": "edit_comment",
+                "comment_id": c.id,
+                "content_ja": "翻訳のみ追加",
+            }]
+        )
+        self.assertTrue(res["ok"])
+        c.refresh_from_db()
+        self.assertEqual(c.content, "原文中文")  # 不変
+        self.assertEqual(c.content_ja, "翻訳のみ追加")
 
     def test_edit_task(self):
         res = self._apply(
@@ -336,3 +382,42 @@ class SchemaCompatibilityTests(TestCase):
         res = inbound.apply_writeback(p, signed(p), sender=SENDER)
         self.assertFalse(res["ok"])
         self.assertIn("schema", res["reason"])
+
+
+class LangDetectTests(TestCase):
+    """入力テキストの言語自動判定（社内側でのフィールド振り分け用）。"""
+
+    def test_zh_or_other_defaults_to_zh(self):
+        self.assertEqual(_detect_lang("中文文本"), "zh")
+        self.assertEqual(_detect_lang("Hello"), "zh")
+        self.assertEqual(_detect_lang(""), "zh")
+        self.assertEqual(_detect_lang(None), "zh")
+
+    def test_hiragana_is_ja(self):
+        self.assertEqual(_detect_lang("日本語のテキスト"), "ja")
+        self.assertEqual(_detect_lang("これ"), "ja")
+        self.assertEqual(_detect_lang("漢字とひらがな"), "ja")
+
+    def test_katakana_is_ja(self):
+        self.assertEqual(_detect_lang("カタカナ"), "ja")
+        self.assertEqual(_detect_lang("ハロー"), "ja")
+        self.assertEqual(_detect_lang("漢字とカタカナ"), "ja")
+
+    def test_kanji_only_defaults_to_zh(self):
+        # 漢字のみは中文扱い（簡易ヒューリスティック・JA との曖昧性は受け入れ）
+        self.assertEqual(_detect_lang("漢字"), "zh")
+        self.assertEqual(_detect_lang("文書管理"), "zh")
+
+
+class RouteTextTests(TestCase):
+    """検出言語に応じて (zh, ja) タプルに振り分け、逆側を空にする。"""
+
+    def test_zh_to_primary_clears_ja(self):
+        zh, ja = _route_text("中文内容")
+        self.assertEqual(zh, "中文内容")
+        self.assertEqual(ja, "")
+
+    def test_ja_to_ja_clears_primary(self):
+        zh, ja = _route_text("日本語の内容")
+        self.assertEqual(zh, "")
+        self.assertEqual(ja, "日本語の内容")

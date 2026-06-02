@@ -3,17 +3,35 @@ from datetime import time as dtime
 
 from django.conf import settings
 from django.db import models
+from django.utils.translation import get_language
+
+
+def active_lang():
+    """現在アクティブな表示言語を pick_lang 用に正規化する。
+
+    日中トグル(switch_language)は translation.activate で言語を切り替えるため、
+    get_language() が 'ja' / 'zh-hans' を返す。pick_lang は lang=='ja' を見るので、
+    'ja' 始まりを 'ja'、それ以外(中国語)を 'zh' に畳む。
+    """
+    return "ja" if (get_language() or "").lower().startswith("ja") else "zh"
 
 
 def pick_lang(primary, ja, lang):
-    """言語に応じて表示文言を選ぶ。
+    """言語に応じて表示文言を選ぶ（双方向フォールバック）。
 
-    lang == 'ja' かつ日本語版が非空なら日本語、そうでなければ原文(中国語)を返す。
-    翻訳ブリッジで *_ja を埋めても、既存データ(空)は原文にフォールバックする。
+    - lang == 'ja': ja が非空なら ja、空なら primary(中文) にフォールバック
+    - lang == 'zh' その他: primary が非空なら primary、空なら ja にフォールバック
+
+    双方向フォールバックの理由:
+      社内側は両言語入力可能で、入力時に「検出言語側」のフィールドだけ埋め、
+      逆側は空のままにする（Mac 側翻訳ワークフローへのシグナル）。
+      Mac が未翻訳の間も、ユーザーには「ある方の言語」で表示する必要がある。
     """
     if lang == "ja" and (ja or "").strip():
         return ja
-    return primary
+    if (primary or "").strip():
+        return primary
+    return ja or ""
 
 
 class Task(models.Model):
@@ -71,11 +89,11 @@ class Task(models.Model):
     def __str__(self):
         return f"{self.title}（{self.client_name}）" if self.client_name else self.title
 
-    def display_title(self, lang="zh"):
-        return pick_lang(self.title, self.title_ja, lang)
+    def display_title(self, lang=None):
+        return pick_lang(self.title, self.title_ja, lang or active_lang())
 
-    def display_description(self, lang="zh"):
-        return pick_lang(self.description, self.description_ja, lang)
+    def display_description(self, lang=None):
+        return pick_lang(self.description, self.description_ja, lang or active_lang())
 
 
 class ProgressUpdate(models.Model):
@@ -118,8 +136,8 @@ class ProgressUpdate(models.Model):
     def __str__(self):
         return f"{self.task_id}: {self.content[:20]}"
 
-    def display_content(self, lang="zh"):
-        return pick_lang(self.content, self.content_ja, lang)
+    def display_content(self, lang=None):
+        return pick_lang(self.content, self.content_ja, lang or active_lang())
 
 
 class SupervisorComment(models.Model):
@@ -150,8 +168,8 @@ class SupervisorComment(models.Model):
     def __str__(self):
         return f"{self.progress_id}: {self.content[:20]}"
 
-    def display_content(self, lang="zh"):
-        return pick_lang(self.content, self.content_ja, lang)
+    def display_content(self, lang=None):
+        return pick_lang(self.content, self.content_ja, lang or active_lang())
 
 
 class WeeklyReportMailingList(models.Model):

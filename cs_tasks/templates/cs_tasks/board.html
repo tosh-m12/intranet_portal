@@ -91,7 +91,7 @@
                                    value="{{ task.title }}" maxlength="28" autocomplete="off">
                         </form>
                         {% else %}
-                            <span class="task-title">{{ task.title }}</span>
+                            <span class="task-title">{{ task.display_title }}</span>
                         {% endif %}
                     </td>
                     <td class="col-close">
@@ -123,7 +123,7 @@
                                     <textarea name="content" class="add-input edit-input" rows="1">{{ p.content }}</textarea>
                                 </form>
                             {% else %}
-                                {{ p.content|linebreaksbr }}
+                                {{ p.display_content|linebreaksbr }}
                             {% endif %}
                         </td>
                         {% endif %}
@@ -143,7 +143,7 @@
                                         <textarea name="content" class="add-input edit-input" rows="1">{{ row.obj.content }}</textarea>
                                     </form>
                                 {% else %}
-                                    {{ row.obj.content|linebreaksbr }}
+                                    {{ row.obj.display_content|linebreaksbr }}
                                 {% endif %}
                                 <div class="comment-by">by {{ row.obj.author_name }}</div>
                             {% elif row.type == "add" %}
