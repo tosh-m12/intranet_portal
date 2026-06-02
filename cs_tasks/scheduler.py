@@ -4,12 +4,18 @@ import time
 import datetime
 import logging
 
+from django.core.management import call_command
 from django.utils import timezone
 from django.db import close_old_connections
 
 logger = logging.getLogger(__name__)
 
 _scheduler_started = False  # 多重起動防止
+
+# CS Bridge: 往路/復路の実行間隔と最終実行時刻(プロセス内モノトニック秒)
+_BRIDGE_INTERVAL_SEC = 300  # 5分
+_last_sync_at = None
+_last_inbound_at = None
 
 
 def _scheduler_loop():
@@ -68,6 +74,28 @@ def _scheduler_loop():
                         logger.warning(
                             "[CSTASKS_SCHED] NOT sent (reason=%s)", res.get("reason")
                         )
+
+            # ===== CS Bridge: 5分毎に 往路/復路 を Waitress プロセス内で実行 =====
+            # タスクスケジューラ起動の .bat に頼らず、Waitress 内スレッドで定期実行する。
+            # 環境変数(CS_BRIDGE_*)は run_portal.bat 経由で Waitress プロセスに継承済み。
+            global _last_sync_at, _last_inbound_at
+            mono = time.monotonic()
+            if _last_sync_at is None or (mono - _last_sync_at) >= _BRIDGE_INTERVAL_SEC:
+                try:
+                    print("### [CSBRIDGE_SCHED] running cs_sync_send")
+                    call_command("cs_sync_send", "--minutes", "30")
+                except Exception:
+                    logger.exception("[CSBRIDGE_SCHED] cs_sync_send failed")
+                finally:
+                    _last_sync_at = mono
+            if _last_inbound_at is None or (mono - _last_inbound_at) >= _BRIDGE_INTERVAL_SEC:
+                try:
+                    print("### [CSBRIDGE_SCHED] running cs_inbound_poll")
+                    call_command("cs_inbound_poll")
+                except Exception:
+                    logger.exception("[CSBRIDGE_SCHED] cs_inbound_poll failed")
+                finally:
+                    _last_inbound_at = mono
 
         except Exception:
             logger.exception("[CSTASKS_SCHED] error in scheduler loop")
