@@ -88,7 +88,7 @@
                             {% csrf_token %}
                             <input type="hidden" name="next" value="{{ request.get_full_path }}">
                             <input type="text" name="cs_subj" class="add-input task-title-input"
-                                   value="{{ task.title }}" maxlength="28" autocomplete="off">
+                                   value="{{ task.display_title }}" maxlength="28" autocomplete="off">
                         </form>
                         {% else %}
                             <span class="task-title">{{ task.display_title }}</span>
@@ -120,7 +120,7 @@
                                 <form method="post" action="{% url 'cs_tasks:edit_progress' p.id %}" class="add-inline">
                                     {% csrf_token %}
                                     <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                                    <textarea name="content" class="add-input edit-input" rows="1">{{ p.content }}</textarea>
+                                    <textarea name="content" class="add-input edit-input" rows="1">{{ p.display_content }}</textarea>
                                 </form>
                             {% else %}
                                 {{ p.display_content|linebreaksbr }}
@@ -140,7 +140,7 @@
                                     <form method="post" action="{% url 'cs_tasks:edit_comment' row.obj.id %}" class="add-inline">
                                         {% csrf_token %}
                                         <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                                        <textarea name="content" class="add-input edit-input" rows="1">{{ row.obj.content }}</textarea>
+                                        <textarea name="content" class="add-input edit-input" rows="1">{{ row.obj.display_content }}</textarea>
                                     </form>
                                 {% else %}
                                     {{ row.obj.display_content|linebreaksbr }}
