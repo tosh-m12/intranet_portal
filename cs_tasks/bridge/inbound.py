@@ -23,7 +23,7 @@ from . import security
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
-VALID_ACTIONS = {"add_comment", "edit_progress", "edit_task", "add_task"}
+VALID_ACTIONS = {"add_comment", "edit_progress", "edit_task", "add_task", "edit_comment"}
 
 # edit_task / add_task の fields キー → Task の属性名
 _TASK_FIELD_MAP = {
@@ -94,6 +94,14 @@ def _apply_op(op, author):
         if "content_ja" in op:
             progress.content_ja = op.get("content_ja") or ""
         progress.save(update_fields=["content", "content_ja"])
+
+    elif action == "edit_comment":
+        comment = m.SupervisorComment.objects.get(pk=op["comment_id"])
+        if "content_zh" in op:
+            comment.content = op.get("content_zh") or ""
+        if "content_ja" in op:
+            comment.content_ja = op.get("content_ja") or ""
+        comment.save(update_fields=["content", "content_ja"])
 
     elif action == "edit_task":
         task = m.Task.objects.get(pk=op["task_id"])

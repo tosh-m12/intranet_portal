@@ -62,6 +62,7 @@ Mac は社内LAN(`10.214.80.86`)に到達できないため、連携路はメー
   "ops":[
     {"op_id":"<一意>","action":"add_comment","progress_id":<id>,"content_zh":"...","content_ja":"..."},
     {"op_id":...,"action":"edit_progress","progress_id":<id>,"content_zh":"...","content_ja":"..."},
+    {"op_id":...,"action":"edit_comment","comment_id":<id>,"content_zh":"...","content_ja":"..."},
     {"op_id":...,"action":"edit_task","task_id":<id>,"fields":{
         "title_zh","title_ja","description_zh","description_ja","client_name","due_date","assignee_email"}},
     {"op_id":...,"action":"add_task","fields":{ 同上。title_zh 必須 }}
@@ -100,13 +101,17 @@ Mac は社内LAN(`10.214.80.86`)に到達できないため、連携路はメー
 方針(2026-06 決定):
 - **接続方式**: 公式 Gmail コネクタは使わず、**IMAP+SMTP 直接実装**。Gmail のアプリパスワードを発行して使用。
 - **同期アカウント**: 社内側=`cs_info@ngls.sh.cn`(既存)、Mac 側=`tosh.m909@gmail.com`(当面)。件名 `[CS-SYNC]`(往路)/ `[CS-WB]`(復路)で分離。
-- **MVP 対象**: 全機能(`add_comment` / `edit_progress` / `edit_task` / `add_task`)を最初から扱う。社内側は実装済み。
+- **MVP 対象**: 全機能(`add_comment` / `edit_progress` / `edit_comment` / `edit_task` / `add_task`)を最初から扱う。社内側は実装済み(`edit_comment` は v2.1 で追加)。
 - **誤送信防止**: コネクタによる下書きゲートが無くなるので、Mac 側 UI に「送信前プレビュー+承認ボタン」を必ず置く。
 - **担当者ドロップダウン**: 往路スナップショットの `meta.assignees`(SCHEMA_VERSION=2 で追加)からそのまま選択 UI を作る。
 
 作業項目:
 - IMAP で `[CS-SYNC]` を定期取得 → 本文マーカー間の JSON を保存(`seq` で取りこぼし検知)
-- Claude が中→日翻訳 → レビュー画面で原文(中)+訳(日)を並記
+- **翻訳ギャップ自動補完(v2.1)**: スナップショットを舐め「片言語だけ埋まっている」エントリを検出 →
+  欠落側を翻訳 → 復路で **`edit_task` / `edit_progress` / `edit_comment`** に該当側のみ書き戻し。
+  社内側は両言語入力を受け付けるが翻訳機能を持たないので、Mac 稼働中は両言語が揃った状態へ収束する。
+  ユーザー編集の有無に関係なく定期実行する。
+- Claude が中↔日翻訳 → レビュー画面で原文+訳を並記
 - 日本語で 上長コメント追加 / タスク編集・新規追加 / 進捗編集 / 担当者割当
 - 日→中翻訳 → 復路 JSON(`-----CS-WB-*-----` マーカー) + HMAC 署名 → SMTP 送信(プレビュー承認後)
 
@@ -131,7 +136,9 @@ Mac は社内LAN(`10.214.80.86`)に到達できないため、連携路はメー
 ### 6.2 残課題
 - Mac 取得間隔の確定値(初期 5 分推奨)
 - HMAC 秘密鍵のローテーション運用方針(初期は手動・必要時のみ)
-- `content_ja` をサーバ表示でどこまで使うか(現状キャッシュ用途のみ)
+- `content_ja` のサーバ側表示: v2.1 で社内側に**両言語入力ポリシー**を導入(`_route_text`)。
+  入力時に検出言語側のみ保存・逆側は空。`pick_lang` は双方向フォールバック対応済み。
+  Mac 側翻訳ワークフロー前提で、両言語が揃った状態に Mac 稼働中は収束する。
 - 復路適用結果(成功/スキップ/エラー)を Mac 側に戻す経路(当面はサーバログ閲覧で代替)
 
 ## 7. テスト/開発メモ
