@@ -183,6 +183,71 @@ class InboundApplyTests(TestCase):
         self.assertEqual(c.content, "原文中文")  # 不変
         self.assertEqual(c.content_ja, "翻訳のみ追加")
 
+    def test_delete_task_soft(self):
+        # task は既存の論理削除運用に合わせて is_cancelled=True 化
+        res = self._apply(
+            [{"op_id": "op-dt", "action": "delete",
+              "target": "task", "id": self.task.id}]
+        )
+        self.assertTrue(res["ok"])
+        self.assertEqual(res["applied"], ["op-dt"])
+        self.task.refresh_from_db()
+        self.assertTrue(self.task.is_cancelled)
+        self.assertIsNotNone(self.task.cancelled_at)
+
+    def test_delete_progress_hard(self):
+        res = self._apply(
+            [{"op_id": "op-dp", "action": "delete",
+              "target": "progress", "id": self.progress.id}]
+        )
+        self.assertTrue(res["ok"])
+        self.assertFalse(
+            ProgressUpdate.objects.filter(pk=self.progress.id).exists()
+        )
+
+    def test_delete_comment_hard(self):
+        c = SupervisorComment.objects.create(
+            progress=self.progress, author=self.boss, content="x"
+        )
+        res = self._apply(
+            [{"op_id": "op-dc", "action": "delete",
+              "target": "comment", "id": c.id}]
+        )
+        self.assertTrue(res["ok"])
+        self.assertFalse(SupervisorComment.objects.filter(pk=c.id).exists())
+
+    def test_delete_unknown_target_is_error(self):
+        res = self._apply(
+            [{"op_id": "op-du", "action": "delete",
+              "target": "unknown", "id": 1}]
+        )
+        # メッセージ自体は処理完了するが、op はエラー扱いで未記録
+        self.assertTrue(res["ok"])
+        self.assertEqual(res["applied"], [])
+        self.assertEqual(len(res["errors"]), 1)
+        self.assertFalse(
+            BridgeProcessedOperation.objects.filter(op_id="op-du").exists()
+        )
+
+    def test_delete_idempotent(self):
+        # 同じ op_id を別メールで再送 → 2回目はスキップ
+        op = {"op_id": "op-di", "action": "delete",
+              "target": "progress", "id": self.progress.id}
+        r1 = self._apply([op], nonce="msg-d1")
+        r2 = self._apply([op], nonce="msg-d2")
+        self.assertEqual(r1["applied"], ["op-di"])
+        self.assertEqual(r2["skipped"], ["op-di"])
+
+    def test_delete_missing_target_is_noop(self):
+        # 既に存在しない id の delete でも例外にはせず冪等的に no-op
+        res = self._apply(
+            [{"op_id": "op-dm", "action": "delete",
+              "target": "comment", "id": 99999}]
+        )
+        self.assertTrue(res["ok"])
+        # 例外なく applied 扱いに（無いものを消したという意味で）
+        self.assertEqual(res["applied"], ["op-dm"])
+
     def test_edit_task(self):
         res = self._apply(
             [{
