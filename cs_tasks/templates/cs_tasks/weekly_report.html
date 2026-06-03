@@ -13,12 +13,12 @@
 
 {% block content %}
 <div class="page-header">
-    <div><h2>📊 {% trans "週報プレビュー" %}</h2></div>
+    <div><h2><svg class="ic"><use href="#ic-chart"/></svg> {% trans "週報プレビュー" %}</h2></div>
     <div>
         <form method="post" onsubmit="return confirm('{% trans "週報をメーリングリスト宛に今すぐ送信します。よろしいですか？" %}');">
             {% csrf_token %}
             <input type="hidden" name="action" value="send">
-            <button type="submit" class="btn btn-primary">📨 {% trans "今すぐ送信" %}</button>
+            <button type="submit" class="btn btn-primary"><svg class="ic"><use href="#ic-send"/></svg> {% trans "今すぐ送信" %}</button>
         </form>
     </div>
 </div>

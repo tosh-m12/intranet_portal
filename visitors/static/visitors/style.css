@@ -81,8 +81,13 @@ body {
     stroke-linecap: round;
     stroke-linejoin: round;
     flex-shrink: 0;
+    vertical-align: -0.15em;   /* h2・ボタン等にインライン配置した時の縦位置 */
 }
 .brand .ic { width: 20px; height: 20px; }
+/* 見出し(h2)・ボタン内のインラインアイコンは少し小さめ＆右に余白 */
+.main-content h2 .ic,
+.btn .ic, button .ic, .btn-link .ic { width: 16px; height: 16px; margin-right: 4px; }
+.main-content h2 .ic { stroke: var(--nx-blue); }
 
 /* 言語トグル（日／中） */
 .lang-toggle {
