@@ -100,6 +100,11 @@
     outline: none;
     background: #fff9e6;   /* visit-table のホバー色に合わせる */
 }
+/* その場確定（AJAX保存）成功の合図：淡いグリーンを一瞬表示 */
+.add-input.just-saved {
+    background-color: #eaf7e3;
+    transition: background-color .3s ease;
+}
 /* textarea は高さ自動調整（JS）。手動リサイズ・横スクロールは無効化し、
    入力中の全文が折り返して見えるようにする。 */
 textarea.add-input {
