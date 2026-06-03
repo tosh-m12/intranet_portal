@@ -111,7 +111,7 @@
 <!-- ▼ ダウンロード -->
 <form method="get" action="{% url 'meetings:download_settings_csv' 'meeting_list' %}" style="margin-bottom:8px;">
     <button type="submit" class="btn btn-secondary">
-        💾 {% trans "Meeting 一覧 CSV をダウンロード" %}
+        <svg class="ic"><use href="#ic-download"/></svg> {% trans "Meeting 一覧 CSV をダウンロード" %}
     </button>
 </form>
 
@@ -120,7 +120,7 @@
     {% csrf_token %}
     <input type="file" name="csv_file" accept=".csv">
     <button type="submit" class="btn btn-danger">
-        ⬆ {% trans "Meeting 一覧 CSV をアップロード（全件入れ替え）" %}
+        <svg class="ic"><use href="#ic-upload"/></svg> {% trans "Meeting 一覧 CSV をアップロード（全件入れ替え）" %}
     </button>
     <p style="font-size:12px; color:#666; margin-top:4px;">
         {% trans "※ ダウンロードした CSV を編集してアップロードすると、Meeting データが全件入れ替えられます。" %}<br>
@@ -137,13 +137,13 @@
 
     <!-- プレビューボタン（GET） -->
     <form method="get" action="{% url 'meetings:preview_email' %}">
-        <button type="submit">👀 {% trans "メールプレビュー" %}</button>
+        <button type="submit"><svg class="ic"><use href="#ic-eye"/></svg> {% trans "メールプレビュー" %}</button>
     </form>
 
     <!-- 送信ボタン（POST） -->
     <form method="post" action="{% url 'meetings:run_email' %}">
         {% csrf_token %}
-        <button type="submit">📨 {% trans "今すぐ送信" %}</button>
+        <button type="submit"><svg class="ic"><use href="#ic-send"/></svg> {% trans "今すぐ送信" %}</button>
     </form>
 
 </div>

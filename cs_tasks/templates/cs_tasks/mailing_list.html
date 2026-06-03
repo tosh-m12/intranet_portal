@@ -12,7 +12,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="page-header"><h2>✉ {% trans "週報メーリングリスト" %}</h2></div>
+<div class="page-header"><h2><svg class="ic"><use href="#ic-mail"/></svg> {% trans "週報メーリングリスト" %}</h2></div>
 
 <form method="post" class="cs-inline-form">
     {% csrf_token %}
