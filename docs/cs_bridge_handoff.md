@@ -149,6 +149,19 @@ Mac は社内LAN(`10.214.80.86`)に到達できないため、連携路はメー
 GitHub+Railway 風の「push したら 5 分以内に本番反映」を、既存 Waitress 内
 スケジューラ + `run_portal.bat` の loop だけで実現。タスクスケジューラ非依存。
 
+**3 段リレーの全体像**:
+```
+私 (Claude) → GitHub      (PR を main にマージ)
+                ↓ Gitee の Pull mirror (Gitee 標準機能, 自動)
+              Gitee       (本番から見た origin)
+                ↓ git pull --ff-only (Waitress 内スケジューラが5分毎に実行)
+              本番 Waitress (os._exit -> run_portal.bat loop で再起動)
+```
+- **私の `git push origin` = GitHub** へのみ。Mac には Gitee remote を設定していない
+- **本番の `origin` = Gitee** (`https://gitee.com/tosh-m/intranet_portal`)
+- **Gitee → GitHub の同期** は **Gitee 側の「仓库镜像管理 (Pull mirror)」** で実施
+  (public repo 同士なので Gitee 側に GitHub 認証不要)
+
 **仕組み**:
 - `cs_tasks/scheduler.py` の `_auto_deploy_check()` が 5 分毎に走り、
   `git fetch` → upstream と HEAD を比較 → 差分があれば `git pull --ff-only`
@@ -164,6 +177,14 @@ GitHub+Railway 風の「push したら 5 分以内に本番反映」を、既存
 - migrate 失敗時も exit せず現行コード継続
 - detached HEAD ・upstream 未設定なら何もしない
 - timeout: fetch=30s, pull=60s
+
+**Gitee Pull mirror 設定(初回のみ, Gitee Web UI)**:
+1. `https://gitee.com/tosh-m/intranet_portal` を開く
+2. `管理` → `仓库镜像管理` → `添加镜像`
+3. 镜像方向: `从 GitHub 仓库镜像到 Gitee 仓库` (Pull mirror)
+4. 镜像源 URL: `https://github.com/tosh-m12/intranet_portal.git`
+5. 同期对象: 全ブランチ(最低 `main` と `feature/cs-tasks`)、頻度は既定の最短
+6. 保存後 `立即同步` で初回手動同期
 
 **本番側の必要対応(初回のみ)**:
 1. `D:\INTRANET_PORTAL\run_portal.bat` 末尾の `waitress-serve ...` を loop で包む:
@@ -189,6 +210,15 @@ GitHub+Railway 風の「push したら 5 分以内に本番反映」を、既存
 - 緊急停止: `D:\INTRANET_PORTAL\.no_auto_deploy` を作る(空ファイルで可)
 - 解除: そのファイルを削除
 - ログ確認: Waitress の標準出力に `### [AUTO_DEPLOY] new commits on main: xxxxxxxx -> yyyyyyyy` などが出る
+
+**ミラー停止時の調査・フォールバック**:
+- 「GitHub に push したのに数十分経っても本番が古い」場合、Gitee Web UI の
+  `仓库镜像管理` 画面で最終同期時刻 / エラー表示を確認(ミラー停止が真因かを切り分け)
+- Gitee 側の比較画面 (`https://gitee.com/tosh-m/intranet_portal/commits/main`) で
+  最新コミットが GitHub と一致しているか目視確認
+- 暫定回避: 本番で `git remote set-url origin https://github.com/tosh-m12/intranet_portal.git`
+  で GitHub 直結に切替可能(中国本土からの github.com アクセス速度に依存)。
+  Gitee ミラー復旧後は元に戻すか、そのまま GitHub 直結運用に移行するかを判断
 
 ### 6.2 残課題
 - Mac 取得間隔の確定値(初期 5 分推奨)
