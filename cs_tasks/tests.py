@@ -1,6 +1,8 @@
 # cs_tasks/tests.py
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
+from django.urls import reverse
+from django.utils import timezone
 
 from .models import (
     Task,
@@ -216,6 +218,30 @@ class InboundApplyTests(TestCase):
         self.assertTrue(res["ok"])
         self.assertFalse(SupervisorComment.objects.filter(pk=c.id).exists())
 
+    def test_delete_progress_touches_parent_for_diff(self):
+        # 子の物理削除は「往路スナップショットからの不在」でしか伝わらない。
+        # 親 Task.updated_at を touch しないと差分(since)に課題が乗らず、Mac 側で
+        # 削除済み進捗が“復活”する（C-1 回帰防止）。
+        since = timezone.now()
+        self._apply(
+            [{"op_id": "op-dp2", "action": "delete",
+              "target": "progress", "id": self.progress.id}]
+        )
+        snap = outbound.build_snapshot(since=since)
+        self.assertIn(self.task.id, [t["id"] for t in snap["tasks"]])
+
+    def test_delete_comment_touches_parent_for_diff(self):
+        c = SupervisorComment.objects.create(
+            progress=self.progress, author=self.boss, content="x"
+        )
+        since = timezone.now()
+        self._apply(
+            [{"op_id": "op-dc2", "action": "delete",
+              "target": "comment", "id": c.id}]
+        )
+        snap = outbound.build_snapshot(since=since)
+        self.assertIn(self.task.id, [t["id"] for t in snap["tasks"]])
+
     def test_delete_unknown_target_is_error(self):
         res = self._apply(
             [{"op_id": "op-du", "action": "delete",
@@ -345,6 +371,45 @@ class InboundApplyTests(TestCase):
         res = inbound.apply_writeback_text(text, sender=SENDER)
         self.assertTrue(res["ok"])
         self.assertEqual(SupervisorComment.objects.get().content_ja, "本文")
+
+
+class ViewChildEditPropagationTests(TestCase):
+    """社内UIで既存の進捗/コメントを編集すると、親課題が touch され
+    差分スナップショット(since)に乗ること（C-2 回帰防止）。
+    新規追加は子の created_at で自然に乗るため、ここでは編集経路を検証する。"""
+
+    def setUp(self):
+        self.boss = User.objects.create_user(
+            email="boss2@ngls.sh.cn", password="x", is_staff=True
+        )
+        self.task = Task.objects.create(title="任务B", client_name="客户Y")
+        self.progress = ProgressUpdate.objects.create(
+            task=self.task, author=self.boss, content="原内容"
+        )
+        self.client.force_login(self.boss)
+
+    def test_edit_progress_view_propagates_via_diff(self):
+        since = timezone.now()
+        resp = self.client.post(
+            reverse("cs_tasks:edit_progress", args=[self.progress.id]),
+            {"content": "修正後の内容"},
+        )
+        self.assertEqual(resp.status_code, 302)
+        snap = outbound.build_snapshot(since=since)
+        self.assertIn(self.task.id, [t["id"] for t in snap["tasks"]])
+
+    def test_edit_comment_view_propagates_via_diff(self):
+        c = SupervisorComment.objects.create(
+            progress=self.progress, author=self.boss, content="旧コメント"
+        )
+        since = timezone.now()
+        resp = self.client.post(
+            reverse("cs_tasks:edit_comment", args=[c.id]),
+            {"content": "新コメント"},
+        )
+        self.assertEqual(resp.status_code, 302)
+        snap = outbound.build_snapshot(since=since)
+        self.assertIn(self.task.id, [t["id"] for t in snap["tasks"]])
 
 
 class OutboundSnapshotTests(TestCase):

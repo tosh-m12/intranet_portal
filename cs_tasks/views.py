@@ -289,6 +289,8 @@ def add_progress(request, task_id):
         ProgressUpdate.objects.create(
             task=task, author=request.user, content=c_zh, content_ja=c_ja
         )
+        # 子の変更を往路差分スナップショットに載せるため親課題を touch
+        task.save(update_fields=["updated_at"])
     return redirect(request.POST.get("next") or "cs_tasks:index")
 
 
@@ -346,6 +348,8 @@ def edit_progress(request, progress_id):
         progress.content = c_zh
         progress.content_ja = c_ja
         progress.save(update_fields=["content", "content_ja"])
+        # 子の編集を往路差分スナップショットに載せるため親課題を touch
+        progress.task.save(update_fields=["updated_at"])
     return redirect(request.POST.get("next") or "cs_tasks:index")
 
 
@@ -368,6 +372,8 @@ def add_comment(request, progress_id):
             content=c_zh,
             content_ja=c_ja,
         )
+        # 子の変更を往路差分スナップショットに載せるため親課題を touch
+        progress.task.save(update_fields=["updated_at"])
     return redirect(request.POST.get("next") or "cs_tasks:index")
 
 
@@ -387,6 +393,8 @@ def edit_comment(request, comment_id):
         comment.content = c_zh
         comment.content_ja = c_ja
         comment.save(update_fields=["content", "content_ja"])
+        # 子の編集を往路差分スナップショットに載せるため親課題を touch
+        comment.progress.task.save(update_fields=["updated_at"])
     return redirect(request.POST.get("next") or "cs_tasks:index")
 
 
