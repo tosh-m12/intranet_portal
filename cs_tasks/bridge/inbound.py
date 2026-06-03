@@ -95,6 +95,8 @@ def _apply_op(op, author):
             content=op.get("content_zh") or "",
             content_ja=op.get("content_ja") or "",
         )
+        # 子の変更を往路差分スナップショットに載せるため親課題を touch
+        progress.task.save(update_fields=["updated_at"])
 
     elif action == "edit_progress":
         progress = m.ProgressUpdate.objects.get(pk=op["progress_id"])
@@ -103,6 +105,7 @@ def _apply_op(op, author):
         if "content_ja" in op:
             progress.content_ja = op.get("content_ja") or ""
         progress.save(update_fields=["content", "content_ja"])
+        progress.task.save(update_fields=["updated_at"])
 
     elif action == "edit_comment":
         comment = m.SupervisorComment.objects.get(pk=op["comment_id"])
@@ -111,6 +114,7 @@ def _apply_op(op, author):
         if "content_ja" in op:
             comment.content_ja = op.get("content_ja") or ""
         comment.save(update_fields=["content", "content_ja"])
+        comment.progress.task.save(update_fields=["updated_at"])
 
     elif action == "edit_task":
         task = m.Task.objects.get(pk=op["task_id"])
@@ -140,10 +144,22 @@ def _apply_op(op, author):
                 cancelled_at=timezone.now(),
             )
         elif target == "progress":
-            m.ProgressUpdate.objects.filter(pk=target_id).delete()
+            # 削除前に親課題を控え、削除後に touch（差分スナップショットに
+            # 子集合の減少を載せて Mac 側の権威的置換で消えるようにする）。
+            progress = m.ProgressUpdate.objects.filter(pk=target_id).first()
+            parent_task = progress.task if progress else None
+            if progress:
+                progress.delete()
+            if parent_task:
+                parent_task.save(update_fields=["updated_at"])
         elif target == "comment":
-            m.SupervisorComment.objects.filter(pk=target_id).delete()
-        # 対象が無くても filter() は黙って no-op。op_id 冪等で重複適用は防がれる。
+            comment = m.SupervisorComment.objects.filter(pk=target_id).first()
+            parent_task = comment.progress.task if comment else None
+            if comment:
+                comment.delete()
+            if parent_task:
+                parent_task.save(update_fields=["updated_at"])
+        # 対象が無くても黙って no-op。op_id 冪等で重複適用は防がれる。
 
 
 def apply_writeback(payload, signature, sender=None):
