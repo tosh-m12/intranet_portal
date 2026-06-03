@@ -2,6 +2,14 @@
    共通レイアウト（portal/base.html 用）
    ========================================================= */
 
+/* ------------ NX テーマ色（CSS変数で一元管理。正式HEXがあればここだけ差し替え） ------------ */
+:root {
+    --nx-blue: #003f98;       /* NX コーポレートブルー（近似） */
+    --nx-blue-dark: #00296b;  /* 濃いめ（トップバー左／ホバー） */
+    --nx-accent: #00a0e9;     /* アクセント（ライトブルー：アクティブタブ等） */
+    --nx-ink: #16233a;        /* 見出し文字 */
+}
+
 /* ページ全体 */
 body {
     font-family: Arial, "Yu Gothic", "Meiryo", sans-serif;
@@ -14,16 +22,18 @@ body {
 .topbar {
     display: flex;
     align-items: center;
-    gap: 18px;
-    background-color: #003366;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    background: linear-gradient(100deg, var(--nx-blue-dark) 0%, var(--nx-blue) 60%, #0a55b8 100%);
     color: #fff;
-    height: 52px;
-    padding: 0 20px;
+    min-height: 54px;
+    padding: 7px 22px;
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, .18);
+    box-shadow: 0 2px 6px rgba(0, 25, 70, .25);
 }
+.topbar .brand .ic { color: var(--nx-accent); }
 
 .topbar .brand {
     display: flex;
@@ -55,7 +65,7 @@ body {
     white-space: nowrap;
     transition: background-color .12s, color .12s;
 }
-.topnav a:hover { background-color: #00254d; color: #fff; }
+.topnav a:hover { background-color: rgba(255, 255, 255, .14); color: #fff; }
 .topnav a.disabled { opacity: .45; pointer-events: none; }
 
 /* SVG アイコン（線・現在色） */
@@ -124,7 +134,7 @@ body {
     display: inline-flex;
     align-items: center;
 }
-.topbar-right .icon-btn:hover { background-color: #00254d; color: #fff; }
+.topbar-right .icon-btn:hover { background-color: rgba(255, 255, 255, .14); color: #fff; }
 .topbar-right .login-link { color: #ffddaa; text-decoration: none; font-size: 13px; }
 
 /* ------------ メインコンテンツ ------------ */
@@ -145,7 +155,7 @@ body {
     align-items: center;
     gap: 8px;
 }
-.main-content h1 .ic { width: 22px; height: 22px; stroke: #003366; }
+.main-content h1 .ic { width: 22px; height: 22px; stroke: var(--nx-blue); }
 
 footer {
     text-align: center;
@@ -154,37 +164,39 @@ footer {
     margin: 20px 0 15px;
 }
 
-/* ------------ サブナビ ------------ */
+/* ------------ サブナビ（アンダーライン型タブ） ------------ */
 .subnav {
-    margin-bottom: 12px;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 2px;
+    margin-bottom: 16px;
+    border-bottom: 2px solid #e5e9f0;
     display: flex;
-    gap: 8px;
+    gap: 4px;
     flex-wrap: wrap;
 }
 
 .subnav a {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    margin-right: 6px;
+    gap: 7px;
+    padding: 9px 14px;
+    margin-bottom: -2px;            /* 下線をコンテンツ境界に重ねる */
     text-decoration: none;
     font-size: 13px;
-    color: #333;
-    background-color: #f0f0f0;
-    border-radius: 4px 4px 0 0;
-    border: 1px solid #ddd;
-    border-bottom: none;
+    color: #5d6b7d;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 6px 6px 0 0;
+    transition: color .12s, border-color .12s, background-color .12s;
 }
-.subnav a .ic { width: 15px; height: 15px; }
+.subnav a .ic { width: 16px; height: 16px; }
 .subnav a:hover {
-    background-color: #e0e0e0;
+    color: var(--nx-blue);
+    background-color: #f3f7fc;
 }
 .subnav a.active {
-    background-color: #ffffff;
+    color: var(--nx-blue);
     font-weight: bold;
+    border-bottom-color: var(--nx-accent);
 }
 
 
@@ -687,13 +699,9 @@ footer {
     text-align: left !important;
 }
 
-/* SUB NAV を上部に固定 */
+/* SUB NAV（トップバーが折り返しても重ならないよう sticky は解除） */
 .subnav {
-    position: sticky;
-    top: 0;                 /* ヘッダーがあるならその高さに調整 */
-    z-index: 1000;
     background-color: #fff;
-    padding: 8px 0;
 }
 
 .logout-link-button {
