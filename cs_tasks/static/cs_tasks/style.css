@@ -33,6 +33,7 @@
 .cs-board .cg-assignee { width: 90px; }
 .cs-board .cg-client { width: 150px; }
 .cs-board .cg-date { width: 74px; }
+.cs-board .cg-date-edit { width: 120px; }   /* 実施日はカレンダー入力のため広め */
 .cs-board .cg-close { width: 68px; }
 /* cg-progress / cg-comment は幅指定なし → 残り幅を均等に確保 */
 
@@ -73,13 +74,43 @@
 .cs-board td.col-client.client-merge-down { border-bottom: none; }
 .cs-board .progress-row .col-progress { padding-left: 16px; }
 
-/* 上長コメントの投稿者表示（コメント末尾に薄いグレーで by XXXX） */
+/* 上長コメントの投稿者表示（コメント末尾に薄いグレーで by XXXX）。
+   進捗の「記入日」も同スタイルを踏襲する。 */
 .cs-board .comment-by {
     margin-top: 2px;
     font-size: 11px;
     color: #999;
     text-align: right;
 }
+
+/* 課題タイトル直下の詳細（細め・やや薄い） */
+.cs-board .task-desc-input {
+    font-weight: normal;
+    font-size: 12px;
+    color: #555;
+    margin-top: 2px;
+}
+.cs-board .task-desc-text {
+    font-size: 12px;
+    color: #555;
+    margin-top: 2px;
+    white-space: pre-wrap;
+}
+
+/* 実施日のカレンダー入力（枠なし風で日付セルに馴染ませる） */
+.cs-board .date-input {
+    border: 1px solid transparent;
+    background: transparent;
+    color: #2f6fb0;
+    font: inherit;
+    padding: 1px 2px;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+.cs-board .date-input:hover { border-color: #ddd; }
+.cs-board .date-input:focus { outline: none; background: #fff9e6; border-color: #e0c46a; }
 
 /* 行内の追加フォーム（visit-table の枠なし入力と統一） */
 .add-inline { margin: 0; }

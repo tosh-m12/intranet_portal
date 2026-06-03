@@ -39,7 +39,7 @@
     <colgroup>
         <col class="cg-assignee">
         <col class="cg-client">
-        <col class="cg-date">
+        <col class="cg-date cg-date-edit">
         <col class="cg-progress">
         <col class="cg-date">
         <col class="cg-comment">
@@ -90,8 +90,18 @@
                             <input type="text" name="cs_subj" class="add-input task-title-input"
                                    value="{{ task.display_title }}" maxlength="28" autocomplete="off">
                         </form>
+                        {# 課題の詳細（タイトル直下） #}
+                        <form method="post" action="{% url 'cs_tasks:edit_description' task.id %}" class="add-inline" data-ajax="1">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <textarea name="description" class="add-input task-desc-input" rows="1"
+                                      placeholder="＋{% trans "詳細を入力" %}">{{ task.display_description }}</textarea>
+                        </form>
                         {% else %}
                             <span class="task-title">{{ task.display_title }}</span>
+                            {% if task.display_description %}
+                            <div class="task-desc-text">{{ task.display_description|linebreaksbr }}</div>
+                            {% endif %}
                         {% endif %}
                     </td>
                     <td class="col-close">
@@ -113,8 +123,19 @@
                     <tr data-task-id="{{ task.id }}" data-progress-id="{{ p.id }}"
                         class="progress-row {% if task.is_closed %}task-closed{% endif %} {% if p.is_closed %}prog-closed{% endif %}">
                         {% if forloop.first %}
-                        {# 進捗の日付・本文・クローズは複数コメント行に跨って結合 #}
-                        <td class="col-date" rowspan="{{ p.comment_rows }}">{{ p.created_at|date:"n/j/Y" }}</td>
+                        {# 進捗の日付（実施日：カレンダーで選択）・本文・クローズは複数コメント行に跨って結合 #}
+                        <td class="col-date" rowspan="{{ p.comment_rows }}">
+                            {% if task.can_edit %}
+                                <form method="post" action="{% url 'cs_tasks:edit_progress_date' p.id %}" class="add-inline" data-ajax="1">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                    <input type="date" name="execution_date" class="date-input"
+                                           value="{{ p.effective_date|date:'Y-m-d' }}">
+                                </form>
+                            {% else %}
+                                {{ p.effective_date|date:"n/j/Y" }}
+                            {% endif %}
+                        </td>
                         <td class="col-progress" rowspan="{{ p.comment_rows }}">
                             {% if task.can_edit %}
                                 <form method="post" action="{% url 'cs_tasks:edit_progress' p.id %}" class="add-inline" data-ajax="1">
@@ -125,6 +146,8 @@
                             {% else %}
                                 {{ p.display_content|linebreaksbr }}
                             {% endif %}
+                            {# 記入日（実際に入力した日）を右下に薄グレーで（上長コメントの記入者と同スタイル） #}
+                            <div class="comment-by">{% trans "記入" %} {{ p.created_at|date:"n/j/Y" }}</div>
                         </td>
                         {% endif %}
 
@@ -177,10 +200,15 @@
 
                 {# ===== 進捗追加行（各列のセルを持たせ、罫線を最初から表示） ===== #}
                 <tr data-task-id="{{ task.id }}" class="add-progress-row {% if task.is_closed %}task-closed{% endif %}">
-                    <td class="col-date"></td>
+                    <td class="col-date">
+                        {% if task.can_edit %}
+                        <input type="date" form="addprog-{{ task.id }}" name="execution_date"
+                               class="date-input" value="{% now 'Y-m-d' %}">
+                        {% endif %}
+                    </td>
                     <td class="col-progress">
                         {% if task.can_edit %}
-                        <form method="post" action="{% url 'cs_tasks:add_progress' task.id %}" class="add-inline">
+                        <form id="addprog-{{ task.id }}" method="post" action="{% url 'cs_tasks:add_progress' task.id %}" class="add-inline">
                             {% csrf_token %}
                             <input type="hidden" name="next" value="{{ request.get_full_path }}">
                             <textarea name="content" class="add-input" rows="1"

@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import JsonResponse, HttpResponseForbidden
 from django.views.decorators.http import require_POST
 from django.utils import timezone
+from django.utils.dateparse import parse_date
 
 from .models import (
     Task,
@@ -286,11 +287,49 @@ def add_progress(request, task_id):
     content = (request.POST.get("content") or "").strip()
     if content:
         c_zh, c_ja = _route_text(content)
+        exec_date = parse_date(request.POST.get("execution_date") or "") or timezone.localdate()
         ProgressUpdate.objects.create(
-            task=task, author=request.user, content=c_zh, content_ja=c_ja
+            task=task, author=request.user, content=c_zh, content_ja=c_ja,
+            execution_date=exec_date,
         )
         # 子の変更を往路差分スナップショットに載せるため親課題を touch
         task.save(update_fields=["updated_at"])
+    return redirect(request.POST.get("next") or "cs_tasks:index")
+
+
+# =========================================================
+# 進捗の実施日を編集（カレンダー選択。記入忘れで後日入れた時に実際の日付を入れる）
+# =========================================================
+@login_required
+@require_POST
+def edit_progress_date(request, progress_id):
+    progress = get_object_or_404(ProgressUpdate, pk=progress_id)
+    if not can_edit_task(request.user, progress.task):
+        return HttpResponseForbidden("この進捗を編集する権限がありません。")
+
+    d = parse_date(request.POST.get("execution_date") or "")
+    if d:
+        progress.execution_date = d
+        progress.save(update_fields=["execution_date"])
+        progress.task.save(update_fields=["updated_at"])
+    return redirect(request.POST.get("next") or "cs_tasks:index")
+
+
+# =========================================================
+# 課題の詳細（内容）のその場編集（POST）。タイトル直下に表示。
+# =========================================================
+@login_required
+@require_POST
+def edit_description(request, task_id):
+    task = get_object_or_404(Task, pk=task_id)
+    if not can_edit_task(request.user, task):
+        return HttpResponseForbidden("この課題を編集する権限がありません。")
+
+    desc = (request.POST.get("description") or "").strip()
+    d_zh, d_ja = _route_text(desc) if desc else ("", "")
+    task.description = d_zh
+    task.description_ja = d_ja
+    task.save(update_fields=["description", "description_ja", "updated_at"])
     return redirect(request.POST.get("next") or "cs_tasks:index")
 
 

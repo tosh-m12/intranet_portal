@@ -91,6 +91,8 @@ def build_snapshot(since=None):
                     "content": p.content,
                     "content_ja": p.content_ja,
                     "created_at": _iso(p.created_at),
+                    # 実施日（未設定なら null。表示側は created_at にフォールバック）
+                    "execution_date": p.execution_date.isoformat() if p.execution_date else None,
                     "is_closed": p.is_closed,
                     "comments": comments,
                 }

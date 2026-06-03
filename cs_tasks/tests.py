@@ -149,6 +149,16 @@ class InboundApplyTests(TestCase):
         self.assertEqual(self.progress.content, "改后")
         self.assertEqual(self.progress.content_ja, "修正後")
 
+    def test_edit_progress_execution_date(self):
+        from datetime import date
+        res = self._apply(
+            [{"op_id": "op-ed", "action": "edit_progress",
+              "progress_id": self.progress.id, "execution_date": "2026-05-15"}]
+        )
+        self.assertTrue(res["ok"])
+        self.progress.refresh_from_db()
+        self.assertEqual(self.progress.execution_date, date(2026, 5, 15))
+
     def test_edit_comment(self):
         c = SupervisorComment.objects.create(
             progress=self.progress, author=self.boss,
@@ -412,6 +422,52 @@ class ViewChildEditPropagationTests(TestCase):
         self.assertIn(self.task.id, [t["id"] for t in snap["tasks"]])
 
 
+class ProgressDateDescriptionTests(TestCase):
+    """実施日(execution_date)のカレンダー編集・既定当日、課題詳細のインライン編集。"""
+
+    def setUp(self):
+        self.boss = User.objects.create_user(
+            email="boss3@ngls.sh.cn", password="x", is_staff=True
+        )
+        self.task = Task.objects.create(title="任务C", client_name="X")
+        self.progress = ProgressUpdate.objects.create(
+            task=self.task, author=self.boss, content="进展"
+        )
+        self.client.force_login(self.boss)
+
+    def test_add_progress_explicit_and_default_date(self):
+        from datetime import date
+        self.client.post(reverse("cs_tasks:add_progress", args=[self.task.id]),
+                         {"content": "明示日付の進捗", "execution_date": "2026-05-10"})
+        p = ProgressUpdate.objects.filter(task=self.task).order_by("-id").first()
+        self.assertEqual(p.execution_date, date(2026, 5, 10))
+        # 日付未指定 → 当日が入る
+        self.client.post(reverse("cs_tasks:add_progress", args=[self.task.id]),
+                         {"content": "日付なしの進捗"})
+        p2 = ProgressUpdate.objects.filter(task=self.task).order_by("-id").first()
+        self.assertEqual(p2.execution_date, timezone.localdate())
+
+    def test_edit_progress_date(self):
+        from datetime import date
+        self.client.post(reverse("cs_tasks:edit_progress_date", args=[self.progress.id]),
+                         {"execution_date": "2026-04-01"})
+        self.progress.refresh_from_db()
+        self.assertEqual(self.progress.execution_date, date(2026, 4, 1))
+
+    def test_effective_date_fallback(self):
+        # execution_date 未設定なら created_at の日付にフォールバック
+        self.assertIsNone(self.progress.execution_date)
+        self.assertEqual(self.progress.effective_date, self.progress.created_at.date())
+
+    def test_edit_description_bilingual(self):
+        # 日本語入力 → description_ja に入り、中文側は空（_route_text 仕様）
+        self.client.post(reverse("cs_tasks:edit_description", args=[self.task.id]),
+                         {"description": "詳細テキスト"})
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.description_ja, "詳細テキスト")
+        self.assertEqual(self.task.description, "")
+
+
 class OutboundSnapshotTests(TestCase):
     def test_snapshot_contains_ids_and_fields(self):
         task = Task.objects.create(title="任务A", client_name="客户X")
@@ -430,6 +486,14 @@ class OutboundSnapshotTests(TestCase):
         self.assertEqual(
             t["progress_updates"][0]["comments"][0]["content_ja"], "コメント"
         )
+
+    def test_snapshot_includes_execution_date(self):
+        from datetime import date
+        t = Task.objects.create(title="任务")
+        ProgressUpdate.objects.create(task=t, content="进展", execution_date=date(2026, 5, 20))
+        snap = outbound.build_snapshot()
+        p = snap["tasks"][0]["progress_updates"][0]
+        self.assertEqual(p["execution_date"], "2026-05-20")
 
     def test_cancelled_task_excluded(self):
         Task.objects.create(title="取消", is_cancelled=True)

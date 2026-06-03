@@ -100,12 +100,19 @@ def _apply_op(op, author):
 
     elif action == "edit_progress":
         progress = m.ProgressUpdate.objects.get(pk=op["progress_id"])
+        upd = []
         if "content_zh" in op:
             progress.content = op.get("content_zh") or ""
+            upd.append("content")
         if "content_ja" in op:
             progress.content_ja = op.get("content_ja") or ""
-        progress.save(update_fields=["content", "content_ja"])
-        progress.task.save(update_fields=["updated_at"])
+            upd.append("content_ja")
+        if "execution_date" in op:
+            progress.execution_date = _parse_date(op.get("execution_date"))
+            upd.append("execution_date")
+        if upd:
+            progress.save(update_fields=upd)
+            progress.task.save(update_fields=["updated_at"])
 
     elif action == "edit_comment":
         comment = m.SupervisorComment.objects.get(pk=op["comment_id"])
