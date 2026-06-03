@@ -436,6 +436,20 @@ class OutboundSnapshotTests(TestCase):
         snap = outbound.build_snapshot()
         self.assertEqual(len(snap["tasks"]), 0)
 
+    def test_meta_active_task_ids_lists_all_active_even_in_diff(self):
+        # 課題まるごとの中止を差分でも Mac に伝えるための全件IDリスト。
+        # since で tasks を空に絞っても active_task_ids には現存課題が全件入る。
+        keep = Task.objects.create(title="存続")
+        cancelled = Task.objects.create(title="中止", is_cancelled=True)
+        from django.utils import timezone as _tz
+        from datetime import timedelta
+        future = _tz.now() + timedelta(hours=1)  # 差分で tasks は空になる since
+        snap = outbound.build_snapshot(since=future)
+        self.assertEqual(len(snap["tasks"]), 0)               # 差分: 詳細は空
+        ids = snap["meta"]["active_task_ids"]
+        self.assertIn(keep.id, ids)                           # 現存は全件入る
+        self.assertNotIn(cancelled.id, ids)                   # 中止は入らない
+
     def test_schema_version_is_v2(self):
         """v2 への昇格を明示的に確認。"""
         self.assertEqual(payload.SCHEMA_VERSION, 2)

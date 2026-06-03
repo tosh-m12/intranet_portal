@@ -123,6 +123,14 @@ def build_snapshot(since=None):
         "meta": {
             # Mac 側で add_task / edit_task の担当者ドロップダウンに使う
             "assignees": _build_assignees(),
+            # 現存(非中止)課題IDの“全件”。since で tasks を差分に絞っても、これは
+            # 常に全件入れる。Mac はこのリストに無い課題を state から除去することで、
+            # 中止/削除された課題が差分スナップショットだけでも消える（追従）。
+            "active_task_ids": list(
+                m.Task.objects.filter(is_cancelled=False)
+                .order_by("id")
+                .values_list("id", flat=True)
+            ),
         },
         "tasks": tasks,
     }
