@@ -31,27 +31,31 @@
     <symbol id="ic-settings" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
     <symbol id="ic-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
     <symbol id="ic-warehouse" viewBox="0 0 24 24"><path d="M22 8.35V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.35A2 2 0 0 1 3.26 6.5l8-3.2a2 2 0 0 1 1.48 0l8 3.2A2 2 0 0 1 22 8.35Z"/><path d="M6 18h12M6 14h12M6 10h12"/></symbol>
+    <symbol id="ic-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+    <symbol id="ic-plus" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></symbol>
+    <symbol id="ic-tag" viewBox="0 0 24 24"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></symbol>
   </defs>
 </svg>
 
 {# ======== トップバー ======== #}
 <header class="topbar">
     <a class="brand" href="{% url 'home' %}">
-        <svg class="ic"><use href="#ic-home"/></svg>
         <span>NGLS-CS Portal</span>
     </a>
 
+    {% with ns=request.resolver_match.namespace un=request.resolver_match.url_name %}
     <nav class="topnav">
-        <a href="{% url 'home' %}"><svg class="ic"><use href="#ic-home"/></svg><span>{% trans "ホーム" %}</span></a>
-        <a href="{% url 'visitors:index' %}"><svg class="ic"><use href="#ic-calendar"/></svg><span>{% trans "来客予定" %}</span></a>
-        <a href="{% url 'meetings:index' %}"><svg class="ic"><use href="#ic-video"/></svg><span>{% trans "客先訪問・WEB会議" %}</span></a>
-        <a href="{% url 'envmon:index' %}"><svg class="ic"><use href="#ic-thermometer"/></svg><span>{% trans "温湿度モニター" %}</span></a>
-        <a href="{% url 'cs_tasks:index' %}"><svg class="ic"><use href="#ic-clipboard"/></svg><span>{% trans "既存業務課題管理" %}</span></a>
+        <a href="{% url 'home' %}" class="{% if un == 'home' %}active{% endif %}"><svg class="ic"><use href="#ic-home"/></svg><span>{% trans "ホーム" %}</span></a>
+        <a href="{% url 'visitors:index' %}" class="{% if ns == 'visitors' %}active{% endif %}"><svg class="ic"><use href="#ic-calendar"/></svg><span>{% trans "来客予定" %}</span></a>
+        <a href="{% url 'meetings:index' %}" class="{% if ns == 'meetings' %}active{% endif %}"><svg class="ic"><use href="#ic-video"/></svg><span>{% trans "客先訪問・WEB会議" %}</span></a>
+        <a href="{% url 'envmon:index' %}" class="{% if ns == 'envmon' %}active{% endif %}"><svg class="ic"><use href="#ic-thermometer"/></svg><span>{% trans "温湿度モニター" %}</span></a>
+        <a href="{% url 'cs_tasks:index' %}" class="{% if ns == 'cs_tasks' %}active{% endif %}"><svg class="ic"><use href="#ic-clipboard"/></svg><span>{% trans "既存業務課題管理" %}</span></a>
         <a class="disabled" href="#" aria-disabled="true"><svg class="ic"><use href="#ic-file"/></svg><span>{% trans "日報" %}（{% trans "準備中" %}）</span></a>
         {% if user.is_superuser or user.is_staff %}
-        <a href="{% url 'authsys:user_management' %}"><svg class="ic"><use href="#ic-users"/></svg><span>{% trans "ユーザー管理" %}</span></a>
+        <a href="{% url 'authsys:user_management' %}" class="{% if un == 'user_management' %}active{% endif %}"><svg class="ic"><use href="#ic-users"/></svg><span>{% trans "ユーザー管理" %}</span></a>
         {% endif %}
     </nav>
+    {% endwith %}
 
     <div class="topbar-right">
         <div class="lang-toggle" role="group" aria-label="language switch">

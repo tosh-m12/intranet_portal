@@ -13,12 +13,12 @@
 
 {% block subnav %}
 <div class="subnav">
-    <a href="{% url 'envmon:index' %}">📊 {% trans "倉庫別モニタ" %}</a>
-    <a href="{% url 'envmon:all_devices' %}" class="active">📋 {% trans "全デバイス一覧" %}</a>
-    <a href="{% url 'envmon:history_csv_menu' %}">📥 {% trans "CSV ダウンロード" %}</a>
+    <a href="{% url 'envmon:index' %}"><svg class="ic"><use href="#ic-chart"/></svg> {% trans "倉庫別モニタ" %}</a>
+    <a href="{% url 'envmon:all_devices' %}" class="active"><svg class="ic"><use href="#ic-list"/></svg> {% trans "全デバイス一覧" %}</a>
+    <a href="{% url 'envmon:history_csv_menu' %}"><svg class="ic"><use href="#ic-download"/></svg> {% trans "CSV ダウンロード" %}</a>
     {% if user.is_staff %}
-        <a href="{% url 'envmon:settings' %}">⚙ {% trans "設定" %}</a>
-        <a href="{% url 'envmon:warehouse_assign' %}">🏷 {% trans "倉庫割当" %}</a>
+        <a href="{% url 'envmon:settings' %}"><svg class="ic"><use href="#ic-settings"/></svg> {% trans "設定" %}</a>
+        <a href="{% url 'envmon:warehouse_assign' %}"><svg class="ic"><use href="#ic-tag"/></svg> {% trans "倉庫割当" %}</a>
     {% endif %}
 </div>
 {% endblock %}

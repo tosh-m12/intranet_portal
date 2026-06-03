@@ -5,24 +5,24 @@
 <div class="subnav">
     <a href="{% url 'meetings:index' %}"
        class="{% if active_tab == 'index' %}active{% endif %}">
-        📋 {% trans "本日以降一覧" %}
+        <svg class="ic"><use href="#ic-list"/></svg> {% trans "本日以降一覧" %}
     </a>
 
     <a href="{% url 'meetings:history' %}"
        class="{% if active_tab == 'history' %}active{% endif %}">
-        🕒 {% trans "過去一覧" %}
+        <svg class="ic"><use href="#ic-clock"/></svg> {% trans "過去一覧" %}
     </a>
 
     <a href="{% url 'meetings:add_meeting' %}"
        class="{% if active_tab == 'add' %}active{% endif %}">
-        ➕ {% trans "新規登録" %}
+        <svg class="ic"><use href="#ic-plus"/></svg> {% trans "新規登録" %}
     </a>
 
     {# ★ 管理者・スタッフだけ「メール設定」を表示 #}
     {% if user.is_staff or user.is_superuser %}
         <a href="{% url 'meetings:settings' %}"
            class="{% if active_tab == 'settings' %}active{% endif %}">
-            ⚙ {% trans "各種設定" %}
+            <svg class="ic"><use href="#ic-settings"/></svg> {% trans "各種設定" %}
         </a>
     {% endif %}
 </div>

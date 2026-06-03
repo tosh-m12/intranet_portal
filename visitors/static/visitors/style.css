@@ -68,6 +68,7 @@ body {
     transition: background-color .12s, color .12s;
 }
 .topnav a:hover { background-color: rgba(255, 255, 255, .14); color: #fff; }
+.topnav a.active { color: var(--nx-green); font-weight: bold; }
 .topnav a.disabled { opacity: .45; pointer-events: none; }
 
 /* SVG アイコン（線・現在色） */
