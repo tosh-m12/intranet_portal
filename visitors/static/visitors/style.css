@@ -7,35 +7,69 @@ body {
     font-family: Arial, "Yu Gothic", "Meiryo", sans-serif;
     margin: 0;
     background-color: #f5f5f5;
-    display: flex;
-    height: 100vh;
+    min-height: 100vh;
 }
 
-/* ------------ サイドバー ------------ */
-.sidebar {
-    width: 250px;
-    background-color: #003366;
-    color: white;
-    padding-top: 20px;
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
-}
-
-.sidebar .title {
-    font-size: 18px;
-    font-weight: bold;
-}
-
-/* タイトル行：タイトル＋言語トグルを横並び */
-.sidebar .title-row {
+/* ------------ トップバー（横型ナビ） ------------ */
+.topbar {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding: 0 10px;
-    margin-bottom: 10px;
+    gap: 18px;
+    background-color: #003366;
+    color: #fff;
+    height: 52px;
+    padding: 0 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .18);
 }
+
+.topbar .brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #fff;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+/* 横並びナビ */
+.topnav {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-wrap: wrap;
+}
+.topnav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #cfe0f5;
+    text-decoration: none;
+    padding: 8px 11px;
+    border-radius: 6px;
+    font-size: 13px;
+    white-space: nowrap;
+    transition: background-color .12s, color .12s;
+}
+.topnav a:hover { background-color: #00254d; color: #fff; }
+.topnav a.disabled { opacity: .45; pointer-events: none; }
+
+/* SVG アイコン（線・現在色） */
+.ic {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+}
+.brand .ic { width: 20px; height: 20px; }
 
 /* 言語トグル（日／中） */
 .lang-toggle {
@@ -65,37 +99,53 @@ body {
     background: #004080;
 }
 
-.sidebar .user-info {
-    font-size: 12px;
-    margin-bottom: 20px;
-    padding: 0 10px;
-    line-height: 1.4;
-}
-
-.sidebar nav {
+/* 右側クラスタ（言語・ユーザー・ログアウト） */
+.topbar-right {
     display: flex;
-    flex-direction: column;
-    padding: 0 10px;
-    gap: 6px;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
 }
-
-.sidebar nav a {
-    color: #cce0ff;
-    text-decoration: none;
-    padding: 8px 12px;
-    border-radius: 4px;
+.topbar-right .user-chip {
+    font-size: 12px;
+    color: #cfe0f5;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
-.sidebar nav a:hover {
-    background-color: #004080;
+.topbar-right .icon-btn {
+    background: transparent;
+    border: none;
+    color: #cfe0f5;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
 }
+.topbar-right .icon-btn:hover { background-color: #00254d; color: #fff; }
+.topbar-right .login-link { color: #ffddaa; text-decoration: none; font-size: 13px; }
 
 /* ------------ メインコンテンツ ------------ */
 .main-content {
-    flex: 1;
     padding: 20px 30px;
-    overflow-y: auto;
-    background-color: #fff;   /* 左ナビ以外のページ背景は白 */
+    background-color: #fff;
+    min-height: calc(100vh - 52px);
+    box-sizing: border-box;
 }
+
+/* アプリ名見出し（既定の特大H1を抑え、コンパクトに） */
+.main-content h1 {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0 0 12px;
+    color: #1a2b3c;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.main-content h1 .ic { width: 22px; height: 22px; stroke: #003366; }
 
 footer {
     text-align: center;
@@ -115,7 +165,9 @@ footer {
 }
 
 .subnav a {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     padding: 6px 12px;
     margin-right: 6px;
     text-decoration: none;
@@ -126,6 +178,7 @@ footer {
     border: 1px solid #ddd;
     border-bottom: none;
 }
+.subnav a .ic { width: 15px; height: 15px; }
 .subnav a:hover {
     background-color: #e0e0e0;
 }

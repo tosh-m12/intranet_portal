@@ -1,11 +1,11 @@
-{% extends "base.html" %}
+{% extends "portal/base.html" %}
 {% load i18n %}
 
 {% block title %}{% trans "プロフィール" %}{% endblock %}
 
 {% block content %}
 <h2>{% trans "プロフィール" %}</h2>
-<p>{% trans "ログイン中のユーザー" %}:{{ request.user.mail }}</p>
+<p>{% trans "ログイン中のユーザー" %}:{{ request.user.email }}</p>
 
 <h3>{% trans "メニュー" %}</h3>
 <ul>
