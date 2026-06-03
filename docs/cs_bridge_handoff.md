@@ -145,6 +145,51 @@ Mac は社内LAN(`10.214.80.86`)に到達できないため、連携路はメー
 - Mac 側ローカル状態: 各 op に `(op_id, attempts, last_attempt_at, last_error_kind)` を保持
 - 過去事例: 2026-06-02 の運用で社内側 `delete` 未実装期に 5 件の delete op が消失。Mac 側に上記再送ロジックがあれば、社内側 delete 投入後の最初のスナップショットで自動回復していた。**Mac 側ウィンドウで上記を実装すること**。
 
+### 6.1.2 本番自動デプロイ(Gitee 監視, 2026-06-03 追加)
+GitHub+Railway 風の「push したら 5 分以内に本番反映」を、既存 Waitress 内
+スケジューラ + `run_portal.bat` の loop だけで実現。タスクスケジューラ非依存。
+
+**仕組み**:
+- `cs_tasks/scheduler.py` の `_auto_deploy_check()` が 5 分毎に走り、
+  `git fetch` → upstream と HEAD を比較 → 差分があれば `git pull --ff-only`
+  → `migrate --noinput` → `os._exit(0)` で Waitress プロセスを終了
+- `run_portal.bat` 末尾の **loop** が「Waitress 終了 → 3 秒後に再起動」を
+  繰り返すため、新コードで自動的に立ち上がる
+- 副次効果: クラッシュ時の自己修復
+
+**安全装置**:
+- クールダウン: 直前デプロイから 10 分以内は再チェックしない
+- 緊急停止フラグ: `D:\INTRANET_PORTAL\.no_auto_deploy` を作ると自動デプロイ停止
+- fast-forward only: コンフリクト時は失敗 → exit せず現行コード継続
+- migrate 失敗時も exit せず現行コード継続
+- detached HEAD ・upstream 未設定なら何もしない
+- timeout: fetch=30s, pull=60s
+
+**本番側の必要対応(初回のみ)**:
+1. `D:\INTRANET_PORTAL\run_portal.bat` 末尾の `waitress-serve ...` を loop で包む:
+   ```bat
+   :loop
+   echo [%DATE% %TIME%] Starting Waitress
+   waitress-serve --listen=0.0.0.0:8000 intranet_portal.wsgi:application
+   echo [%DATE% %TIME%] Waitress exited, restarting in 3s...
+   timeout /t 3 /nobreak >nul
+   goto loop
+   ```
+2. 本番ブランチを `main` に切り替え(現在は `feature/cs-tasks`):
+   ```cmd
+   cd /d D:\INTRANET_PORTAL\intranet_portal
+   git fetch origin
+   git checkout main
+   git branch --set-upstream-to=origin/main main
+   ```
+   ※ 自動デプロイは「現在ブランチの upstream」を追いかける。`feature/cs-tasks` でも動くが、PR マージ先である `main` を追う構成が分かりやすい。
+3. Waitress を一度再起動(Task Scheduler から `Portal Waitress` を停止 → 開始)
+
+**運用**:
+- 緊急停止: `D:\INTRANET_PORTAL\.no_auto_deploy` を作る(空ファイルで可)
+- 解除: そのファイルを削除
+- ログ確認: Waitress の標準出力に `### [AUTO_DEPLOY] new commits on main: xxxxxxxx -> yyyyyyyy` などが出る
+
 ### 6.2 残課題
 - Mac 取得間隔の確定値(初期 5 分推奨)
 - HMAC 秘密鍵のローテーション運用方針(初期は手動・必要時のみ)
