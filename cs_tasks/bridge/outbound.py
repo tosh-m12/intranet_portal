@@ -101,6 +101,7 @@ def build_snapshot(since=None):
         tasks.append(
             {
                 "id": t.id,
+                "category": t.category,
                 "title": t.title,
                 "title_ja": t.title_ja,
                 "description": t.description,

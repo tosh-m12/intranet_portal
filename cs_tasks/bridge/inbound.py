@@ -41,6 +41,7 @@ _TASK_FIELD_MAP = {
     "description_zh": "description",
     "description_ja": "description_ja",
     "client_name": "client_name",
+    "category": "category",
 }
 
 

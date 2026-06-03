@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block subnav %}
-    {% include "cs_tasks/_subnav.html" with active_tab=is_my_view|yesno:"my,index" %}
+    {% include "cs_tasks/_subnav.html" with active_tab=active_tab %}
 {% endblock %}
 
 {% block content %}
@@ -32,13 +32,15 @@
 </div>
 
 {# 課題インライン追加用フォーム（実体。表内の input は form 属性で紐付け） #}
-<form id="ntf" method="post" action="{% url 'cs_tasks:task_add_inline' %}" autocomplete="off">{% csrf_token %}</form>
+<form id="ntf" method="post" action="{% url 'cs_tasks:task_add_inline' %}" autocomplete="off">{% csrf_token %}
+    <input type="hidden" name="category" value="{{ current_category }}">
+</form>
 
 <div class="table-wrapper">
 <table class="cs-board">
     <colgroup>
         <col class="cg-assignee">
-        <col class="cg-client">
+        {% if not hide_client %}<col class="cg-client">{% endif %}
         <col class="cg-date cg-date-edit">
         <col class="cg-progress">
         <col class="cg-comment">
@@ -47,7 +49,7 @@
     <thead>
         <tr>
             <th class="col-assignee">{% trans "担当" %}</th>
-            <th class="col-client">{% trans "顧客" %}</th>
+            {% if not hide_client %}<th class="col-client">{% trans "顧客" %}</th>{% endif %}
             <th colspan="2">{% trans "課題および進捗" %}</th>
             <th>{% trans "指示・コメント" %}</th>
             <th class="col-close">{% trans "クローズ" %}</th>
@@ -66,6 +68,7 @@
                         </a>
                     </td>
                     {% endif %}
+                    {% if not hide_client %}
                     {% comment %}顧客名は課題ごとに個別編集。重複（同一顧客の2件目以降）は普段非表示、顧客列ホバーでうっすら表示。{% endcomment %}
                     <td class="col-client client-cell {% if not forloop.first %}client-dup{% endif %} {% if not forloop.last %}client-merge-down{% endif %}"
                         rowspan="{{ task.row_count }}">
@@ -81,6 +84,7 @@
                             <span class="client-text">{{ task.client_name|default:"—" }}</span>
                         {% endif %}
                     </td>
+                    {% endif %}
                     <td class="col-task" colspan="3">
                         {% if task.can_edit %}
                         <form method="post" action="{% url 'cs_tasks:edit_title' task.id %}" class="add-inline" data-ajax="1">
@@ -220,16 +224,18 @@
                 {% endfor %}
             {% endfor %}
         {% empty %}
-            <tr><td colspan="6" class="empty-message">{% trans "課題はありません。「＋課題追加」から登録してください。" %}</td></tr>
+            <tr><td colspan="{% if hide_client %}5{% else %}6{% endif %}" class="empty-message">{% trans "課題はありません。「＋課題追加」から登録してください。" %}</td></tr>
         {% endfor %}
 
         {# ===== 課題のインライン追加（罫線付きの行を1行追加。顧客名・課題のみ） ===== #}
         <tr class="new-task-row" style="display:none;">
             <td class="col-assignee">{{ user.last_name }} {{ user.first_name|default:user.email }}</td>
+            {% if not hide_client %}
             <td class="col-client">
                 <input type="text" form="ntf" name="cs_cust" class="add-input nt-cell"
                        placeholder="{% trans "顧客名" %}" autocomplete="off">
             </td>
+            {% endif %}
             <td class="col-task" colspan="3">
                 <input type="text" form="ntf" name="cs_subj" class="add-input nt-cell nt-title"
                        placeholder="{% trans "課題（28文字以内）" %}" maxlength="28" required autocomplete="off">

@@ -192,19 +192,24 @@
 
     // 新規課題の確定処理。両方入力済み→送信、片方だけ→警告、両方空→何もしない。
     function commitNewTask() {
-        const client = document.querySelector('.new-task-row input[name="cs_cust"]');
         const title = document.querySelector('.new-task-row input[name="cs_subj"]');
-        if (!client || !title) return;
-        const cv = client.value.trim();
+        if (!title) return;
+        const client = document.querySelector('.new-task-row input[name="cs_cust"]'); // 部内課題では存在しない
         const tv = title.value.trim();
+        const cv = client ? client.value.trim() : "";
 
-        if (cv === "" && tv === "") {
+        if (tv === "" && cv === "") {
             ntWarn(false);
             return;
         }
-        if (cv === "" || tv === "") {
+        if (tv === "") {
+            ntWarn(true, "課題名を入力してください。");
+            focusSoft(title);
+            return;
+        }
+        if (client && cv === "") {
             ntWarn(true, "顧客名と課題の両方を入力してください。");
-            focusSoft(cv === "" ? client : title);
+            focusSoft(client);
             return;
         }
         ntWarn(false);
@@ -305,12 +310,12 @@
                 });
                 ntWarn(false);
                 if (willShow) {
-                    const clientInput = document.querySelector(
-                        '.new-task-row input[name="cs_cust"]'
-                    );
-                    if (clientInput) {
-                        clientInput.scrollIntoView({ behavior: "smooth", block: "center" });
-                        focusSoft(clientInput);
+                    // 部内課題は顧客欄が無いので課題名にフォーカス
+                    const firstInput = document.querySelector('.new-task-row input[name="cs_cust"]')
+                        || document.querySelector('.new-task-row input[name="cs_subj"]');
+                    if (firstInput) {
+                        firstInput.scrollIntoView({ behavior: "smooth", block: "center" });
+                        focusSoft(firstInput);
                     }
                 }
             });

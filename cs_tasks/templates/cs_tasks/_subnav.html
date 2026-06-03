@@ -1,9 +1,17 @@
 {# cs_tasks/_subnav.html #}
 {% load i18n %}
 <div class="subnav">
-    <a href="{% url 'cs_tasks:index' %}"
-       class="{% if active_tab == 'index' %}active{% endif %}">
-        <svg class="ic"><use href="#ic-list"/></svg>{% trans "全課題一覧" %}
+    <a href="{% url 'cs_tasks:index' %}?cat=existing"
+       class="{% if active_tab == 'existing' %}active{% endif %}">
+        <svg class="ic"><use href="#ic-list"/></svg>{% trans "既存顧客課題" %}
+    </a>
+    <a href="{% url 'cs_tasks:index' %}?cat=new"
+       class="{% if active_tab == 'new' %}active{% endif %}">
+        <svg class="ic"><use href="#ic-clipboard"/></svg>{% trans "新規顧客課題" %}
+    </a>
+    <a href="{% url 'cs_tasks:index' %}?cat=internal"
+       class="{% if active_tab == 'internal' %}active{% endif %}">
+        <svg class="ic"><use href="#ic-users"/></svg>{% trans "部内課題" %}
     </a>
     <a href="{% url 'cs_tasks:my' %}"
        class="{% if active_tab == 'my' %}active{% endif %}">
