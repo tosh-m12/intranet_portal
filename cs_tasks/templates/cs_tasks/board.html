@@ -71,7 +71,7 @@
                     <td class="col-client client-cell {% if not forloop.first %}client-dup{% endif %} {% if not forloop.last %}client-merge-down{% endif %}"
                         rowspan="{{ task.row_count }}">
                         {% if task.can_edit %}
-                        <form method="post" action="{% url 'cs_tasks:edit_client' %}" class="add-inline">
+                        <form method="post" action="{% url 'cs_tasks:edit_client' %}" class="add-inline" data-ajax="1">
                             {% csrf_token %}
                             <input type="hidden" name="next" value="{{ request.get_full_path }}">
                             <input type="hidden" name="task_ids" value="{{ task.id }}">
@@ -84,7 +84,7 @@
                     </td>
                     <td class="col-task" colspan="4">
                         {% if task.can_edit %}
-                        <form method="post" action="{% url 'cs_tasks:edit_title' task.id %}" class="add-inline">
+                        <form method="post" action="{% url 'cs_tasks:edit_title' task.id %}" class="add-inline" data-ajax="1">
                             {% csrf_token %}
                             <input type="hidden" name="next" value="{{ request.get_full_path }}">
                             <input type="text" name="cs_subj" class="add-input task-title-input"
@@ -117,7 +117,7 @@
                         <td class="col-date" rowspan="{{ p.comment_rows }}">{{ p.created_at|date:"n/j/Y" }}</td>
                         <td class="col-progress" rowspan="{{ p.comment_rows }}">
                             {% if task.can_edit %}
-                                <form method="post" action="{% url 'cs_tasks:edit_progress' p.id %}" class="add-inline">
+                                <form method="post" action="{% url 'cs_tasks:edit_progress' p.id %}" class="add-inline" data-ajax="1">
                                     {% csrf_token %}
                                     <input type="hidden" name="next" value="{{ request.get_full_path }}">
                                     <textarea name="content" class="add-input edit-input" rows="1">{{ p.display_content }}</textarea>
@@ -137,7 +137,7 @@
                         <td class="col-comment">
                             {% if row.type == "comment" %}
                                 {% if is_admin %}
-                                    <form method="post" action="{% url 'cs_tasks:edit_comment' row.obj.id %}" class="add-inline">
+                                    <form method="post" action="{% url 'cs_tasks:edit_comment' row.obj.id %}" class="add-inline" data-ajax="1">
                                         {% csrf_token %}
                                         <input type="hidden" name="next" value="{{ request.get_full_path }}">
                                         <textarea name="content" class="add-input edit-input" rows="1">{{ row.obj.display_content }}</textarea>

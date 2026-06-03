@@ -115,9 +115,54 @@
         }
     });
 
+    // 保存できた合図（入力欄を一瞬だけ淡くハイライト）
+    function flashSaved(el) {
+        if (!el) return;
+        el.classList.add("just-saved");
+        setTimeout(function () { el.classList.remove("just-saved"); }, 1200);
+    }
+
+    // 編集フォームをその場で確定（ページ遷移なし＝スクロール位置維持）
+    function ajaxSubmit(form, el) {
+        var fd = new FormData(form);
+        fetch(form.action, {
+            method: "POST",
+            body: fd,
+            headers: {
+                "X-Requested-With": "XMLHttpRequest",
+                "X-CSRFToken": getCookie("csrftoken"),
+            },
+            redirect: "manual",   // サーバの redirect を追わない（無駄な再描画を避ける）
+        })
+            .then(function (res) {
+                // 成功時は redirect(opaqueredirect/status0) か 2xx。権限エラー等は throw。
+                if (!(res.ok || res.status === 0 || res.type === "opaqueredirect")) {
+                    throw new Error("failed");
+                }
+                if (el) el.dataset.orig = el.value; // 確定済みに更新（再送防止）
+                flashSaved(el);
+            })
+            .catch(function () {
+                alert("保存に失敗しました。もう一度お試しください。");
+            });
+    }
+
+    // リロードを伴う送信（追加系）の前にスクロール位置を控える
+    function saveScroll() {
+        try {
+            sessionStorage.setItem("cs_scroll", String(window.scrollY || window.pageYOffset || 0));
+        } catch (e) { /* noop */ }
+    }
+    // 追加系フォーム（ネイティブ送信）の submit を捕捉して位置を保存
+    document.addEventListener("submit", saveScroll);
+
     function submitForm(el) {
-        if (!el.form) return;
-        if (el.form.requestSubmit) el.form.requestSubmit();
+        if (!el || !el.form) return;
+        if (el.form.dataset.ajax) {          // 編集：その場確定（リロードしない）
+            ajaxSubmit(el.form, el);
+            return;
+        }
+        if (el.form.requestSubmit) el.form.requestSubmit();  // 追加：リロード（位置は復元）
         else el.form.submit();
     }
 
@@ -207,6 +252,15 @@
 
     // 初期表示時に既存の textarea を一度フィット
     document.addEventListener("DOMContentLoaded", function () {
+        // 追加系送信で控えたスクロール位置を復元（トップに戻さない）
+        try {
+            var y = sessionStorage.getItem("cs_scroll");
+            if (y !== null) {
+                window.scrollTo(0, parseInt(y, 10) || 0);
+                sessionStorage.removeItem("cs_scroll");
+            }
+        } catch (e) { /* noop */ }
+
         document.querySelectorAll("textarea.add-input").forEach(autoGrow);
 
         // ===== ブラウザのオートフィル抑止（顧客名・課題） =====
