@@ -4,10 +4,12 @@
 
 /* ------------ NX テーマ色（CSS変数で一元管理。正式HEXがあればここだけ差し替え） ------------ */
 :root {
-    --nx-blue: #003f98;       /* NX コーポレートブルー（近似） */
-    --nx-blue-dark: #00296b;  /* 濃いめ（トップバー左／ホバー） */
-    --nx-accent: #00a0e9;     /* アクセント（ライトブルー：アクティブタブ等） */
-    --nx-ink: #16233a;        /* 見出し文字 */
+    --nx-navy: #1A005D;          /* NX ネイビーブルー（公式） */
+    --nx-green: #8EC400;         /* NX グリーン（公式） */
+    --nx-blue: var(--nx-navy);   /* 主色：トップバー・見出しアイコン */
+    --nx-blue-dark: #12003f;     /* 予備（濃いネイビー） */
+    --nx-accent: var(--nx-green);/* アクセント：アクティブタブ下線・ブランドアイコン */
+    --nx-ink: #1A005D;           /* 見出し文字 */
 }
 
 /* ページ全体 */
@@ -24,7 +26,7 @@ body {
     align-items: center;
     flex-wrap: wrap;
     gap: 6px 18px;
-    background: linear-gradient(100deg, var(--nx-blue-dark) 0%, var(--nx-blue) 60%, #0a55b8 100%);
+    background-color: var(--nx-navy);
     color: #fff;
     min-height: 54px;
     padding: 7px 22px;
