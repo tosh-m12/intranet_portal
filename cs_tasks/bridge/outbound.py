@@ -78,6 +78,7 @@ def build_snapshot(since=None):
             comments = [
                 {
                     "id": c.id,
+                    "author": _user_label(c.author),
                     "content": c.content,
                     "content_ja": c.content_ja,
                     "created_at": _iso(c.created_at),

@@ -165,6 +165,14 @@
         }
     });
 
+    // 日付欄はアイコンを隠しているので、クリックでカレンダーを開く
+    document.addEventListener("click", function (e) {
+        var el = e.target;
+        if (el.classList && el.classList.contains("date-input") && el.showPicker) {
+            try { el.showPicker(); } catch (_) { /* noop */ }
+        }
+    });
+
     function submitForm(el) {
         if (!el || !el.form) return;
         if (el.form.dataset.ajax) {          // 編集：その場確定（リロードしない）

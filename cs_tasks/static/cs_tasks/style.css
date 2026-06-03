@@ -111,6 +111,14 @@
 }
 .cs-board .date-input:hover { border-color: #ddd; }
 .cs-board .date-input:focus { outline: none; background: #fff9e6; border-color: #e0c46a; }
+/* カレンダーのアイコンは隠す（クリックで showPicker を呼ぶ） */
+.cs-board .date-input::-webkit-calendar-picker-indicator { display: none; -webkit-appearance: none; }
+
+/* 進捗セル: 上下結合(rowspan)されていても記入日を最下部の右に固定する */
+.cs-board td.col-progress { height: 1px; }   /* 内側 height:100% を実高さに解決させる */
+.cs-board .prog-cell { display: flex; flex-direction: column; height: 100%; }
+.cs-board .prog-cell .prog-body { flex: 0 0 auto; }
+.cs-board .prog-cell .entry-date { margin-top: auto; }
 
 /* 行内の追加フォーム（visit-table の枠なし入力と統一） */
 .add-inline { margin: 0; }

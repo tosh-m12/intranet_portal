@@ -41,7 +41,6 @@
         <col class="cg-client">
         <col class="cg-date cg-date-edit">
         <col class="cg-progress">
-        <col class="cg-date">
         <col class="cg-comment">
         <col class="cg-close">
     </colgroup>
@@ -50,7 +49,7 @@
             <th class="col-assignee">{% trans "担当" %}</th>
             <th class="col-client">{% trans "顧客" %}</th>
             <th colspan="2">{% trans "課題および進捗" %}</th>
-            <th colspan="2">{% trans "指示・コメント" %}</th>
+            <th>{% trans "指示・コメント" %}</th>
             <th class="col-close">{% trans "クローズ" %}</th>
         </tr>
     </thead>
@@ -82,7 +81,7 @@
                             <span class="client-text">{{ task.client_name|default:"—" }}</span>
                         {% endif %}
                     </td>
-                    <td class="col-task" colspan="4">
+                    <td class="col-task" colspan="3">
                         {% if task.can_edit %}
                         <form method="post" action="{% url 'cs_tasks:edit_title' task.id %}" class="add-inline" data-ajax="1">
                             {% csrf_token %}
@@ -137,24 +136,23 @@
                             {% endif %}
                         </td>
                         <td class="col-progress" rowspan="{{ p.comment_rows }}">
-                            {% if task.can_edit %}
+                            <div class="prog-cell">
+                              <div class="prog-body">
+                                {% if task.can_edit %}
                                 <form method="post" action="{% url 'cs_tasks:edit_progress' p.id %}" class="add-inline" data-ajax="1">
                                     {% csrf_token %}
                                     <input type="hidden" name="next" value="{{ request.get_full_path }}">
                                     <textarea name="content" class="add-input edit-input" rows="1">{{ p.display_content }}</textarea>
                                 </form>
-                            {% else %}
-                                {{ p.display_content|linebreaksbr }}
-                            {% endif %}
-                            {# 記入日（実際に入力した日）を右下に薄グレーで（上長コメントの記入者と同スタイル） #}
-                            <div class="comment-by">{% trans "記入" %} {{ p.created_at|date:"n/j/Y" }}</div>
+                                {% else %}
+                                    {{ p.display_content|linebreaksbr }}
+                                {% endif %}
+                              </div>
+                              {# 記入日（実際に入力した日）を右下・最下部に薄グレーで #}
+                              <div class="comment-by entry-date">{{ p.created_at|date:"n/j/Y" }}</div>
+                            </div>
                         </td>
                         {% endif %}
-
-                        {# コメントの日付 #}
-                        <td class="col-date">
-                            {% if row.type == "comment" %}{{ row.obj.created_at|date:"n/j/Y" }}{% endif %}
-                        </td>
 
                         {# 上長コメント本文 #}
                         <td class="col-comment">
@@ -168,7 +166,7 @@
                                 {% else %}
                                     {{ row.obj.display_content|linebreaksbr }}
                                 {% endif %}
-                                <div class="comment-by">by {{ row.obj.author_name }}</div>
+                                <div class="comment-by">{{ row.obj.created_at|date:"n/j/Y" }} by {{ row.obj.author_name }}</div>
                             {% elif row.type == "add" %}
                                 <form method="post" action="{% url 'cs_tasks:add_comment' p.id %}" class="add-inline">
                                     {% csrf_token %}
@@ -216,14 +214,13 @@
                         </form>
                         {% endif %}
                     </td>
-                    <td class="col-date"></td>
                     <td class="col-comment"></td>
                     <td class="col-close"></td>
                 </tr>
                 {% endfor %}
             {% endfor %}
         {% empty %}
-            <tr><td colspan="7" class="empty-message">{% trans "課題はありません。「＋課題追加」から登録してください。" %}</td></tr>
+            <tr><td colspan="6" class="empty-message">{% trans "課題はありません。「＋課題追加」から登録してください。" %}</td></tr>
         {% endfor %}
 
         {# ===== 課題のインライン追加（罫線付きの行を1行追加。顧客名・課題のみ） ===== #}
@@ -233,7 +230,7 @@
                 <input type="text" form="ntf" name="cs_cust" class="add-input nt-cell"
                        placeholder="{% trans "顧客名" %}" autocomplete="off">
             </td>
-            <td class="col-task" colspan="4">
+            <td class="col-task" colspan="3">
                 <input type="text" form="ntf" name="cs_subj" class="add-input nt-cell nt-title"
                        placeholder="{% trans "課題（28文字以内）" %}" maxlength="28" required autocomplete="off">
             </td>
