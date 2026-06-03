@@ -4,22 +4,22 @@
 <div class="subnav">
     <a href="{% url 'visitors:index' %}"
        class="{% if active_tab == 'index' %}active{% endif %}">
-        📋 {% trans "本日以降一覧" %}
+        <svg class="ic"><use href="#ic-list"/></svg> {% trans "本日以降一覧" %}
     </a>
     <a href="{% url 'visitors:history' %}"
        class="{% if active_tab == 'history' %}active{% endif %}">
-        🕒 {% trans "過去一覧" %}
+        <svg class="ic"><use href="#ic-clock"/></svg> {% trans "過去一覧" %}
     </a>
     <a href="{% url 'visitors:add_visitor' %}"
        class="{% if active_tab == 'add' %}active{% endif %}">
-        ➕ {% trans "新規登録" %}
+        <svg class="ic"><use href="#ic-plus"/></svg> {% trans "新規登録" %}
     </a>
 
     {# ▼ authsys の is_admin と同じ条件（superuser または staff） #}
     {% if request.user.is_superuser or request.user.is_staff %}
         <a href="{% url 'visitors:settings' %}"
            class="{% if active_tab == 'settings' %}active{% endif %}">
-            ⚙ {% trans "各種設定" %}
+            <svg class="ic"><use href="#ic-settings"/></svg> {% trans "各種設定" %}
         </a>
     {% endif %}
 </div>
