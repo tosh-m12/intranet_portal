@@ -156,6 +156,15 @@
     // 追加系フォーム（ネイティブ送信）の submit を捕捉して位置を保存
     document.addEventListener("submit", saveScroll);
 
+    // 既存進捗の実施日（カレンダー）変更で即確定。
+    // 追加行(addprog-*, data-ajax なし)の日付は送信せず、進捗本文の確定時に一緒に送る。
+    document.addEventListener("change", function (e) {
+        var el = e.target;
+        if (el.classList && el.classList.contains("date-input") && el.form && el.form.dataset.ajax) {
+            submitForm(el);
+        }
+    });
+
     function submitForm(el) {
         if (!el || !el.form) return;
         if (el.form.dataset.ajax) {          // 編集：その場確定（リロードしない）

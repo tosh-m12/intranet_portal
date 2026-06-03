@@ -115,6 +115,8 @@ class ProgressUpdate(models.Model):
     content = models.TextField(verbose_name="進捗内容")
     content_ja = models.TextField(verbose_name="進捗内容(日本語)", blank=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="記入日時")
+    # 実施日（記入忘れで後日入れた場合に実際の実施日を選べる。未設定なら記入日を使う）
+    execution_date = models.DateField(verbose_name="実施日", null=True, blank=True)
 
     # 行単位のクローズ（上長のみ）
     is_closed = models.BooleanField(verbose_name="クローズ", default=False)
@@ -138,6 +140,13 @@ class ProgressUpdate(models.Model):
 
     def display_content(self, lang=None):
         return pick_lang(self.content, self.content_ja, lang or active_lang())
+
+    @property
+    def effective_date(self):
+        """表示・編集用の実施日。未設定なら記入日(created_at)の日付にフォールバック。"""
+        if self.execution_date:
+            return self.execution_date
+        return self.created_at.date() if self.created_at else None
 
 
 class SupervisorComment(models.Model):
