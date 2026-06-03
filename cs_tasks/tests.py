@@ -468,6 +468,62 @@ class ProgressDateDescriptionTests(TestCase):
         self.assertEqual(self.task.description, "")
 
 
+class CategoryTabTests(TestCase):
+    """区分(既存顧客/新規顧客/部内)タブの絞り込みと、部内の顧客列非表示。"""
+
+    def setUp(self):
+        self.boss = User.objects.create_user(
+            email="boss4@ngls.sh.cn", password="x", is_staff=True
+        )
+        self.client.force_login(self.boss)
+        self.t_exist = Task.objects.create(title="既存", client_name="客A",
+                                           category=Task.CATEGORY_EXISTING, assignee=self.boss)
+        self.t_new = Task.objects.create(title="新規", client_name="客B",
+                                         category=Task.CATEGORY_NEW, assignee=self.boss)
+        self.t_int = Task.objects.create(title="部内", category=Task.CATEGORY_INTERNAL,
+                                         assignee=self.boss)
+
+    def _ids(self, resp):
+        return {t.id for g in resp.context["groups"]
+                for c in g["clients"] for t in c["tasks"]}
+
+    def test_existing_tab_default(self):
+        r = self.client.get(reverse("cs_tasks:index"))
+        self.assertEqual(r.context["active_tab"], "existing")
+        self.assertFalse(r.context["hide_client"])
+        self.assertEqual(self._ids(r), {self.t_exist.id})
+
+    def test_new_tab(self):
+        r = self.client.get(reverse("cs_tasks:index") + "?cat=new")
+        self.assertEqual(self._ids(r), {self.t_new.id})
+        self.assertFalse(r.context["hide_client"])
+
+    def test_internal_tab_hides_client(self):
+        r = self.client.get(reverse("cs_tasks:index") + "?cat=internal")
+        self.assertEqual(self._ids(r), {self.t_int.id})
+        self.assertTrue(r.context["hide_client"])
+        self.assertNotContains(r, '<th class="col-client">')
+
+    def test_my_tab_all_categories(self):
+        r = self.client.get(reverse("cs_tasks:my"))
+        self.assertEqual(self._ids(r), {self.t_exist.id, self.t_new.id, self.t_int.id})
+
+    def test_add_inline_sets_category_and_no_client_for_internal(self):
+        self.client.post(reverse("cs_tasks:task_add_inline"),
+                         {"cs_subj": "部内の新課題", "cs_cust": "無視される客", "category": "internal"})
+        # 日本語タイトルは title_ja 側に入る（_route_text 仕様）
+        t = Task.objects.filter(title_ja="部内の新課題").first()
+        self.assertIsNotNone(t)
+        self.assertEqual(t.category, Task.CATEGORY_INTERNAL)
+        self.assertEqual(t.client_name, "")   # 部内は顧客名を持たない
+
+    def test_snapshot_includes_category(self):
+        snap = outbound.build_snapshot()
+        cats = {t["id"]: t["category"] for t in snap["tasks"]}
+        self.assertEqual(cats[self.t_int.id], "internal")
+        self.assertEqual(cats[self.t_new.id], "new")
+
+
 class OutboundSnapshotTests(TestCase):
     def test_snapshot_contains_ids_and_fields(self):
         task = Task.objects.create(title="任务A", client_name="客户X")

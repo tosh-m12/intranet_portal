@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import JsonResponse, HttpResponseForbidden
 from django.views.decorators.http import require_POST
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 
@@ -68,7 +69,7 @@ def _route_text(text):
     return (text, "")
 
 
-def _build_board(user, assignee_id=None):
+def _build_board(user, assignee_id=None, category=None):
     """
     担当者 > 顧客 > 課題 > 進捗 の3階層でグルーピングした
     課題ボード用のデータを組み立てる。
@@ -88,6 +89,9 @@ def _build_board(user, assignee_id=None):
         )
         .order_by("created_at", "id")
     )
+
+    if category:
+        tasks_qs = tasks_qs.filter(category=category)
 
     filtered_user = None
     if assignee_id:
@@ -173,21 +177,34 @@ def _build_board(user, assignee_id=None):
 # =========================================================
 # 課題・進捗ボード（メイン画面）。?assignee=<id> で担当者絞り込み
 # =========================================================
+_CATEGORY_TITLE = {
+    Task.CATEGORY_EXISTING: "既存顧客課題",
+    Task.CATEGORY_NEW: "新規顧客課題",
+    Task.CATEGORY_INTERNAL: "部内課題",
+}
+
+
 @login_required
 def index(request):
     assignee_id = request.GET.get("assignee")
-    groups, filtered_user = _build_board(request.user, assignee_id)
+    cat = request.GET.get("cat") or Task.CATEGORY_EXISTING
+    if cat not in _CATEGORY_TITLE:
+        cat = Task.CATEGORY_EXISTING
+    groups, filtered_user = _build_board(request.user, assignee_id, category=cat)
     return render(request, "cs_tasks/board.html", {
         "groups": groups,
         "filtered_user": filtered_user,
         "filtered_user_name": _display_name(filtered_user) if filtered_user else "",
         "is_admin": is_admin(request.user),
-        "board_title": "CS課題・進捗一覧",
+        "board_title": _CATEGORY_TITLE[cat],
+        "active_tab": cat,
+        "current_category": cat,            # 新規追加時に引き継ぐ区分
+        "hide_client": cat == Task.CATEGORY_INTERNAL,
     })
 
 
 # =========================================================
-# 自分の担当課題（ボードを自分で絞り込み）
+# 自分の担当課題（全カテゴリ横断で自分が担当の課題）
 # =========================================================
 @login_required
 def my_tasks(request):
@@ -199,6 +216,8 @@ def my_tasks(request):
         "is_admin": is_admin(request.user),
         "board_title": "自分の担当課題",
         "is_my_view": True,
+        "active_tab": "my",
+        "current_category": Task.CATEGORY_EXISTING,
     })
 
 
@@ -232,13 +251,21 @@ def task_add_inline(request):
     title = (request.POST.get("cs_subj") or "").strip()[:28]
     client_name = (request.POST.get("cs_cust") or "").strip()
     progress = (request.POST.get("progress") or "").strip()
+    category = request.POST.get("category") or Task.CATEGORY_EXISTING
+    if category not in _CATEGORY_TITLE:
+        category = Task.CATEGORY_EXISTING
 
     if not title:
         messages.error(request, "課題名を入力してください。")
-        return redirect("cs_tasks:index")
+        return redirect(f"{reverse('cs_tasks:index')}?cat={category}")
+
+    # 部内課題は顧客名を持たない
+    if category == Task.CATEGORY_INTERNAL:
+        client_name = ""
 
     title_zh, title_ja = _route_text(title)
     task = Task.objects.create(
+        category=category,
         title=title_zh,
         title_ja=title_ja,
         client_name=client_name,
@@ -251,7 +278,7 @@ def task_add_inline(request):
             task=task, author=request.user, content=p_zh, content_ja=p_ja
         )
 
-    return redirect("cs_tasks:index")
+    return redirect(f"{reverse('cs_tasks:index')}?cat={category}")
 
 
 # =========================================================
