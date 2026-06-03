@@ -486,3 +486,70 @@ class RouteTextTests(TestCase):
         zh, ja = _route_text("日本語の内容")
         self.assertEqual(zh, "")
         self.assertEqual(ja, "日本語の内容")
+
+
+class AutoDeployGuardTests(TestCase):
+    """自動デプロイ: 安全装置(緊急停止フラグ・クールダウン・detached HEAD)。
+
+    git 実行は伴わない(ガード段階で早期 return することを確認)。
+    """
+
+    def setUp(self):
+        from cs_tasks import scheduler as sch
+        sch._last_deploy_at = None
+
+    def test_disable_flag_blocks_check(self):
+        from unittest.mock import patch
+        from cs_tasks import scheduler as sch
+        with patch("cs_tasks.scheduler.os.path.exists", return_value=True), \
+             patch("cs_tasks.scheduler._git") as mock_git:
+            sch._auto_deploy_check()
+            mock_git.assert_not_called()
+
+    def test_cooldown_blocks_check(self):
+        import time as _t
+        from unittest.mock import patch
+        from cs_tasks import scheduler as sch
+        sch._last_deploy_at = _t.monotonic()
+        with patch("cs_tasks.scheduler.os.path.exists", return_value=False), \
+             patch("cs_tasks.scheduler._git") as mock_git:
+            sch._auto_deploy_check()
+            mock_git.assert_not_called()
+
+    def test_no_change_no_exit(self):
+        """local == upstream の場合は exit しない。"""
+        from unittest.mock import patch
+        from cs_tasks import scheduler as sch
+
+        def fake_git(args, cwd, timeout=30):
+            if args[:2] == ["rev-parse", "--abbrev-ref"]:
+                return "feature/cs-tasks"
+            if args[0] == "fetch":
+                return ""
+            if args == ["rev-parse", "HEAD"]:
+                return "abc12345abc12345abc12345abc12345abc12345"
+            if args == ["rev-parse", "@{u}"]:
+                return "abc12345abc12345abc12345abc12345abc12345"
+            return ""
+
+        with patch("cs_tasks.scheduler.os.path.exists", return_value=False), \
+             patch("cs_tasks.scheduler._git", side_effect=fake_git), \
+             patch("cs_tasks.scheduler.os._exit") as mock_exit:
+            sch._auto_deploy_check()
+            self.assertIsNone(sch._last_deploy_at)
+            mock_exit.assert_not_called()
+
+    def test_detached_head_skips(self):
+        from unittest.mock import patch
+        from cs_tasks import scheduler as sch
+
+        def fake_git(args, cwd, timeout=30):
+            if args[:2] == ["rev-parse", "--abbrev-ref"]:
+                return "HEAD"
+            return ""
+
+        with patch("cs_tasks.scheduler.os.path.exists", return_value=False), \
+             patch("cs_tasks.scheduler._git", side_effect=fake_git) as mock_git:
+            sch._auto_deploy_check()
+            calls = [c.args[0] for c in mock_git.call_args_list]
+            self.assertNotIn(["fetch", "--quiet"], calls)

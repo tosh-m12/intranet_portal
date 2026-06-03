@@ -1,4 +1,6 @@
 # cs_tasks/scheduler.py
+import os
+import subprocess
 import threading
 import time
 import datetime
@@ -16,6 +18,111 @@ _scheduler_started = False  # 多重起動防止
 _BRIDGE_INTERVAL_SEC = 300  # 5分
 _last_sync_at = None
 _last_inbound_at = None
+
+# 自動デプロイ(Gitee 監視): upstream に新コミットがあれば pull → migrate →
+# self-exit。run_portal.bat の loop が新コードで waitress を再起動する。
+_DEPLOY_INTERVAL_SEC = 300       # 5分毎にチェック
+_DEPLOY_COOLDOWN_SEC = 600       # 直前デプロイから10分は再デプロイしない
+_DEPLOY_DISABLE_FLAG = r"D:\INTRANET_PORTAL\.no_auto_deploy"  # 緊急停止フラグ
+_last_deploy_check_at = None
+_last_deploy_at = None
+
+
+def _project_root():
+    """manage.py が居るディレクトリ(= git リポジトリのルート)を返す。"""
+    here = os.path.abspath(__file__)  # cs_tasks/scheduler.py
+    return os.path.abspath(os.path.join(here, os.pardir, os.pardir))
+
+
+def _git(args, cwd, timeout=30):
+    """git コマンドを実行し、stdout(strip)を返す。失敗時は None。"""
+    try:
+        result = subprocess.run(
+            ["git"] + list(args),
+            cwd=cwd,
+            capture_output=True,
+            timeout=timeout,
+            text=True,
+        )
+        if result.returncode != 0:
+            logger.warning(
+                "[AUTO_DEPLOY] git %s rc=%d stderr=%s",
+                args, result.returncode, (result.stderr or "").strip(),
+            )
+            return None
+        return (result.stdout or "").strip()
+    except subprocess.TimeoutExpired:
+        logger.warning("[AUTO_DEPLOY] git %s timeout", args)
+        return None
+    except FileNotFoundError:
+        logger.warning("[AUTO_DEPLOY] git not found on PATH")
+        return None
+    except Exception:
+        logger.exception("[AUTO_DEPLOY] git %s exception", args)
+        return None
+
+
+def _auto_deploy_check():
+    """upstream に新コミットがあれば pull + migrate + self-exit する。
+
+    self-exit 後は run_portal.bat の loop が新コードで waitress を再起動する想定。
+    pull や migrate に失敗した場合は exit せず、ログのみ残す(=現行コード継続)。
+    """
+    global _last_deploy_at
+
+    # 緊急停止フラグ(touch しておけばデプロイを一時停止できる)
+    if os.path.exists(_DEPLOY_DISABLE_FLAG):
+        return
+
+    # 直前デプロイから 10 分以内は何もしない
+    if _last_deploy_at is not None and (time.monotonic() - _last_deploy_at) < _DEPLOY_COOLDOWN_SEC:
+        return
+
+    cwd = _project_root()
+
+    # 現在のブランチ(detached HEAD は除外)
+    branch = _git(["rev-parse", "--abbrev-ref", "HEAD"], cwd)
+    if not branch or branch == "HEAD":
+        return
+
+    if _git(["fetch", "--quiet"], cwd, timeout=30) is None:
+        return
+
+    local = _git(["rev-parse", "HEAD"], cwd)
+    upstream = _git(["rev-parse", "@{u}"], cwd)
+    if not local or not upstream or local == upstream:
+        return
+
+    logger.info(
+        "[AUTO_DEPLOY] new commits on %s: %s -> %s",
+        branch, local[:8], upstream[:8],
+    )
+    print(f"### [AUTO_DEPLOY] new commits on {branch}: {local[:8]} -> {upstream[:8]}")
+
+    # fast-forward only で安全に pull (conflict は手動介入)
+    if _git(["pull", "--ff-only"], cwd, timeout=60) is None:
+        logger.error("[AUTO_DEPLOY] pull failed, abort restart")
+        return
+
+    # 新マイグレーション適用(無ければ no-op)
+    try:
+        call_command("migrate", "--noinput")
+    except Exception:
+        logger.exception("[AUTO_DEPLOY] migrate failed, abort restart")
+        return
+
+    _last_deploy_at = time.monotonic()
+    logger.warning(
+        "[AUTO_DEPLOY] code updated to %s, exiting in 3s for restart by run_portal.bat",
+        upstream[:8],
+    )
+    print(f"### [AUTO_DEPLOY] code updated to {upstream[:8]}, exiting in 3s")
+
+    # 進行中リクエストを多少待ってから self-exit
+    def _exit_soon():
+        time.sleep(3)
+        os._exit(0)
+    threading.Thread(target=_exit_soon, daemon=True).start()
 
 
 def _scheduler_loop():
@@ -96,6 +203,16 @@ def _scheduler_loop():
                     logger.exception("[CSBRIDGE_SCHED] cs_inbound_poll failed")
                 finally:
                     _last_inbound_at = mono
+
+            # ===== 自動デプロイ: Gitee 監視(5分毎) =====
+            global _last_deploy_check_at
+            if _last_deploy_check_at is None or (mono - _last_deploy_check_at) >= _DEPLOY_INTERVAL_SEC:
+                try:
+                    _auto_deploy_check()
+                except Exception:
+                    logger.exception("[AUTO_DEPLOY] check failed")
+                finally:
+                    _last_deploy_check_at = mono
 
         except Exception:
             logger.exception("[CSTASKS_SCHED] error in scheduler loop")
