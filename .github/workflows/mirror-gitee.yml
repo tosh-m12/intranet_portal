@@ -1,0 +1,36 @@
+name: Mirror to Gitee
+
+# GitHub の main / feature/cs-tasks へ push があるたびに、
+# 同じ内容を Gitee (drtee/intranet_portal) へ転送する。
+# Gitee 自体の Pull mirror は同期遅延が大きかったため、push 駆動に切替。
+# 本番サーバは Gitee を origin にしているので、Gitee 反映 = 本番自動デプロイ起点。
+
+on:
+  push:
+    branches:
+      - main
+      - feature/cs-tasks
+  workflow_dispatch:  # 手動実行も可
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 全履歴(force push 用)
+
+      - name: Push to Gitee
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+        run: |
+          if [ -z "$GITEE_TOKEN" ]; then
+            echo "::error::GITEE_TOKEN secret is not set. See .github/workflows/mirror-gitee.yml for setup."
+            exit 1
+          fi
+          git remote add gitee "https://drtee:${GITEE_TOKEN}@gitee.com/drtee/intranet_portal.git"
+          # GitHub 側を Source of Truth とし、Gitee を上書き
+          git push gitee --force "HEAD:${GITHUB_REF_NAME}"
+          echo "Pushed ${GITHUB_REF_NAME} to Gitee."
