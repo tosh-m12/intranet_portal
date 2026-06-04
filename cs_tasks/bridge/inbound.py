@@ -85,8 +85,30 @@ def _apply_task_fields(task, fields):
         task.assignee = _resolve_user(fields.get("assignee_email"))
 
 
-def _apply_op(op, author):
+def _resolve_task_id(op, created_map):
+    """add_progress 等の対象課題IDを解決する。
+
+    task_id があればそれ。無ければ task_ref(=add_task の op_id)から、
+    同一メール内で作成した課題(created_map)→過去メールで作成した課題
+    (BridgeProcessedOperation.result_task_id)の順に引く。
+    """
+    tid = op.get("task_id")
+    if tid:
+        return tid
+    ref = op.get("task_ref")
+    if ref:
+        if ref in created_map:
+            return created_map[ref]
+        rec = m.BridgeProcessedOperation.objects.filter(op_id=ref).first()
+        if rec and rec.result_task_id:
+            return rec.result_task_id
+    return None
+
+
+def _apply_op(op, author, created_map=None):
+    """op を1件適用する。add_task のときは生成した Task の id を返す。"""
     action = op["action"]
+    created_map = created_map if created_map is not None else {}
 
     if action == "add_comment":
         progress = m.ProgressUpdate.objects.get(pk=op["progress_id"])
@@ -101,7 +123,11 @@ def _apply_op(op, author):
 
     elif action == "add_progress":
         # Mac(上長)が新規課題等に進捗を追加する。中文(content_zh)必須・日本語訳は任意。
-        task = m.Task.objects.get(pk=op["task_id"])
+        # task_id 直接指定 or task_ref(同一/過去メールの add_task)から課題を解決。
+        tid = _resolve_task_id(op, created_map)
+        if not tid:
+            raise ValueError("add_progress: task_id/task_ref から課題を解決できません。")
+        task = m.Task.objects.get(pk=tid)
         progress = m.ProgressUpdate(
             task=task,
             author=author,
@@ -151,6 +177,9 @@ def _apply_op(op, author):
         if not (task.title or "").strip():
             raise ValueError("add_task には title(title_zh) が必要です。")
         task.save()
+        # 同一メール内の後続 add_progress(task_ref) が参照できるよう記録
+        created_map[op["op_id"]] = task.id
+        return task.id
 
     elif action == "delete":
         target = op.get("target")
@@ -229,6 +258,7 @@ def apply_writeback(payload, signature, sender=None):
 
     ops = payload.get("ops") or []
     author = _bridge_author()
+    created_map = {}   # 同一メール内: add_task の op_id -> 生成 task_id（task_ref 解決用）
 
     for op in ops:
         op_id = op.get("op_id")
@@ -246,8 +276,10 @@ def apply_writeback(payload, signature, sender=None):
         try:
             # 各opはsavepointで囲み、失敗時はそのopだけロールバック
             with transaction.atomic():
-                _apply_op(op, author)
-                m.BridgeProcessedOperation.objects.create(op_id=op_id, action=action)
+                result_task_id = _apply_op(op, author, created_map)
+                m.BridgeProcessedOperation.objects.create(
+                    op_id=op_id, action=action, result_task_id=result_task_id
+                )
         except Exception as e:  # noqa: BLE001
             logger.exception("[CSBRIDGE] op failed: %s", op_id)
             result["errors"].append({"op_id": op_id, "error": str(e)})
