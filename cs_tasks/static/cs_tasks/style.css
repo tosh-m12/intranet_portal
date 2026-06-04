@@ -83,6 +83,13 @@
     text-align: right;
 }
 
+/* 上長コメントは赤字・太字で目立たせる（記入日/記入者のメタは通常表示のまま） */
+.cs-board td.col-comment .add-input,
+.cs-board td.col-comment .comment-text {
+    color: #c0392b;
+    font-weight: bold;
+}
+
 /* 課題タイトル直下の詳細（細め・やや薄い） */
 .cs-board .task-desc-input {
     font-weight: normal;
