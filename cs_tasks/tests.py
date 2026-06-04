@@ -136,6 +136,26 @@ class InboundApplyTests(TestCase):
         self.assertEqual(c.content_ja, "至急対応してください")
         self.assertEqual(c.author, self.boss)  # CS_BRIDGE_AUTHOR_EMAIL
 
+    def test_add_progress(self):
+        before = self.task.updated_at
+        res = self._apply(
+            [{
+                "op_id": "op-ap", "action": "add_progress",
+                "task_id": self.task.id,
+                "content_zh": "已发货", "content_ja": "出荷済み",
+                "execution_date": "2026-05-20",
+            }]
+        )
+        self.assertTrue(res["ok"])
+        self.assertEqual(res["applied"], ["op-ap"])
+        p = ProgressUpdate.objects.filter(task=self.task).order_by("-id").first()
+        self.assertEqual(p.content, "已发货")
+        self.assertEqual(p.content_ja, "出荷済み")
+        self.assertEqual(str(p.execution_date), "2026-05-20")
+        self.assertEqual(p.author, self.boss)   # CS_BRIDGE_AUTHOR_EMAIL
+        self.task.refresh_from_db()
+        self.assertGreater(self.task.updated_at, before)  # 親 touch（往路差分に載る）
+
     def test_edit_progress(self):
         res = self._apply(
             [{
