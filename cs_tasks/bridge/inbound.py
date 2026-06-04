@@ -26,7 +26,7 @@ User = get_user_model()
 
 VALID_ACTIONS = {
     "add_comment", "edit_progress", "edit_task", "add_task", "edit_comment",
-    "delete",
+    "add_progress", "delete",
 }
 
 # delete action の target → 削除方式
@@ -98,6 +98,22 @@ def _apply_op(op, author):
         )
         # 子の変更を往路差分スナップショットに載せるため親課題を touch
         progress.task.save(update_fields=["updated_at"])
+
+    elif action == "add_progress":
+        # Mac(上長)が新規課題等に進捗を追加する。中文(content_zh)必須・日本語訳は任意。
+        task = m.Task.objects.get(pk=op["task_id"])
+        progress = m.ProgressUpdate(
+            task=task,
+            author=author,
+            content=op.get("content_zh") or "",
+            content_ja=op.get("content_ja") or "",
+        )
+        ed = _parse_date(op.get("execution_date"))
+        if ed:
+            progress.execution_date = ed
+        progress.save()
+        # 子の追加を往路差分スナップショットに載せるため親課題を touch
+        task.save(update_fields=["updated_at"])
 
     elif action == "edit_progress":
         progress = m.ProgressUpdate.objects.get(pk=op["progress_id"])
