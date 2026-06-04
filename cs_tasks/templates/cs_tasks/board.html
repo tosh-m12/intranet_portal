@@ -168,7 +168,7 @@
                                         <textarea name="content" class="add-input edit-input" rows="1">{{ row.obj.display_content }}</textarea>
                                     </form>
                                 {% else %}
-                                    {{ row.obj.display_content|linebreaksbr }}
+                                    <span class="comment-text">{{ row.obj.display_content|linebreaksbr }}</span>
                                 {% endif %}
                                 <div class="comment-by">{{ row.obj.created_at|date:"n/j/Y" }} by {{ row.obj.author_name }}</div>
                             {% elif row.type == "add" %}
