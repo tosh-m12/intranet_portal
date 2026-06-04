@@ -12,12 +12,23 @@
     --nx-ink: #1A005D;           /* 見出し文字 */
 }
 
-/* ページ全体 */
+/* ------------ フォント（日中で適切なCJKフォントを当て、中文のチグハグを防ぐ） ------------ */
+/* 既定（日本語）: モダンなゴシック。Noto Sans JP が無い環境は OS 標準にフォールバック。 */
 body {
-    font-family: Arial, "Yu Gothic", "Meiryo", sans-serif;
+    font-family: "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN",
+                 "Yu Gothic UI", "Yu Gothic", "Meiryo", system-ui, -apple-system, sans-serif;
     margin: 0;
     background-color: #f5f5f5;
     min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "palt";   /* 約物の詰めで読みやすく */
+    color: #1c1f24;
+}
+/* 中国語表示時は簡体字フォントで統一（和文フォント混在による“チグハグ”を防止） */
+html[lang^="zh"] body {
+    font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei",
+                 "Hiragino Sans GB", "Source Han Sans SC", system-ui, sans-serif;
 }
 
 /* ------------ トップバー（横型ナビ） ------------ */
