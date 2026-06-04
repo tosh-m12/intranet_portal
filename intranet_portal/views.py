@@ -32,47 +32,39 @@ def _heat_level(n):
 def home(request):
     """
     社内ポータルのトップページ。
-    担当者別の課題入力状況を過去30日分のヒートマップで表示する。
+    過去30日間の課題報告状況（=進捗の入力件数）を全ユーザー分ヒートマップで表示する。
+    Superuser は除外、未入力の人も0件として表示する。
     """
-    from cs_tasks.models import Task, ProgressUpdate, SupervisorComment
+    from django.contrib.auth import get_user_model
+    from cs_tasks.models import ProgressUpdate
 
+    User = get_user_model()
     today = timezone.localdate()
     start = today - timedelta(days=HEAT_DAYS - 1)
     days = [start + timedelta(days=i) for i in range(HEAT_DAYS)]
 
+    # 報告 = 進捗の入力（上長コメントはカウントしない）。TZ境界の取りこぼし防止に1日広く取得。
     counts = {}   # user_id -> {date: 件数}
-    users = {}    # user_id -> user
-
-    def add(author, created_at):
-        if not author or not created_at:
-            return
-        d = timezone.localtime(created_at).date()
-        if d < start or d > today:
-            return
-        users[author.id] = author
-        counts.setdefault(author.id, {})
-        counts[author.id][d] = counts[author.id].get(d, 0) + 1
-
-    # 入力 = 進捗 + 上長コメント（区分は分けずトータル）。TZ境界の取りこぼし防止に1日広く取得。
     buf = start - timedelta(days=1)
-    for p in ProgressUpdate.objects.filter(created_at__date__gte=buf).select_related("author"):
-        add(p.author, p.created_at)
-    for c in SupervisorComment.objects.filter(created_at__date__gte=buf).select_related("author"):
-        add(c.author, c.created_at)
-    # 活動0でも担当者は行として出す（非中止課題の担当者）
-    for t in Task.objects.filter(is_cancelled=False).select_related("assignee"):
-        if t.assignee:
-            users.setdefault(t.assignee.id, t.assignee)
+    for p in ProgressUpdate.objects.filter(created_at__date__gte=buf).only("author", "created_at"):
+        if not p.author_id:
+            continue
+        d = timezone.localtime(p.created_at).date()
+        if d < start or d > today:
+            continue
+        counts.setdefault(p.author_id, {})
+        counts[p.author_id][d] = counts[p.author_id].get(d, 0) + 1
 
     rows = []
-    for uid, u in users.items():
-        cmap = counts.get(uid, {})
+    for u in User.objects.filter(is_active=True, is_superuser=False):
+        cmap = counts.get(u.id, {})
         cells = [{"date": d, "n": cmap.get(d, 0), "lvl": _heat_level(cmap.get(d, 0))} for d in days]
         rows.append({"name": _heat_name(u), "total": sum(c["n"] for c in cells), "cells": cells})
     rows.sort(key=lambda r: r["name"])
 
     return render(request, "portal/home.html", {
         "heat_rows": rows,
+        "heat_days": days,
         "heat_start": start,
         "heat_end": today,
     })
