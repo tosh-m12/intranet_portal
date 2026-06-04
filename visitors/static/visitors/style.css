@@ -172,6 +172,30 @@ footer {
     margin: 20px 0 15px;
 }
 
+/* ------------ ホーム: 担当者別 入力状況ヒートマップ ------------ */
+.heat-title { font-size: 16px; margin: 18px 0 10px; color: var(--nx-navy); }
+.heat-wrap { overflow-x: auto; }
+.heatmap { border-collapse: separate; border-spacing: 3px; }
+.heatmap .heat-name {
+    text-align: right; padding-right: 10px; font-weight: normal;
+    font-size: 13px; white-space: nowrap; color: #333;
+}
+.heat-cell {
+    width: 14px; height: 14px; padding: 0; border-radius: 3px;
+    display: inline-block; box-sizing: border-box;
+}
+/* NXグリーン(#8EC400)を最濃とする薄→濃スケール */
+.heat-cell.lvl-0 { background: #ebedf0; }
+.heat-cell.lvl-1 { background: #e8f3cc; }
+.heat-cell.lvl-2 { background: #cce48c; }
+.heat-cell.lvl-3 { background: #a8d63f; }
+.heat-cell.lvl-4 { background: var(--nx-green); }
+.heatmap td.heat-cell { border: 1px solid rgba(0, 0, 0, .04); }
+.heat-total { padding-left: 10px; font-size: 12px; color: #888; }
+.heat-legend { margin-top: 10px; font-size: 12px; color: #666; display: flex; align-items: center; gap: 3px; }
+.heat-legend .heat-cell { vertical-align: middle; }
+.heat-legend-note { margin-left: 10px; color: #999; }
+
 /* ------------ サブナビ（アンダーライン型タブ） ------------ */
 .subnav {
     margin-bottom: 16px;
