@@ -651,12 +651,6 @@ class SchemaCompatibilityTests(TestCase):
 class LangDetectTests(TestCase):
     """入力テキストの言語自動判定（社内側でのフィールド振り分け用）。"""
 
-    def test_zh_or_other_defaults_to_zh(self):
-        self.assertEqual(_detect_lang("中文文本"), "zh")
-        self.assertEqual(_detect_lang("Hello"), "zh")
-        self.assertEqual(_detect_lang(""), "zh")
-        self.assertEqual(_detect_lang(None), "zh")
-
     def test_hiragana_is_ja(self):
         self.assertEqual(_detect_lang("日本語のテキスト"), "ja")
         self.assertEqual(_detect_lang("これ"), "ja")
@@ -667,18 +661,33 @@ class LangDetectTests(TestCase):
         self.assertEqual(_detect_lang("ハロー"), "ja")
         self.assertEqual(_detect_lang("漢字とカタカナ"), "ja")
 
-    def test_kanji_only_defaults_to_zh(self):
-        # 漢字のみは中文扱い（簡易ヒューリスティック・JA との曖昧性は受け入れ）
-        self.assertEqual(_detect_lang("漢字"), "zh")
-        self.assertEqual(_detect_lang("文書管理"), "zh")
+    def test_simplified_chinese_is_zh(self):
+        # 簡体字専用の字を 1 つでも含めば中文
+        self.assertEqual(_detect_lang("这是中文"), "zh")       # 这
+        self.assertEqual(_detect_lang("维护质量"), "zh")       # 维护质
+        self.assertEqual(_detect_lang("请确认进度"), "zh")     # 请/进
+
+    def test_kanji_only_japanese_is_ja(self):
+        # C-4 是正: かな無し・簡体字専用字なしの漢字のみ日本語は ja に判定する
+        # （旧実装は zh と誤判定し、Mac 側で誤再翻訳していた）
+        self.assertEqual(_detect_lang("漢字"), "ja")
+        self.assertEqual(_detect_lang("文書管理"), "ja")
+        self.assertEqual(_detect_lang("確認中"), "ja")
+        self.assertEqual(_detect_lang("対応完了"), "ja")
+
+    def test_ascii_and_empty_default_to_ja(self):
+        # 共通漢字のみ・英数・空は社内入力前提で ja に倒す
+        self.assertEqual(_detect_lang("Hello"), "ja")
+        self.assertEqual(_detect_lang(""), "ja")
+        self.assertEqual(_detect_lang(None), "ja")
 
 
 class RouteTextTests(TestCase):
     """検出言語に応じて (zh, ja) タプルに振り分け、逆側を空にする。"""
 
     def test_zh_to_primary_clears_ja(self):
-        zh, ja = _route_text("中文内容")
-        self.assertEqual(zh, "中文内容")
+        zh, ja = _route_text("这是中文内容")   # 这 が簡体字専用 → zh
+        self.assertEqual(zh, "这是中文内容")
         self.assertEqual(ja, "")
 
     def test_ja_to_ja_clears_primary(self):
