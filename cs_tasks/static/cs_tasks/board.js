@@ -221,9 +221,27 @@
     }
 
     // Enter で送信 / Shift+Enter で改行（textarea のみ改行可）
+    // 入力キャンセル用: 新規行を取り消して隠す（DBに何も登録しない）
+    function hideNewTask() {
+        document.querySelectorAll(".new-task-row").forEach(function (r) {
+            r.style.display = "none";
+            r.querySelectorAll("input, textarea").forEach(function (f) {
+                if (f.type !== "hidden") f.value = "";
+            });
+        });
+        ntWarn(false);
+    }
+
     document.addEventListener("keydown", function (e) {
         const el = e.target;
         if (!el.classList || !el.classList.contains("add-input")) return;
+        // ESC: 編集セルは元の値に戻して確定しない／新規行は取り消して隠す
+        if (e.key === "Escape") {
+            if (el.closest(".new-task-row")) { hideNewTask(); return; }
+            if (el.dataset.orig !== undefined) el.value = el.dataset.orig;
+            el.blur();   // 戻した後の blur は val===orig なので送信されない
+            return;
+        }
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             const newRow = el.closest(".new-task-row");
@@ -260,6 +278,12 @@
         if (newRow) {
             const next = e.relatedTarget;
             if (next && newRow.contains(next)) return; // 行内移動中
+            // 何も入力されていなければ取り消し（出てきた行を隠す。DB登録なし）
+            const hasVal = Array.prototype.some.call(
+                newRow.querySelectorAll("input, textarea"),
+                function (f) { return f.type !== "hidden" && (f.value || "").trim() !== ""; }
+            );
+            if (!hasVal) { hideNewTask(); return; }
             commitNewTask();
             return;
         }
