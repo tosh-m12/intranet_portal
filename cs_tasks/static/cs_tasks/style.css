@@ -113,6 +113,14 @@
 .cs-board .date-input:focus { outline: none; background: #fff9e6; border-color: #e0c46a; }
 /* カレンダーのアイコンは隠す（クリックで showPicker を呼ぶ） */
 .cs-board .date-input::-webkit-calendar-picker-indicator { display: none; -webkit-appearance: none; }
+/* 未入力(追加行)の日付は mm/dd/yyyy を見せず空欄に見せる（フォーカス時は表示） */
+.cs-board .date-input.is-empty::-webkit-datetime-edit { color: transparent; }
+.cs-board .date-input.is-empty:focus::-webkit-datetime-edit { color: inherit; }
+/* 実施日 未入力のまま確定しようとした時の警告（赤枠） */
+.cs-board .date-input.date-missing {
+    border-color: #e74c3c !important;
+    background: #fdecea;
+}
 
 /* 進捗セル: 上下結合(rowspan)されていても記入日を最下部の右に固定する */
 .cs-board td.col-progress { height: 1px; }   /* 内側 height:100% を実高さに解決させる */

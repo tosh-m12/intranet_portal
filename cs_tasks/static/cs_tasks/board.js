@@ -156,12 +156,33 @@
     // 追加系フォーム（ネイティブ送信）の submit を捕捉して位置を保存
     document.addEventListener("submit", saveScroll);
 
-    // 既存進捗の実施日（カレンダー）変更で即確定。
-    // 追加行(addprog-*, data-ajax なし)の日付は送信せず、進捗本文の確定時に一緒に送る。
+    // 実施日(date-input)の状態管理: 空欄表示クラス・赤枠警告・確定。
+    function setEmpty(el) {
+        if (el && el.classList) el.classList.toggle("is-empty", !el.value);
+    }
+    function warnDate(el, show) {
+        if (el && el.classList) el.classList.toggle("date-missing", !!show);
+    }
+    // 追加行(add_progress)フォームは content(textarea) と execution_date を併せ持つ。
+    // 既存編集(data-ajax)や add_comment(日付なし)は対象外として null を返す。
+    function addProgressDate(form) {
+        if (!form || !form.elements || !form.elements["content"]) return null;
+        return form.elements["execution_date"] || null;
+    }
+
     document.addEventListener("change", function (e) {
         var el = e.target;
-        if (el.classList && el.classList.contains("date-input") && el.form && el.form.dataset.ajax) {
+        if (!(el.classList && el.classList.contains("date-input"))) return;
+        setEmpty(el);
+        if (el.value) warnDate(el, false);
+        if (el.form && el.form.dataset.ajax) {     // 既存進捗の実施日変更 → 即確定
             submitForm(el);
+            return;
+        }
+        // 追加行: 日付が入り、本文も入力済みなら一緒に確定する
+        if (el.value && el.form && el.form.elements) {
+            var ta = el.form.elements["content"];
+            if (ta && ta.value.trim() !== "") submitForm(ta);
         }
     });
 
@@ -177,6 +198,16 @@
         if (!el || !el.form) return;
         if (el.form.dataset.ajax) {          // 編集：その場確定（リロードしない）
             ajaxSubmit(el.form, el);
+            return;
+        }
+        // 進捗追加：実施日が未入力なら確定させず、日付セルを赤枠で警告してカレンダーを開く
+        var dateEl = addProgressDate(el.form);
+        if (dateEl && !dateEl.value) {
+            warnDate(dateEl, true);
+            try {
+                dateEl.focus();
+                if (dateEl.showPicker) dateEl.showPicker();
+            } catch (_) { /* noop */ }
             return;
         }
         if (el.form.requestSubmit) el.form.requestSubmit();  // 追加：リロード（位置は復元）
@@ -308,6 +339,9 @@
         } catch (e) { /* noop */ }
 
         document.querySelectorAll("textarea.add-input").forEach(autoGrow);
+
+        // 実施日の空欄表示クラスを初期化（値ありは通常表示、未入力は mm/dd/yyyy を隠す）
+        document.querySelectorAll(".date-input").forEach(setEmpty);
 
         // ===== ブラウザのオートフィル抑止（顧客名・課題） =====
         // 読み込み時に readonly にしておくとオートフィル対象から外れる。

@@ -204,9 +204,9 @@
                 <tr data-task-id="{{ task.id }}" class="add-progress-row {% if task.is_closed %}task-closed{% endif %}">
                     <td class="col-date">
                         {% if task.can_edit %}
-                        {# 進捗が未入力の行では日付を空欄に。保存時に未指定なら view 側で当日へフォールバック #}
+                        {# 進捗が未入力の行では日付を空欄表示（mm/dd/yyyy を隠す）。確定時に未入力なら赤枠警告 #}
                         <input type="date" form="addprog-{{ task.id }}" name="execution_date"
-                               class="date-input" value="">
+                               class="date-input is-empty" value="">
                         {% endif %}
                     </td>
                     <td class="col-progress">
