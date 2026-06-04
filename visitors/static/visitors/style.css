@@ -15,20 +15,24 @@
 /* ------------ フォント（日中で適切なCJKフォントを当て、中文のチグハグを防ぐ） ------------ */
 /* 既定（日本語）: モダンなゴシック。Noto Sans JP が無い環境は OS 標準にフォールバック。 */
 body {
-    font-family: "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN",
-                 "Yu Gothic UI", "Yu Gothic", "Meiryo", system-ui, -apple-system, sans-serif;
+    /* 日本語優先。中国語名(担当者等)も Noto Sans SC でフォールバックして同じ Noto で統一 */
+    font-family: "Noto Sans JP", "Noto Sans SC", "Hiragino Sans", "Hiragino Kaku Gothic ProN",
+                 "Yu Gothic UI", "Yu Gothic", "Meiryo", "PingFang SC", "Microsoft YaHei",
+                 system-ui, -apple-system, sans-serif;
     margin: 0;
     background-color: #f5f5f5;
     min-height: 100vh;
+    font-size: 16px;                 /* 既定より小さくしない（ボード等は個別に拡大） */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-feature-settings: "palt";   /* 約物の詰めで読みやすく */
     color: #1c1f24;
 }
-/* 中国語表示時は簡体字フォントで統一（和文フォント混在による“チグハグ”を防止） */
+/* 中国語表示時は簡体字フォントを優先（和文混在による“チグハグ”を防止）。JPもフォールバックに残す */
 html[lang^="zh"] body {
-    font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei",
-                 "Hiragino Sans GB", "Source Han Sans SC", system-ui, sans-serif;
+    font-family: "Noto Sans SC", "Noto Sans JP", "PingFang SC", "Microsoft YaHei",
+                 "Hiragino Sans GB", "Source Han Sans SC", "Hiragino Sans",
+                 "Yu Gothic UI", system-ui, sans-serif;
 }
 
 /* ------------ トップバー（横型ナビ） ------------ */
@@ -182,6 +186,48 @@ footer {
     color: #777;
     margin: 20px 0 15px;
 }
+
+/* ------------ ユーザー管理ページ（モダン化。Bootstrap非依存） ------------ */
+.user-admin { max-width: 1000px; }
+.user-admin h2 { font-size: 16px; color: var(--nx-navy); margin: 6px 0 14px; }
+.user-admin .django-messages { list-style: none; padding: 0; margin: 0 0 12px; }
+.user-admin .alert { padding: 9px 13px; border-radius: 8px; margin-bottom: 8px; font-size: 13px; }
+.user-admin .alert-success { background: #e8f5e9; color: #1b5e20; }
+.user-admin .alert-error, .user-admin .alert-danger, .user-admin .alert-warning { background: #fdecea; color: #b71c1c; }
+.user-admin .table {
+    width: 100%; border-collapse: separate; border-spacing: 0; background: #fff;
+    border: 1px solid #e5e8ee; border-radius: 10px; overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
+}
+.user-admin .table thead th {
+    background: var(--nx-navy); color: #fff; font-weight: 600; font-size: 13px;
+    padding: 11px 12px; text-align: left; white-space: nowrap;
+}
+.user-admin .table tbody td { padding: 8px 12px; border-top: 1px solid #eef0f4; vertical-align: middle; }
+.user-admin .table tbody tr:first-child td { border-top: none; }
+.user-admin .table tbody tr:hover td { background: #f7faf0; }
+.user-admin .form-control {
+    width: 100%; padding: 7px 9px; border: 1px solid #d8dde6; border-radius: 6px;
+    font: inherit; box-sizing: border-box; background: #fff;
+}
+.user-admin .form-control:focus {
+    outline: none; border-color: var(--nx-green); box-shadow: 0 0 0 2px rgba(142, 196, 0, .25);
+}
+.user-admin .form-control:disabled { background: #f3f4f6; color: #888; }
+.user-admin .btn {
+    display: inline-block; padding: 6px 12px; border-radius: 6px; font-size: 13px;
+    border: 1px solid transparent; cursor: pointer; text-decoration: none; line-height: 1.4;
+}
+.user-admin .btn-sm { font-size: 12px; padding: 5px 10px; }
+.user-admin .btn-warning { background: #fff3e0; color: #a15c00; border-color: #f0c48a; }
+.user-admin .btn-warning:hover { background: #ffe9c7; }
+.user-admin .btn-danger { background: #fff; color: #c0392b; border-color: #e0b4ae; }
+.user-admin .btn-danger:hover { background: #fdecea; }
+.user-admin .btn-success { background: var(--nx-green); color: #1f2d00; border-color: var(--nx-green); font-weight: 600; }
+.user-admin .btn-success:hover { filter: brightness(.95); }
+.user-admin .d-none { display: none !important; }
+.user-admin .back-link { color: var(--nx-navy); text-decoration: none; font-size: 13px; }
+.user-admin .back-link:hover { text-decoration: underline; }
 
 /* ------------ ホーム: 過去30日間の課題報告状況ヒートマップ ------------ */
 .heat-title { font-size: 16px; margin: 18px 0 10px; color: var(--nx-navy); }

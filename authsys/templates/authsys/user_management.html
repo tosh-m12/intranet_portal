@@ -8,6 +8,7 @@
 {% endblock %}
 
 {% block content %}
+<div class="user-admin">
 
 {% if messages %}
   <ul class="django-messages">
@@ -129,9 +130,11 @@
     </button>
 </div>
 
-<p style="margin-top:10px;">
-    <a href="{% url 'home' %}">{% trans "ホームに戻る" %}</a>
+<p style="margin-top:14px;">
+    <a class="back-link" href="{% url 'home' %}">← {% trans "ホームに戻る" %}</a>
 </p>
+
+</div>{# /.user-admin #}
 
 {# ==== 自動保存 & 行追加用のスクリプト ==== #}
 <script>
