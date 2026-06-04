@@ -18,11 +18,26 @@
   </ul>
 {% endif %}
 
-<h2>{% trans "登録ユーザー一覧" %}</h2>
+<div class="um-header">
+    <h2>{% trans "登録ユーザー一覧" %}</h2>
+    <button type="button" id="add-row-btn" class="btn-link">
+        ＋{% trans "行追加" %}
+    </button>
+</div>
 
-<table class="table table-bordered table-striped">
+<table class="table">
+    <colgroup>
+        <col class="cg-drag">
+        <col class="cg-name">
+        <col class="cg-name">
+        <col class="cg-email">
+        <col class="cg-role">
+        <col class="cg-pw">
+        <col class="cg-actions">
+    </colgroup>
     <thead>
         <tr>
+            <th class="col-drag"></th>
             <th>{% trans "姓" %}</th>
             <th>{% trans "名" %}</th>
             <th>{% trans "メール" %}</th>
@@ -39,6 +54,9 @@
             data-user-id="{{ u.id }}"
             data-is-superuser="{% if u.is_superuser %}1{% else %}0{% endif %}"
             data-is-self="{% if u.id == request.user.id %}1{% else %}0{% endif %}">
+            <td class="col-drag">
+                <span class="drag-handle" draggable="true" title="{% trans 'ドラッグして並び替え' %}" aria-label="{% trans '並び替え' %}">⋮⋮</span>
+            </td>
             <td>
                 <input type="text"
                        class="form-control form-control-sm user-input user-last-name"
@@ -61,7 +79,7 @@
                     <option value="user" {% if not u.is_superuser and not u.is_staff %}selected{% endif %}>{% trans "一般ユーザー" %}</option>
                 </select>
             </td>
-            <td>
+            <td class="col-pw">
                 {% if u.must_change_password %}
                     {% trans "要変更" %}
                 {% else %}
@@ -69,23 +87,24 @@
                 {% endif %}
             </td>
             <td>
-                {# PW再発行ボタン（これは従来通りフォームPOSTでOK） #}
-                <form method="post"
-                      action="{% url 'authsys:reset_user_password' u.id %}"
-                      style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-warning">
-                        {% trans "PW再発行" %}
-                    </button>
-                </form>
+                <div class="row-actions">
+                    {# PW再発行ボタン（これは従来通りフォームPOSTでOK） #}
+                    <form method="post"
+                          action="{% url 'authsys:reset_user_password' u.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-warning">
+                            {% trans "PW再発行" %}
+                        </button>
+                    </form>
 
-                {# 削除ボタン（管理者 & 自分 には表示しない） #}
-                {% if not u.is_superuser and u.id != request.user.id %}
-                    <button type="button"
-                            class="btn btn-sm btn-danger user-delete-btn">
-                        {% trans "削除" %}
-                    </button>
-                {% endif %}
+                    {# 削除ボタン（管理者 & 自分 には表示しない） #}
+                    {% if not u.is_superuser and u.id != request.user.id %}
+                        <button type="button"
+                                class="btn btn-sm btn-danger user-delete-btn">
+                            {% trans "削除" %}
+                        </button>
+                    {% endif %}
+                </div>
             </td>
         </tr>
         {% endfor %}
@@ -95,6 +114,9 @@
             data-user-id=""
             data-is-superuser="0"
             data-is-self="0">
+            <td class="col-drag">
+                <span class="drag-handle" draggable="true" title="{% trans 'ドラッグして並び替え' %}" aria-label="{% trans '並び替え' %}">⋮⋮</span>
+            </td>
             <td>
                 <input type="text"
                        class="form-control form-control-sm user-input user-last-name"
@@ -117,26 +139,19 @@
                     <option value="user" selected>{% trans "一般ユーザー" %}</option>
                 </select>
             </td>
+            <td class="col-pw"></td>
             <td>
-                {# 新規行にはPW再発行ボタン・削除ボタンは最初は無し #}
+                <div class="row-actions">
+                    {# 新規行にはPW再発行ボタン・削除ボタンは最初は無し #}
+                </div>
             </td>
         </tr>
     </tbody>
 </table>
 
-<div style="margin-top: 10px;">
-    <button type="button" id="add-row-btn" class="btn btn-sm btn-success">
-        ＋{% trans "行追加" %}
-    </button>
-</div>
-
-<p style="margin-top:14px;">
-    <a class="back-link" href="{% url 'home' %}">← {% trans "ホームに戻る" %}</a>
-</p>
-
 </div>{# /.user-admin #}
 
-{# ==== 自動保存 & 行追加用のスクリプト ==== #}
+{# ==== 自動保存 & 行追加 & 並び替え用のスクリプト ==== #}
 <script>
 (function() {
     function getCookie(name) {
@@ -157,6 +172,18 @@
     const tbody = document.getElementById("user-table-body");
     const template = document.getElementById("user-row-template");
     const addRowBtn = document.getElementById("add-row-btn");
+
+    function postForm(params) {
+        return fetch(window.location.pathname, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": csrftoken,
+                "X-Requested-With": "XMLHttpRequest",
+            },
+            body: params.toString(),
+        });
+    }
 
     // 行追加ボタン：空の行を増やすだけ
     addRowBtn.addEventListener("click", function() {
@@ -200,15 +227,7 @@
         params.append("email", email);
         params.append("role", role);
 
-        fetch(window.location.pathname, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "X-CSRFToken": csrftoken,
-                "X-Requested-With": "XMLHttpRequest",
-            },
-            body: params.toString(),
-        })
+        postForm(params)
         .then(res => res.json())
         .then(data => {
             if (data.status === "ok") {
@@ -246,15 +265,7 @@
         params.append("action", "delete");
         params.append("user_id", userId);
 
-        fetch(window.location.pathname, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "X-CSRFToken": csrftoken,
-                "X-Requested-With": "XMLHttpRequest",
-            },
-            body: params.toString(),
-        })
+        postForm(params)
         .then(res => res.json())
         .then(data => {
             if (data.status === "ok") {
@@ -267,6 +278,70 @@
             console.error(err);
             alert("通信エラーが発生しました。");
         });
+    });
+
+    // ===== ドラッグ&ドロップ並び替え =====
+    let dragRow = null;
+
+    // 並び替え対象の行（保存済みユーザー・テンプレ以外）を上から取得
+    function orderableRows() {
+        return Array.from(tbody.querySelectorAll(".user-row"))
+            .filter(r => r.id !== "user-row-template" && !r.classList.contains("d-none"));
+    }
+
+    // ドロップ位置（dragRow をどの行の前に入れるか）を求める
+    function rowAfter(y) {
+        const rows = orderableRows().filter(r => r !== dragRow);
+        for (const r of rows) {
+            const box = r.getBoundingClientRect();
+            if (y < box.top + box.height / 2) return r;
+        }
+        return null;
+    }
+
+    // 並び順をサーバーへ保存
+    function persistOrder() {
+        const params = new URLSearchParams();
+        params.append("action", "reorder");
+        orderableRows().forEach(r => {
+            if (r.dataset.userId) params.append("order[]", r.dataset.userId);
+        });
+        postForm(params).catch(err => console.error(err));
+    }
+
+    tbody.addEventListener("dragstart", function(e) {
+        const handle = e.target.closest(".drag-handle");
+        if (!handle) { e.preventDefault(); return; }
+        dragRow = handle.closest(".user-row");
+        dragRow.classList.add("dragging");
+        e.dataTransfer.effectAllowed = "move";
+        // Firefox はデータ未設定だと dragstart が成立しない
+        try { e.dataTransfer.setData("text/plain", ""); } catch (_) {}
+    });
+
+    tbody.addEventListener("dragover", function(e) {
+        if (!dragRow) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        const ref = rowAfter(e.clientY);
+        if (ref == null) {
+            // 末尾（ただしテンプレ行の前に置く）
+            tbody.insertBefore(dragRow, template);
+        } else {
+            tbody.insertBefore(dragRow, ref);
+        }
+    });
+
+    tbody.addEventListener("drop", function(e) {
+        if (!dragRow) return;
+        e.preventDefault();
+    });
+
+    tbody.addEventListener("dragend", function() {
+        if (!dragRow) return;
+        dragRow.classList.remove("dragging");
+        dragRow = null;
+        persistOrder();
     });
 })();
 </script>

@@ -100,7 +100,13 @@ def user_management(request):
             role = request.POST.get("role", "user")
             user.is_staff = (role == "admin")
             user.must_change_password = True
-            user.save(update_fields=["must_change_password", "is_staff"])
+            # 新規ユーザーは一覧の末尾に配置
+            from django.db.models import Max
+            max_order = User.objects.filter(is_superuser=False).aggregate(
+                m=Max("display_order")
+            )["m"] or 0
+            user.display_order = max_order + 1
+            user.save(update_fields=["must_change_password", "is_staff", "display_order"])
 
             subject = "【社内ポータル】アカウントが作成されました"
             message = (
@@ -119,9 +125,30 @@ def user_management(request):
             messages.success(request, f"{last_name} {first_name} さんを新規登録しました。")
             return redirect("authsys:user_management")
 
+        # ④ 並び替え（ドラッグ&ドロップ）。order[] にユーザーIDを表示順で受け取る
+        elif action == "reorder":
+            ids = request.POST.getlist("order[]") or request.POST.getlist("order")
+            # 受け取った順に display_order を 1 から振り直す（superuser は対象外）
+            valid_ids = set(
+                User.objects.filter(is_superuser=False).values_list("id", flat=True)
+            )
+            for index, uid in enumerate(ids, start=1):
+                try:
+                    pk = int(uid)
+                except (TypeError, ValueError):
+                    continue
+                if pk in valid_ids:
+                    User.objects.filter(pk=pk).update(display_order=index)
+
+            if is_ajax:
+                return JsonResponse({"status": "ok"})
+            return redirect("authsys:user_management")
+
     # GET / 再表示
     # superuser はこの画面の管理対象外（Django admin 等で別管理）。
-    users = User.objects.filter(is_superuser=False).order_by("last_name", "first_name")
+    users = User.objects.filter(is_superuser=False).order_by(
+        "display_order", "last_name", "first_name"
+    )
     return render(request, "authsys/user_management.html", {"users": users})
 
 
