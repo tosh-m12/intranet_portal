@@ -188,46 +188,84 @@ footer {
 }
 
 /* ------------ ユーザー管理ページ（モダン化。Bootstrap非依存） ------------ */
-.user-admin { max-width: 1000px; }
-.user-admin h2 { font-size: 16px; color: var(--nx-navy); margin: 6px 0 14px; }
+.user-admin { max-width: 960px; }
 .user-admin .django-messages { list-style: none; padding: 0; margin: 0 0 12px; }
 .user-admin .alert { padding: 9px 13px; border-radius: 8px; margin-bottom: 8px; font-size: 13px; }
 .user-admin .alert-success { background: #e8f5e9; color: #1b5e20; }
 .user-admin .alert-error, .user-admin .alert-danger, .user-admin .alert-warning { background: #fdecea; color: #b71c1c; }
+
+/* 見出し＋「＋行追加」を表の右上に配置 */
+.user-admin .um-header {
+    display: flex; align-items: center; justify-content: space-between; margin: 6px 0 12px;
+}
+.user-admin .um-header h2 { font-size: 16px; color: var(--nx-navy); margin: 0; }
+
+/* 表：外枠の角は直角（Radiusなし）。レイアウト固定で列幅を厳密に制御 */
 .user-admin .table {
-    width: 100%; border-collapse: separate; border-spacing: 0; background: #fff;
-    border: 1px solid #e5e8ee; border-radius: 10px; overflow: hidden;
+    width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0;
+    background: #fff; border: 1px solid #e5e8ee; border-radius: 0;
     box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
 }
+.user-admin .table .cg-drag { width: 34px; }
+.user-admin .table .cg-name { width: 84px; }
+.user-admin .table .cg-email { width: 330px; }
+.user-admin .table .cg-role { width: 150px; }
+.user-admin .table .cg-pw { width: 70px; }
+.user-admin .table .cg-actions { width: 168px; }
 .user-admin .table thead th {
     background: var(--nx-navy); color: #fff; font-weight: 600; font-size: 13px;
     padding: 11px 12px; text-align: left; white-space: nowrap;
 }
-.user-admin .table tbody td { padding: 8px 12px; border-top: 1px solid #eef0f4; vertical-align: middle; }
+.user-admin .table tbody td {
+    padding: 6px 10px; border-top: 1px solid #eef0f4; vertical-align: middle;
+    white-space: nowrap; overflow: hidden;
+}
 .user-admin .table tbody tr:first-child td { border-top: none; }
 .user-admin .table tbody tr:hover td { background: #f7faf0; }
+.user-admin .col-pw { text-align: center; color: #555; font-size: 12px; }
+
+/* 入力欄・ドロップダウンは枠なし（ホバー/フォーカスでのみ背景・リング） */
 .user-admin .form-control {
-    width: 100%; padding: 7px 9px; border: 1px solid #d8dde6; border-radius: 6px;
-    font: inherit; box-sizing: border-box; background: #fff;
+    width: 100%; padding: 6px 7px; border: 1px solid transparent; border-radius: 6px;
+    font: inherit; box-sizing: border-box; background: transparent; color: inherit;
+    text-overflow: ellipsis;
 }
+.user-admin .form-control:hover { background: #f2f4f7; }
 .user-admin .form-control:focus {
-    outline: none; border-color: var(--nx-green); box-shadow: 0 0 0 2px rgba(142, 196, 0, .25);
+    outline: none; background: #fff; border-color: var(--nx-green);
+    box-shadow: 0 0 0 2px rgba(142, 196, 0, .25);
 }
-.user-admin .form-control:disabled { background: #f3f4f6; color: #888; }
+.user-admin select.form-control {
+    -webkit-appearance: none; appearance: none; cursor: pointer; padding-right: 22px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%238a93a3' stroke-width='1.4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 7px center;
+}
+.user-admin .form-control:disabled { background: transparent; color: #999; cursor: default; }
+
+/* 操作ボタンは横一列 */
+.user-admin .row-actions { display: flex; flex-wrap: nowrap; gap: 6px; align-items: center; }
+.user-admin .row-actions form { margin: 0; display: inline-flex; }
 .user-admin .btn {
-    display: inline-block; padding: 6px 12px; border-radius: 6px; font-size: 13px;
+    display: inline-block; padding: 5px 10px; border-radius: 6px; font-size: 12px;
     border: 1px solid transparent; cursor: pointer; text-decoration: none; line-height: 1.4;
+    white-space: nowrap;
 }
-.user-admin .btn-sm { font-size: 12px; padding: 5px 10px; }
 .user-admin .btn-warning { background: #fff3e0; color: #a15c00; border-color: #f0c48a; }
 .user-admin .btn-warning:hover { background: #ffe9c7; }
 .user-admin .btn-danger { background: #fff; color: #c0392b; border-color: #e0b4ae; }
 .user-admin .btn-danger:hover { background: #fdecea; }
-.user-admin .btn-success { background: var(--nx-green); color: #1f2d00; border-color: var(--nx-green); font-weight: 600; }
-.user-admin .btn-success:hover { filter: brightness(.95); }
 .user-admin .d-none { display: none !important; }
-.user-admin .back-link { color: var(--nx-navy); text-decoration: none; font-size: 13px; }
-.user-admin .back-link:hover { text-decoration: underline; }
+
+/* ドラッグハンドル */
+.user-admin .col-drag { text-align: center; padding-left: 4px; padding-right: 4px; }
+.user-admin .drag-handle {
+    display: inline-block; color: #b5bcc7; cursor: grab; letter-spacing: -3px;
+    font-size: 14px; line-height: 1; user-select: none; padding: 2px 4px;
+}
+.user-admin .drag-handle:hover { color: var(--nx-navy); }
+.user-admin .drag-handle:active { cursor: grabbing; }
+.user-admin tr.dragging { opacity: .45; }
+.user-admin tr.dragging td { background: #eef3fb; }
 
 /* ------------ ホーム: 過去30日間の課題報告状況ヒートマップ ------------ */
 .heat-title { font-size: 16px; margin: 18px 0 10px; color: var(--nx-navy); }

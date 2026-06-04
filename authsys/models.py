@@ -54,6 +54,10 @@ class User(AbstractUser):
         default=False,
     )
 
+    # ユーザー管理画面でのドラッグ&ドロップ表示順（小さいほど上）。
+    # 0 のままなら氏名順にフォールバックする。
+    display_order = models.PositiveIntegerField('表示順', default=0)
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
