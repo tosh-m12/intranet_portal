@@ -89,6 +89,8 @@
     color: #c0392b;
     font-weight: bold;
 }
+/* 空欄の「＋コメントを追加」プレースホルダは太字にしない（通常のグレー） */
+.cs-board td.col-comment .add-input::placeholder { color: #aaa; font-weight: normal; }
 
 /* 課題タイトル直下の詳細（細め・やや薄い） */
 .cs-board .task-desc-input {
