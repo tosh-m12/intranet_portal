@@ -279,6 +279,9 @@ class BridgeProcessedOperation(models.Model):
     op_id = models.CharField(verbose_name="操作ID", max_length=128, unique=True)
     action = models.CharField(verbose_name="操作種別", max_length=40)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="適用日時")
+    # add_task が生成した Task の id を記録（後続 op の task_ref 解決に使う。
+    # 別メールで先に課題追加→後から進捗追加が来ても実IDに紐付けられる）
+    result_task_id = models.IntegerField(verbose_name="生成課題ID", null=True, blank=True)
 
     class Meta:
         verbose_name = "ブリッジ処理済み操作"

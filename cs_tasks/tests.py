@@ -336,6 +336,38 @@ class InboundApplyTests(TestCase):
         self.assertEqual(t.title_ja, "新規課題")
         self.assertEqual(t.owner, self.boss)
 
+    def test_add_progress_via_task_ref_same_payload(self):
+        # 同一メール内で「課題追加→その課題に進捗追加」をチェーン（未送信新規課題向け）
+        res = self._apply([
+            {"op_id": "t-1", "action": "add_task",
+             "fields": {"title_zh": "新任务", "title_ja": "新課題", "client_name": "C"}},
+            {"op_id": "p-1", "action": "add_progress", "task_ref": "t-1",
+             "content_zh": "已开始", "content_ja": "着手しました"},
+        ])
+        self.assertTrue(res["ok"])
+        self.assertEqual(res["applied"], ["t-1", "p-1"])
+        t = Task.objects.get(title="新任务")
+        p = ProgressUpdate.objects.get(task=t)
+        self.assertEqual(p.content, "已开始")
+        self.assertEqual(p.content_ja, "着手しました")
+
+    def test_add_progress_via_task_ref_cross_payload(self):
+        # 別メールで先に課題追加→後から task_ref で進捗追加（result_task_id 永続解決）
+        r1 = self._apply(
+            [{"op_id": "t-2", "action": "add_task",
+              "fields": {"title_zh": "任务X", "title_ja": "課題X"}}],
+            nonce="n-a",
+        )
+        self.assertEqual(r1["applied"], ["t-2"])
+        r2 = self._apply(
+            [{"op_id": "p-2", "action": "add_progress", "task_ref": "t-2",
+              "content_zh": "继续", "content_ja": "継続"}],
+            nonce="n-b",
+        )
+        self.assertEqual(r2["applied"], ["p-2"])
+        t = Task.objects.get(title="任务X")
+        self.assertEqual(ProgressUpdate.objects.get(task=t).content_ja, "継続")
+
     def test_add_task_without_title_is_error(self):
         res = self._apply(
             [{"op_id": "op-5", "action": "add_task", "fields": {"client_name": "X"}}]
