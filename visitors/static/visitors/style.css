@@ -172,17 +172,23 @@ footer {
     margin: 20px 0 15px;
 }
 
-/* ------------ ホーム: 担当者別 入力状況ヒートマップ ------------ */
+/* ------------ ホーム: 過去30日間の課題報告状況ヒートマップ ------------ */
 .heat-title { font-size: 16px; margin: 18px 0 10px; color: var(--nx-navy); }
 .heat-wrap { overflow-x: auto; }
-.heatmap { border-collapse: separate; border-spacing: 3px; }
-.heatmap .heat-name {
-    text-align: right; padding-right: 10px; font-weight: normal;
-    font-size: 13px; white-space: nowrap; color: #333;
+.heatmap { display: inline-block; }
+.heat-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.heat-name {
+    flex: 0 0 120px; width: 120px; text-align: left;
+    font-size: 13px; color: #333; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+}
+.heat-date {
+    flex: 0 0 20px; width: 20px; text-align: center;
+    font-size: 10px; color: #999; white-space: nowrap;
 }
 .heat-cell {
-    width: 14px; height: 14px; padding: 0; border-radius: 3px;
-    display: inline-block; box-sizing: border-box;
+    flex: 0 0 20px; width: 20px; height: 20px;
+    border-radius: 4px; box-sizing: border-box;
 }
 /* NXグリーン(#8EC400)を最濃とする薄→濃スケール */
 .heat-cell.lvl-0 { background: #ebedf0; }
@@ -190,11 +196,10 @@ footer {
 .heat-cell.lvl-2 { background: #cce48c; }
 .heat-cell.lvl-3 { background: #a8d63f; }
 .heat-cell.lvl-4 { background: var(--nx-green); }
-.heatmap td.heat-cell { border: 1px solid rgba(0, 0, 0, .04); }
-.heat-total { padding-left: 10px; font-size: 12px; color: #888; }
-.heat-legend { margin-top: 10px; font-size: 12px; color: #666; display: flex; align-items: center; gap: 3px; }
-.heat-legend .heat-cell { vertical-align: middle; }
-.heat-legend-note { margin-left: 10px; color: #999; }
+.heat-total { flex: 0 0 auto; margin-left: 8px; min-width: 28px; font-size: 12px; color: #888; }
+.heat-head .heat-total { color: #999; }
+.heat-legend { margin-top: 10px; font-size: 12px; color: #666; display: flex; align-items: center; gap: 4px; }
+.heat-legend .heat-cell { flex: 0 0 16px; width: 16px; height: 16px; }
 
 /* ------------ サブナビ（アンダーライン型タブ） ------------ */
 .subnav {

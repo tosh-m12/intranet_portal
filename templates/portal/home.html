@@ -16,28 +16,28 @@
     {% endif %}
 </p>
 
-{# ===== 担当者別 入力状況ヒートマップ（過去30日・区分横断トータル） ===== #}
-<h2 class="heat-title">{% trans "担当者別 入力状況" %}（{{ heat_start|date:"n/j" }}〜{{ heat_end|date:"n/j" }}）</h2>
+{# ===== 過去30日間の課題報告状況（進捗の入力件数。全ユーザー、Superuser除く） ===== #}
+<h2 class="heat-title">{% trans "過去30日間の課題報告状況" %}</h2>
 {% if heat_rows %}
 <div class="heat-wrap">
-    <table class="heatmap">
-        <tbody>
+    <div class="heatmap">
+        <div class="heat-row heat-head">
+            <div class="heat-name"></div>
+            {% for d in heat_days %}<div class="heat-date">{{ d|date:"n/j" }}</div>{% endfor %}
+            <div class="heat-total">{% trans "計" %}</div>
+        </div>
         {% for row in heat_rows %}
-            <tr>
-                <th class="heat-name">{{ row.name }}</th>
-                {% for c in row.cells %}
-                    <td class="heat-cell lvl-{{ c.lvl }}" title="{{ c.date|date:'Y/n/j' }}：{{ c.n }}件"></td>
-                {% endfor %}
-                <td class="heat-total">{{ row.total }}</td>
-            </tr>
+        <div class="heat-row">
+            <div class="heat-name">{{ row.name }}</div>
+            {% for c in row.cells %}<div class="heat-cell lvl-{{ c.lvl }}" title="{{ c.date|date:'Y/n/j' }}：{{ c.n }}件"></div>{% endfor %}
+            <div class="heat-total">{{ row.total }}</div>
+        </div>
         {% endfor %}
-        </tbody>
-    </table>
+    </div>
     <div class="heat-legend">
         {% trans "少" %}
         <span class="heat-cell lvl-0"></span><span class="heat-cell lvl-1"></span><span class="heat-cell lvl-2"></span><span class="heat-cell lvl-3"></span><span class="heat-cell lvl-4"></span>
         {% trans "多" %}
-        <span class="heat-legend-note">{% trans "進捗・上長コメントの入力件数（区分問わず合計）" %}</span>
     </div>
 </div>
 {% else %}
