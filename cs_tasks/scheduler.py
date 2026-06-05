@@ -125,6 +125,29 @@ def _auto_deploy_check():
     threading.Thread(target=_exit_soon, daemon=True).start()
 
 
+# 過去分 [CS-WB] の一括掃除を「初回1回だけ」実行するための永続フラグ。
+# プロジェクト直下にファイルを置く（git pull では消えないので再デプロイ後も再実行しない）。
+_PURGE_DONE_FILENAME = ".cs_wb_purge_done"
+
+
+def _run_inbound_purge_once():
+    """受信箱の過去分 [CS-WB] を初回1回だけ一括削除する（成功するまで毎ループ再試行）。"""
+    flag = os.path.join(_project_root(), _PURGE_DONE_FILENAME)
+    if os.path.exists(flag):
+        return
+    try:
+        print("### [CSBRIDGE_SCHED] running cs_inbound_purge (one-time)")
+        call_command("cs_inbound_purge")
+    except Exception:
+        logger.exception("[CSBRIDGE_SCHED] cs_inbound_purge failed（次回再試行）")
+        return  # 失敗時はフラグを立てない＝次ループで再試行
+    try:
+        with open(flag, "w", encoding="utf-8") as f:
+            f.write("done")
+    except Exception:
+        logger.exception("[CSBRIDGE_SCHED] purge 完了フラグの書き込み失敗")
+
+
 def _scheduler_loop():
     """
     60秒ごとに tick し、
@@ -196,6 +219,8 @@ def _scheduler_loop():
                 finally:
                     _last_sync_at = mono
             if _last_inbound_at is None or (mono - _last_inbound_at) >= _BRIDGE_INTERVAL_SEC:
+                # 過去分 [CS-WB] の一括掃除（初回1回だけ。永続フラグで再実行しない）
+                _run_inbound_purge_once()
                 try:
                     print("### [CSBRIDGE_SCHED] running cs_inbound_poll")
                     call_command("cs_inbound_poll")
