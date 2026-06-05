@@ -262,8 +262,13 @@ class WeeklyReportConfig(models.Model):
 # 翻訳ブリッジ: 復路(Mac→社内)受信処理の冪等性・リプレイ防止
 # =========================================================
 class BridgeProcessedMessage(models.Model):
-    """処理済みの書き戻しメール(nonce単位)。同一メールの再適用を防ぐ。"""
+    """処理済みの書き戻しメール(nonce単位)。同一メールの再適用を防ぐ。
+
+    監査用に受信した [CS-WB] 本文原文と差出人も保存する（メール削除後も追跡可能に）。
+    """
     nonce = models.CharField(verbose_name="メッセージnonce", max_length=128, unique=True)
+    sender = models.CharField(verbose_name="差出人", max_length=320, blank=True, default="")
+    raw_body = models.TextField(verbose_name="受信本文(原文)", blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="処理日時")
 
     class Meta:

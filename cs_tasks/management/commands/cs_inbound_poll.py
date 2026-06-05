@@ -61,6 +61,7 @@ class Command(BaseCommand):
             server = imaplib.IMAP4(host, port)
 
         processed = 0
+        deleted = 0
         try:
             server.login(user, password)
             server.select(mailbox)
@@ -69,6 +70,7 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.ERROR("IMAP search に失敗。"))
                 return
 
+            to_delete = []   # 成功処理したメール（原文は inbound 側で DB 保存済み）
             for num in data[0].split():
                 typ, msg_data = server.fetch(num, "(RFC822)")
                 if typ != "OK":
@@ -79,7 +81,9 @@ class Command(BaseCommand):
 
                 result = inbound.apply_writeback_text(body, sender=sender)
                 if result.get("ok"):
-                    server.store(num, "+FLAGS", "\\Seen")
+                    # 成功 = 受信本文は BridgeProcessedMessage に保存済み。メールは削除して
+                    # 受信箱の溜まり込みを防ぐ（重複防止は nonce/op_id で DB 管理、機能影響なし）。
+                    to_delete.append(num)
                     processed += 1
                     self.stdout.write(
                         self.style.SUCCESS(
@@ -89,14 +93,21 @@ class Command(BaseCommand):
                         )
                     )
                 else:
-                    # 検証失敗は既読にせず残す(誤判定時の手動確認のため)
+                    # 検証失敗・拒否は削除せず残す(誤判定時の手動確認のため。既読化もしない)
                     self.stdout.write(
                         self.style.ERROR(f"拒否: {result.get('reason')} from={sender!r}")
                     )
+
+            # 成功分をまとめて削除（\Deleted を付けてから一度だけ expunge）
+            if to_delete:
+                for num in to_delete:
+                    server.store(num, "+FLAGS", "\\Deleted")
+                server.expunge()
+                deleted = len(to_delete)
         finally:
             try:
                 server.logout()
             except Exception:
                 pass
 
-        self.stdout.write(self.style.SUCCESS(f"処理メール数: {processed}"))
+        self.stdout.write(self.style.SUCCESS(f"処理メール数: {processed} / 削除: {deleted}"))
