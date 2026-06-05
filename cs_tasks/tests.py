@@ -433,6 +433,10 @@ class InboundApplyTests(TestCase):
         res = inbound.apply_writeback_text(text, sender=SENDER)
         self.assertTrue(res["ok"])
         self.assertEqual(SupervisorComment.objects.get().content_ja, "本文")
+        # 監査用に受信本文原文と差出人が保存される（メール削除後も追跡可能）
+        rec = BridgeProcessedMessage.objects.get(nonce="e2e-nonce")
+        self.assertEqual(rec.raw_body, text)
+        self.assertEqual(rec.sender, SENDER)
 
 
 class ViewChildEditPropagationTests(TestCase):

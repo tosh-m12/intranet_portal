@@ -215,8 +215,12 @@ def _apply_op(op, author, created_map=None):
         # 対象が無くても黙って no-op。op_id 冪等で重複適用は防がれる。
 
 
-def apply_writeback(payload, signature, sender=None):
-    """検証済みの書き戻しを適用する。結果サマリ(dict)を返す。"""
+def apply_writeback(payload, signature, sender=None, raw_text=None):
+    """検証済みの書き戻しを適用する。結果サマリ(dict)を返す。
+
+    raw_text を渡すと、監査用に受信本文原文を BridgeProcessedMessage に保存する
+    （社内側はメール削除運用のため、原文を DB に残して追跡できるようにする）。
+    """
     result = {
         "ok": False,
         "reason": "",
@@ -286,8 +290,10 @@ def apply_writeback(payload, signature, sender=None):
             continue
         result["applied"].append(op_id)
 
-    # メールを処理済みとして記録(以後この nonce は再適用しない)
-    m.BridgeProcessedMessage.objects.create(nonce=nonce)
+    # メールを処理済みとして記録(以後この nonce は再適用しない)。原文も監査用に保存。
+    m.BridgeProcessedMessage.objects.create(
+        nonce=nonce, sender=sender or "", raw_body=raw_text or ""
+    )
 
     result["ok"] = True
     return result
@@ -296,4 +302,4 @@ def apply_writeback(payload, signature, sender=None):
 def apply_writeback_text(raw_text, sender=None):
     """メール本文テキストから payload/署名を抽出して適用する。"""
     payload, signature = pl.extract_writeback(raw_text)
-    return apply_writeback(payload, signature, sender=sender)
+    return apply_writeback(payload, signature, sender=sender, raw_text=raw_text)
