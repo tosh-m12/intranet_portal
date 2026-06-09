@@ -1,5 +1,6 @@
 # meetings/forms.py
 from django import forms
+from django.utils.translation import gettext_lazy as _l
 
 TIME_CHOICES = [('', '---------')] + [
     (f'{h:02}:{m:02}', f'{h:02}:{m:02}') for h in range(0, 24) for m in (0, 15, 30, 45)
@@ -7,7 +8,7 @@ TIME_CHOICES = [('', '---------')] + [
 
 class MeetingForm(forms.Form):
     visit_date = forms.DateField(
-        label='訪問日',
+        label=_l('訪問日'),
         required=False,
         widget=forms.DateInput(
             attrs={
@@ -18,7 +19,7 @@ class MeetingForm(forms.Form):
         )
     )
     visit_time = forms.TimeField(
-        label='訪問時間',
+        label=_l('訪問時間'),
         required=False,
         widget=forms.Select(
             choices=TIME_CHOICES,
@@ -29,15 +30,15 @@ class MeetingForm(forms.Form):
         )
     )
     time_undecided = forms.BooleanField(
-        label='時間未定', required=False
+        label=_l('時間未定'), required=False
     )
-    company_name = forms.CharField(label='会社名', required=False)
-    last_name = forms.CharField(label='姓', required=False)
-    first_name = forms.CharField(label='名', required=False)
-    title = forms.CharField(label='役職', required=False)
-    purpose = forms.CharField(label='目的', required=False)
-    location = forms.CharField(label='場所', required=False)
-    host_staff = forms.CharField(label='担当者', required=False)
+    company_name = forms.CharField(label=_l('会社名'), required=False)
+    last_name = forms.CharField(label=_l('姓'), required=False)
+    first_name = forms.CharField(label=_l('名'), required=False)
+    title = forms.CharField(label=_l('役職'), required=False)
+    purpose = forms.CharField(label=_l('目的'), required=False)
+    location = forms.CharField(label=_l('場所'), required=False)
+    host_staff = forms.CharField(label=_l('担当者'), required=False)
 
     def clean(self):
         cleaned = super().clean()

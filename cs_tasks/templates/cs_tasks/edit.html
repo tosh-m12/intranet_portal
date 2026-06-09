@@ -1,9 +1,10 @@
 {% extends "portal/base.html" %}
+{% load i18n %}
 
-{% block title %}課題編集 - 社内ポータル{% endblock %}
+{% block title %}{% trans "課題編集 - 社内ポータル" %}{% endblock %}
 
 {% block app_name %}
-<h1><svg class="ic"><use href="#ic-clipboard"/></svg> CS課題管理</h1>
+<h1><svg class="ic"><use href="#ic-clipboard"/></svg> {% trans "CS課題管理" %}</h1>
 {% endblock %}
 
 {% block subnav %}
@@ -11,7 +12,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="page-header"><h2><svg class="ic"><use href="#ic-edit"/></svg> 課題を編集</h2></div>
+<div class="page-header"><h2><svg class="ic"><use href="#ic-edit"/></svg> {% trans "課題を編集" %}</h2></div>
 
 <form method="post" class="cs-form">
     {% csrf_token %}
@@ -23,8 +24,8 @@
     </div>
     {% endfor %}
     <div class="form-action-buttons">
-        <a class="btn btn-secondary" href="{% url 'cs_tasks:index' %}">キャンセル</a>
-        <button type="submit" class="btn btn-primary">更新</button>
+        <a class="btn btn-secondary" href="{% url 'cs_tasks:index' %}">{% trans "キャンセル" %}</a>
+        <button type="submit" class="btn btn-primary">{% trans "更新" %}</button>
     </div>
 </form>
 {% endblock %}

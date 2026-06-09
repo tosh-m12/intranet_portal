@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-26 12:34+0800\n"
+"POT-Creation-Date: 2026-06-09 17:17+0800\n"
 "PO-Revision-Date: 2025-07-23 23:45+0800\n"
 "Last-Translator: TMurayama <example@example.com>\n"
 "Language-Team: Chinese Simplified\n"
@@ -53,7 +53,6 @@ msgid "パスワードの変更が完了しました。"
 msgstr "密码修改已完成。"
 
 #: authsys/templates/authsys/password_change_done.html:12
-#: authsys/templates/authsys/user_management.html:133
 msgid "ホームに戻る"
 msgstr "返回主页"
 
@@ -63,10 +62,8 @@ msgid "パスワード再発行"
 msgstr "重新发放密码"
 
 #: authsys/templates/authsys/reset_password.html:11
-msgid ""
-"登録済みの社内メールアドレスを入力してください。新しいパスワードをメールで送"
-"信します。"
-msgstr ""
+msgid "登録済みの社内メールアドレスを入力してください。新しいパスワードをメールで送信します。"
+msgstr "请输入已注册的公司邮箱地址。新密码将通过邮件发送。"
 
 #: authsys/templates/authsys/reset_password.html:21
 msgid "送信"
@@ -78,65 +75,79 @@ msgstr "返回登录画面"
 
 #: authsys/templates/authsys/user_management.html:4
 #: authsys/templates/authsys/user_management.html:7
-#: templates/portal/base.html:50
+#: templates/portal/base.html:60
 msgid "ユーザー管理"
 msgstr "用户管理"
 
-#: authsys/templates/authsys/user_management.html:20
+#: authsys/templates/authsys/user_management.html:22
 msgid "登録ユーザー一覧"
 msgstr "注册用户一览"
 
-#: authsys/templates/authsys/user_management.html:25
+#: authsys/templates/authsys/user_management.html:24
+msgid "行追加"
+msgstr "添加行"
+
+#: authsys/templates/authsys/user_management.html:41
 #: meetings/templates/meetings/add.html:35
 #: visitors/templates/visitors/add.html:34
 msgid "姓"
 msgstr "姓"
 
-#: authsys/templates/authsys/user_management.html:26
+#: authsys/templates/authsys/user_management.html:42
 #: meetings/templates/meetings/add.html:36
 #: visitors/templates/visitors/add.html:35
 msgid "名"
 msgstr "名"
 
-#: authsys/templates/authsys/user_management.html:27
+#: authsys/templates/authsys/user_management.html:43
 msgid "メール"
 msgstr "邮箱"
 
-#: authsys/templates/authsys/user_management.html:28
+#: authsys/templates/authsys/user_management.html:44
 msgid "権限"
 msgstr "权限"
 
-#: authsys/templates/authsys/user_management.html:29
+#: authsys/templates/authsys/user_management.html:45
 msgid "初回PW"
 msgstr "初始密码"
 
-#: authsys/templates/authsys/user_management.html:30
+#: authsys/templates/authsys/user_management.html:46
 msgid "操作"
 msgstr "操作"
 
 #: authsys/templates/authsys/user_management.html:58
+#: authsys/templates/authsys/user_management.html:118
+msgid "ドラッグして並び替え"
+msgstr "拖动以排序"
+
+#: authsys/templates/authsys/user_management.html:58
+#: authsys/templates/authsys/user_management.html:118
+msgid "並び替え"
+msgstr "排序"
+
+#: authsys/templates/authsys/user_management.html:77
 msgid "スーパーユーザーの権限は変更できません"
 msgstr "无法更改超级用户的权限"
 
-#: authsys/templates/authsys/user_management.html:59
-#: authsys/templates/authsys/user_management.html:115
+#: authsys/templates/authsys/user_management.html:78
+#: authsys/templates/authsys/user_management.html:138
 msgid "管理者"
 msgstr "管理员"
 
-#: authsys/templates/authsys/user_management.html:60
-#: authsys/templates/authsys/user_management.html:116
+#: authsys/templates/authsys/user_management.html:79
+#: authsys/templates/authsys/user_management.html:139
 msgid "一般ユーザー"
 msgstr "普通用户"
 
-#: authsys/templates/authsys/user_management.html:65
+#: authsys/templates/authsys/user_management.html:84
 msgid "要変更"
 msgstr "需修改"
 
-#: authsys/templates/authsys/user_management.html:77
+#: authsys/templates/authsys/user_management.html:96
 msgid "PW再発行"
 msgstr "重发密码"
 
-#: authsys/templates/authsys/user_management.html:85
+#: authsys/templates/authsys/user_management.html:104
 #: cs_tasks/templates/cs_tasks/mailing_list.html:48
 #: meetings/templates/meetings/settings.html:71
 #: meetings/templates/meetings/settings.html:76
@@ -147,41 +158,111 @@ msgstr "重发密码"
 msgid "削除"
 msgstr "删除"
 
-#: authsys/templates/authsys/user_management.html:111
+#: authsys/templates/authsys/user_management.html:134
 #: cs_tasks/templates/cs_tasks/mailing_list.html:21
 #: cs_tasks/templates/cs_tasks/mailing_list.html:27
 msgid "メールアドレス"
 msgstr "邮箱地址"
 
-#: authsys/templates/authsys/user_management.html:128
-msgid "行追加"
-msgstr "添加行"
+#: authsys/views.py:58
+#, python-format
+msgid "%(name)s さんを更新しました。"
+msgstr "已更新 %(name)s。"
+
+#: authsys/views.py:67
+msgid "管理者または自身のアカウントは削除できません。"
+msgstr "无法删除管理员或自己的账户。"
+
+#: authsys/views.py:75
+msgid "ユーザーを削除しました。"
+msgstr "已删除用户。"
+
+#: authsys/views.py:86
+#| msgid "メールアドレス"
+msgid "メールアドレスは必須です。"
+msgstr "邮箱地址为必填项。"
+
+#: authsys/views.py:126
+#, python-format
+msgid "%(name)s さんを新規登録しました。"
+msgstr "已新建 %(name)s。"
+
+#: authsys/views.py:196
+#, python-format
+#| msgid "パスワードの変更が完了しました。"
+msgid "%(name)s さんのパスワードを再発行しました。"
+msgstr "已重置 %(name)s 的密码。"
+
+#: authsys/views.py:219
+#| msgid "パスワードの変更が完了しました。"
+msgid "パスワード再設定用のメールを送信しました。"
+msgstr "已发送密码重置邮件。"
+
+#: authsys/views.py:247
+#| msgid "パスワードの変更が完了しました。"
+msgid "パスワード再発行メールを送信しました。"
+msgstr "已发送密码补发邮件。"
 
 #: cs_tasks/templates/cs_tasks/_subnav.html:6
-msgid "全課題一覧"
-msgstr "全部课题一览"
+msgid "クレーム・インシデント (Bad News First)"
+msgstr "投诉・事故 (Bad News First)"
 
 #: cs_tasks/templates/cs_tasks/_subnav.html:10
+msgid "既存顧客課題"
+msgstr "现有客户课题"
+
+#: cs_tasks/templates/cs_tasks/_subnav.html:14
+msgid "新規顧客課題"
+msgstr "新客户课题"
+
+#: cs_tasks/templates/cs_tasks/_subnav.html:18
+msgid "部内課題"
+msgstr "部门内部课题"
+
+#: cs_tasks/templates/cs_tasks/_subnav.html:22
 msgid "自分の担当"
 msgstr "我的负责"
 
-#: cs_tasks/templates/cs_tasks/_subnav.html:16
+#: cs_tasks/templates/cs_tasks/_subnav.html:28
 #: meetings/templates/meetings/settings.html:64
 #: visitors/templates/visitors/settings.html:63
 msgid "メーリングリスト"
 msgstr "邮件列表"
 
-#: cs_tasks/templates/cs_tasks/_subnav.html:20
+#: cs_tasks/templates/cs_tasks/_subnav.html:32
 msgid "週報"
 msgstr "周报"
 
+#: cs_tasks/templates/cs_tasks/admin_send_now.html:5
+#| msgid "今すぐ送信"
+msgid "週報を今すぐ送信"
+msgstr "立即发送周报"
+
+#: cs_tasks/templates/cs_tasks/admin_send_now.html:6
+#| msgid "週報をメーリングリスト宛に今すぐ送信します。よろしいですか？"
+msgid "週次レポートをメーリングリスト宛に今すぐ送信します。よろしいですか？"
+msgstr "立即向邮件列表发送周报。确定吗？"
+
+#: cs_tasks/templates/cs_tasks/admin_send_now.html:9
+msgid "送信する"
+msgstr "发送"
+
+#: cs_tasks/templates/cs_tasks/admin_send_now.html:10
+#: cs_tasks/templates/cs_tasks/edit.html:27
+#: cs_tasks/templates/cs_tasks/new.html:27
+msgid "キャンセル"
+msgstr "取消"
+
 #: cs_tasks/templates/cs_tasks/board.html:4
 #: cs_tasks/templates/cs_tasks/board.html:7
+#: cs_tasks/templates/cs_tasks/edit.html:7
 #: cs_tasks/templates/cs_tasks/mailing_list.html:7
+#: cs_tasks/templates/cs_tasks/new.html:7
 #: cs_tasks/templates/cs_tasks/weekly_report.html:7
-#: templates/portal/base.html:45
-msgid "既存業務課題管理"
-msgstr "现有业务课题管理"
+#: templates/portal/base.html:58
+#| msgid "CS課題"
+msgid "CS課題管理"
+msgstr "CS课题管理"
 
 #: cs_tasks/templates/cs_tasks/board.html:23
 msgid "自分の担当課題"
@@ -199,46 +280,63 @@ msgstr "返回全部"
 msgid "課題追加"
 msgstr "添加课题"
 
-#: cs_tasks/templates/cs_tasks/board.html:50
+#: cs_tasks/templates/cs_tasks/board.html:51
 msgid "担当"
 msgstr "负责人"
 
-#: cs_tasks/templates/cs_tasks/board.html:51
+#: cs_tasks/templates/cs_tasks/board.html:52
 msgid "顧客"
 msgstr "客户"
 
-#: cs_tasks/templates/cs_tasks/board.html:52
+#: cs_tasks/templates/cs_tasks/board.html:53
 msgid "課題および進捗"
 msgstr "课题及进度"
 
-#: cs_tasks/templates/cs_tasks/board.html:53
+#: cs_tasks/templates/cs_tasks/board.html:54
 msgid "指示・コメント"
 msgstr "指示・评论"
 
-#: cs_tasks/templates/cs_tasks/board.html:54
+#: cs_tasks/templates/cs_tasks/board.html:55
 msgid "クローズ"
 msgstr "关闭"
 
-#: cs_tasks/templates/cs_tasks/board.html:80
-#: cs_tasks/templates/cs_tasks/board.html:207
+#: cs_tasks/templates/cs_tasks/board.html:82
+#: cs_tasks/templates/cs_tasks/board.html:238
 msgid "顧客名"
 msgstr "客户名称"
 
-#: cs_tasks/templates/cs_tasks/board.html:155
+#: cs_tasks/templates/cs_tasks/board.html:102
+msgid "詳細を入力"
+msgstr "输入详情"
+
+#: cs_tasks/templates/cs_tasks/board.html:180
 msgid "コメントを追加"
 msgstr "添加评论"
 
-#: cs_tasks/templates/cs_tasks/board.html:188
+#: cs_tasks/templates/cs_tasks/board.html:219
 msgid "進捗を追加"
 msgstr "添加进度"
 
-#: cs_tasks/templates/cs_tasks/board.html:199
+#: cs_tasks/templates/cs_tasks/board.html:229
 msgid "課題はありません。「＋課題追加」から登録してください。"
 msgstr "暂无课题。请通过“＋添加课题”进行登记。"
 
-#: cs_tasks/templates/cs_tasks/board.html:211
+#: cs_tasks/templates/cs_tasks/board.html:243
 msgid "課題（28文字以内）"
 msgstr "课题（28字以内）"
+
+#: cs_tasks/templates/cs_tasks/edit.html:4
+msgid "課題編集 - 社内ポータル"
+msgstr "编辑课题 - 内部门户"
+
+#: cs_tasks/templates/cs_tasks/edit.html:15
+msgid "課題を編集"
+msgstr "编辑课题"
+
+#: cs_tasks/templates/cs_tasks/edit.html:28
+#| msgid "最終更新"
+msgid "更新"
+msgstr "更新"
 
 #: cs_tasks/templates/cs_tasks/mailing_list.html:4
 #: cs_tasks/templates/cs_tasks/mailing_list.html:15
@@ -283,6 +381,19 @@ msgstr "启用"
 #: cs_tasks/templates/cs_tasks/mailing_list.html:53
 msgid "宛先が登録されていません。"
 msgstr "尚未登记收件人。"
+
+#: cs_tasks/templates/cs_tasks/new.html:4
+msgid "課題追加 - 社内ポータル"
+msgstr "添加课题 - 内部门户"
+
+#: cs_tasks/templates/cs_tasks/new.html:15
+msgid "課題を追加"
+msgstr "添加课题"
+
+#: cs_tasks/templates/cs_tasks/new.html:28
+#| msgid "新規登録"
+msgid "登録"
+msgstr "登记"
 
 #: cs_tasks/templates/cs_tasks/weekly_report.html:4
 #: cs_tasks/templates/cs_tasks/weekly_report.html:16
@@ -362,6 +473,182 @@ msgstr "完成"
 msgid "中止"
 msgstr "中止"
 
+#: cs_tasks/views.py:36
+msgid "（未割当）"
+msgstr "（未分配）"
+
+#: cs_tasks/views.py:256
+msgid "課題を登録しました。"
+msgstr "已登记课题。"
+
+#: cs_tasks/views.py:280
+#| msgid "選択してください"
+msgid "課題名を入力してください。"
+msgstr "请输入课题名称。"
+
+#: cs_tasks/views.py:312 cs_tasks/views.py:374 cs_tasks/views.py:392
+msgid "この課題を編集する権限がありません。"
+msgstr "您没有编辑此课题的权限。"
+
+#: cs_tasks/views.py:318
+msgid "課題を更新しました。"
+msgstr "已更新课题。"
+
+#: cs_tasks/views.py:333
+msgid "この課題に進捗を追記する権限がありません。"
+msgstr "您没有为此课题添加进展的权限。"
+
+#: cs_tasks/views.py:356
+msgid "この進捗を編集する権限がありません。"
+msgstr "您没有编辑此进展的权限。"
+
+#: cs_tasks/views.py:451
+msgid "コメントを付与する権限がありません。"
+msgstr "您没有添加评论的权限。"
+
+#: cs_tasks/views.py:475
+msgid "コメントを編集する権限がありません。"
+msgstr "您没有编辑评论的权限。"
+
+#: cs_tasks/views.py:498 cs_tasks/views.py:500 cs_tasks/views.py:534
+#: cs_tasks/views.py:536
+msgid "クローズ操作の権限がありません。"
+msgstr "您没有关闭操作的权限。"
+
+#: cs_tasks/views.py:563 cs_tasks/views.py:565
+#| msgid "本日以降の来訪予定はありません。"
+msgid "中止操作の権限がありません。"
+msgstr "您没有中止操作的权限。"
+
+#: cs_tasks/views.py:596
+msgid "宛先を追加しました。"
+msgstr "已添加收件人。"
+
+#: cs_tasks/views.py:598
+#| msgid "メール送信先を 1 行ずつ追加してください。"
+msgid "メールアドレスを入力してください。"
+msgstr "请输入邮箱地址。"
+
+#: cs_tasks/views.py:603
+msgid "宛先を削除しました。"
+msgstr "已删除收件人。"
+
+#: cs_tasks/views.py:633
+#, python-format
+msgid "週報を送信しました。宛先: %(recipients)s"
+msgstr "已发送周报。收件人: %(recipients)s"
+
+#: cs_tasks/views.py:639
+#, python-format
+msgid "週報の送信に失敗しました。%(reason)s"
+msgstr "周报发送失败。%(reason)s"
+
+#: envmon/views.py:463
+msgid "環境モニタの設定ページは管理者権限ユーザーのみアクセスできます。"
+msgstr "环境监控的设置页面仅限管理员权限用户访问。"
+
+#: envmon/views.py:824
+msgid "履歴データの取得処理を実行しました。（旧 fetch_history_all ルート）"
+msgstr "已执行历史数据获取处理。（旧 fetch_history_all 路由）"
+
+#: envmon/views.py:827
+#, python-format
+msgid "履歴データの取得に失敗しました: %(error)s"
+msgstr "历史数据获取失败: %(error)s"
+
+#: envmon/views.py:987
+msgid "シリアルナンバーが指定されていません。"
+msgstr "未指定序列号。"
+
+#: envmon/views.py:996 envmon/views.py:1075 envmon/views.py:1140
+msgid "SN"
+msgstr "序列号"
+
+#: envmon/views.py:996 envmon/views.py:1075 envmon/views.py:1140
+msgid "記録日時"
+msgstr "记录时间"
+
+#: envmon/views.py:996 envmon/views.py:1075 envmon/views.py:1140
+#: templates/envmon/all_devices.html:39
+msgid "温度"
+msgstr "温度"
+
+#: envmon/views.py:996 envmon/views.py:1075 envmon/views.py:1140
+#: templates/envmon/all_devices.html:40
+msgid "湿度"
+msgstr "湿度"
+
+#: envmon/views.py:1018
+#| msgid "宛先が登録されていません。"
+msgid "倉庫ロケーションが指定されていません。"
+msgstr "未指定仓库位置。"
+
+#: envmon/views.py:1023
+#, python-format
+msgid "指定されたロケーションが見つかりません: %(code)s"
+msgstr "未找到指定的位置: %(code)s"
+
+#: envmon/views.py:1032
+#, python-format
+msgid "ロケーション %(code)s / %(name)s に割当されたデバイスがありません。"
+msgstr "没有分配到位置 %(code)s / %(name)s 的设备。"
+
+#: envmon/views.py:1064
+msgid "指定条件に該当する履歴データがありません。"
+msgstr "没有符合指定条件的历史数据。"
+
+#: envmon/views.py:1075
+msgid "倉庫コード"
+msgstr "仓库代码"
+
+#: envmon/views.py:1075
+#| msgid "倉庫"
+msgid "倉庫名"
+msgstr "仓库名称"
+
+#: envmon/views.py:1101
+msgid "開始日と終了日を指定してください。"
+msgstr "请指定开始日期和结束日期。"
+
+#: envmon/views.py:1108
+msgid "日付の形式が不正です。"
+msgstr "日期格式不正确。"
+
+#: envmon/views.py:1112
+msgid "開始日は終了日以前の日付を指定してください。"
+msgstr "开始日期请指定为结束日期之前的日期。"
+
+#: envmon/views.py:1132
+msgid "指定期間の履歴データが存在しません。"
+msgstr "指定期间的历史数据不存在。"
+
+#: envmon/views.py:1427
+msgid "履歴データ取得処理がすでに実行中のため、手動実行はスキップしました。"
+msgstr "历史数据获取处理已在执行中，已跳过手动执行。"
+
+#: envmon/views.py:1436
+msgid "履歴データの取得処理を実行しました。詳細はログを確認してください。"
+msgstr "已执行历史数据获取处理。详情请查看日志。"
+
+#: envmon/views.py:1441
+#, python-format
+msgid "履歴データ取得処理中にエラーが発生しました: %(error)s"
+msgstr "历史数据获取处理中发生错误: %(error)s"
+
+#: envmon/views.py:1461
+msgid "現在、履歴データ取得中のためキャッシュ手動取得は実行できません。"
+msgstr "当前正在获取历史数据，无法执行缓存手动获取。"
+
+#: envmon/views.py:1467
+#| msgid "パスワードの変更が完了しました。"
+msgid "キャッシュの手動取得を実行しました。"
+msgstr "已执行缓存手动获取。"
+
+#: envmon/views.py:1469
+#, python-format
+msgid "キャッシュ手動取得中にエラーが発生しました: %(error)s"
+msgstr "缓存手动获取中发生错误: %(error)s"
+
 #: meetings/templates/meetings/_subnav.html:8
 #: visitors/templates/visitors/_subnav.html:7
 msgid "本日以降一覧"
@@ -408,9 +695,11 @@ msgid "来訪日"
 msgstr "来访日期"
 
 #: meetings/templates/meetings/add.html:32
+#: meetings/templates/meetings/add.html:63
 #: meetings/templates/meetings/history.html:28
 #: meetings/templates/meetings/index.html:28
 #: visitors/templates/visitors/add.html:31
+#: visitors/templates/visitors/add.html:62
 #: visitors/templates/visitors/history.html:28
 #: visitors/templates/visitors/index.html:27
 msgid "未定"
@@ -597,10 +886,8 @@ msgid "Meeting 一覧 CSV をアップロード（全件入れ替え）"
 msgstr "上传 Meeting 一览 CSV（全部替换）"
 
 #: meetings/templates/meetings/settings.html:126
-msgid ""
-"※ ダウンロードした CSV を編集してアップロードすると、Meeting データが全件入れ"
-"替えられます。"
-msgstr ""
+msgid "※ ダウンロードした CSV を編集してアップロードすると、Meeting データが全件入れ替えられます。"
+msgstr "※ 编辑下载的 CSV 并上传后，Meeting 数据将被全部替换。"
 
 #: meetings/templates/meetings/settings.html:127
 #: visitors/templates/visitors/settings.html:126
@@ -622,8 +909,56 @@ msgstr "以当前设置手动发送一次邮件。"
 msgid "メールプレビュー"
 msgstr "邮件预览"
 
+#: meetings/views.py:213
+msgid "この行を編集する権限がありません。"
+msgstr "您没有编辑此行的权限。"
+
+#: meetings/views.py:270 meetings/views.py:309
+msgid "この行を更新する権限がありません。"
+msgstr "您没有更新此行的权限。"
+
+#: meetings/views.py:392 visitors/views.py:306
+#| msgid "設定を保存"
+msgid "設定を保存しました。"
+msgstr "已保存设置。"
+
+#: meetings/views.py:489 visitors/views.py:573
+#| msgid "宛先が登録されていません。"
+msgid "CSVファイルが選択されていません。"
+msgstr "未选择 CSV 文件。"
+
+#: meetings/views.py:549
+#, python-format
+msgid "Meeting データをCSVから再登録しました（%(count)s件）。"
+msgstr "已从 CSV 重新登记 Meeting 数据（%(count)s 条）。"
+
+#: meetings/views.py:557 visitors/views.py:634
+#, python-format
+msgid "CSVの読み込み中にエラーが発生しました: %(error)s"
+msgstr "读取 CSV 时发生错误: %(error)s"
+
+#: meetings/views.py:632
+#, python-format
+msgid " 宛先: %(recipients)s"
+msgstr " 收件人: %(recipients)s"
+
+#: meetings/views.py:638 visitors/views.py:490
+#, python-format
+msgid "📨 メールを送信しました。%(recipients)s"
+msgstr "📨 已发送邮件。%(recipients)s"
+
+#: meetings/views.py:645 visitors/views.py:496
+#, python-format
+msgid "⚠ メール送信に失敗しました。%(detail)s"
+msgstr "⚠ 邮件发送失败。%(detail)s"
+
+#: meetings/views.py:652 visitors/views.py:501
+#, python-format
+msgid "⚠ メール送信中に例外が発生しました：%(error)s"
+msgstr "⚠ 邮件发送中发生异常：%(error)s"
+
 #: templates/authsys/login.html:4 templates/authsys/login.html:7
-#: templates/authsys/login.html:23 templates/portal/base.html:36
+#: templates/authsys/login.html:23 templates/portal/base.html:81
 msgid "ログイン"
 msgstr "登录"
 
@@ -716,17 +1051,13 @@ msgstr "序列号"
 msgid "倉庫"
 msgstr "仓库"
 
-#: templates/envmon/all_devices.html:39
-msgid "温度"
-msgstr "温度"
-
-#: templates/envmon/all_devices.html:40
-msgid "湿度"
-msgstr "湿度"
-
 #: templates/envmon/all_devices.html:41
 msgid "最終更新"
 msgstr "最后更新"
+
+#: templates/envmon/all_devices.html:49
+msgid "未割当"
+msgstr "未分配"
 
 #: templates/envmon/history_download.html:5
 msgid "履歴CSVダウンロード"
@@ -840,9 +1171,8 @@ msgid "API キャッシュ取得間隔（秒）"
 msgstr "API 缓存获取间隔（秒）"
 
 #: templates/envmon/settings.html:51
-msgid ""
-"※ 外部APIからリアルタイムデータを取得してキャッシュする間隔（5分以上推奨）"
-msgstr ""
+msgid "※ 外部APIからリアルタイムデータを取得してキャッシュする間隔（5分以上推奨）"
+msgstr "※ 从外部 API 获取实时数据并缓存的间隔（建议 5 分钟以上）"
 
 #: templates/envmon/settings.html:56
 msgid "キャッシュ保存期間（時間）"
@@ -861,10 +1191,8 @@ msgid "※ 1weilian の履歴データを DeviceHistory に取り込む時刻で
 msgstr "※ 将 1weilian 的历史数据导入 DeviceHistory 的时间。"
 
 #: templates/envmon/settings.html:73
-msgid ""
-"※ 深夜などの時間帯を指定してください（取り込み中はリアルタイムキャッシュ取得"
-"を停止します）。"
-msgstr ""
+msgid "※ 深夜などの時間帯を指定してください（取り込み中はリアルタイムキャッシュ取得を停止します）。"
+msgstr "※ 请指定深夜等时间段（获取期间将停止实时缓存获取）。"
 
 #: templates/envmon/settings.html:83
 msgid "手動実行（バックエンド手動トリガー）"
@@ -899,36 +1227,29 @@ msgid "割当なしデバイス"
 msgstr "未分配设备"
 
 #: templates/envmon/warehouse_assign.html:71
+#: visitors/templates/visitors/email_preview.html:27
 msgid "設定画面に戻る"
 msgstr "返回设置画面"
 
-#: templates/portal/base.html:33
-msgid "ログアウト"
-msgstr "退出登录"
-
-#: templates/portal/base.html:41
+#: templates/portal/base.html:54
 msgid "ホーム"
 msgstr "主页"
 
-#: templates/portal/base.html:42
+#: templates/portal/base.html:55
 msgid "来客予定"
 msgstr "来客预定"
 
-#: templates/portal/base.html:43
+#: templates/portal/base.html:56
 msgid "客先訪問・WEB会議"
 msgstr "客户拜访・网络会议"
 
-#: templates/portal/base.html:44
+#: templates/portal/base.html:57
 msgid "温湿度モニター"
 msgstr "温湿度监控"
 
-#: templates/portal/base.html:46
-msgid "日報"
-msgstr "日报"
-
-#: templates/portal/base.html:46
-msgid "準備中"
-msgstr "准备中"
+#: templates/portal/base.html:76
+msgid "ログアウト"
+msgstr "退出登录"
 
 #: templates/portal/home.html:4
 msgid "ポータルトップ"
@@ -945,63 +1266,83 @@ msgid ""
 "        %(email)s さん、ようこそ。\n"
 "        "
 msgstr ""
+"\n"
+"        欢迎您，%(email)s。\n"
+"        "
 
 #: templates/portal/home.html:15
 msgid "ログインしてご利用ください。"
 msgstr "请登录后使用。"
 
-#: templates/portal/home.html:21 visitors/templates/visitors/add.html:7
+#: templates/portal/home.html:20
+msgid "過去30日間の課題報告状況"
+msgstr "过去 30 天的课题报告情况"
+
+#: templates/portal/home.html:27
+msgid "計"
+msgstr "合计"
+
+#: templates/portal/home.html:38
+msgid "少"
+msgstr "少"
+
+#: templates/portal/home.html:40
+msgid "多"
+msgstr "多"
+
+#: templates/portal/home.html:44
+msgid "入力データがありません。"
+msgstr "没有输入数据。"
+
+#: templates/portal/home.html:49 visitors/templates/visitors/add.html:7
+#: visitors/templates/visitors/email_preview.html:7
 #: visitors/templates/visitors/history.html:8
 #: visitors/templates/visitors/index.html:7
 #: visitors/templates/visitors/settings.html:7
 msgid "来客予定管理"
 msgstr "来客预定管理"
 
-#: templates/portal/home.html:22
-msgid ""
-"本日以降の来訪予定の一覧表示・登録・キャンセル・編集、および毎朝の予定メール"
-"送信を管理します。"
-msgstr ""
+#: templates/portal/home.html:50
+msgid "本日以降の来訪予定の一覧表示・登録・キャンセル・編集、および毎朝の予定メール送信を管理します。"
+msgstr "管理今日及以后的来访预定的列表显示、登记、取消、编辑，以及每天早晨的预定邮件发送。"
 
-#: templates/portal/home.html:23
+#: templates/portal/home.html:51
 msgid "来客予定画面を開く"
 msgstr "打开来客预定页面"
 
-#: templates/portal/home.html:24
+#: templates/portal/home.html:52
 msgid "メール送信設定を開く"
 msgstr "打开邮件发送设置"
 
-#: templates/portal/home.html:28
+#: templates/portal/home.html:56
 msgid "温湿度モニタリング"
 msgstr "温湿度监控"
 
-#: templates/portal/home.html:30
-msgid ""
-"倉庫別の温湿度状況を表示・監視するシステムです。リアルタイム表示、全デバイス"
-"一覧、倉庫割当、履歴ダウンロードなどを行います。"
-msgstr ""
+#: templates/portal/home.html:58
+msgid "倉庫別の温湿度状況を表示・監視するシステムです。リアルタイム表示、全デバイス一覧、倉庫割当、履歴ダウンロードなどを行います。"
+msgstr "这是按仓库显示和监控温湿度状况的系统。可进行实时显示、全部设备列表、仓库分配、历史下载等。"
 
-#: templates/portal/home.html:33
+#: templates/portal/home.html:61
 msgid "倉庫別温湿度モニタを開く"
 msgstr "打开各仓库温湿度监控"
 
-#: templates/portal/home.html:36
+#: templates/portal/home.html:64
 msgid "全デバイス稼働状況一覧を開く"
 msgstr "打开全部设备运行状态一览"
 
-#: templates/portal/home.html:39
+#: templates/portal/home.html:67
 msgid "温湿度ログ・履歴設定を開く"
 msgstr "打开温湿度日志・历史设置"
 
-#: templates/portal/home.html:44
+#: templates/portal/home.html:72
 msgid "日報管理システム"
 msgstr "日报管理系统"
 
-#: templates/portal/home.html:45
+#: templates/portal/home.html:73
 msgid "各担当者の日報入力・閲覧・集計を行うシステムへのリンク（現在構築中）。"
 msgstr "用于各负责人填写・查看・汇总日报的系统链接（建设中）。"
 
-#: templates/portal/home.html:46
+#: templates/portal/home.html:74
 msgid "※ 準備中"
 msgstr "※ 准备中"
 
@@ -1018,6 +1359,20 @@ msgstr "来客预定新建登记"
 #: visitors/templates/visitors/index.html:34
 msgid "訪問場所"
 msgstr "访问地点"
+
+#: visitors/templates/visitors/email_preview.html:4
+#: visitors/templates/visitors/email_preview.html:15
+#| msgid "メールプレビュー"
+msgid "来客予定メール プレビュー"
+msgstr "来访预定邮件 预览"
+
+#: visitors/templates/visitors/email_preview.html:18
+msgid "現在の設定・データにもとづいたメール本文のプレビューです。"
+msgstr "这是基于当前设置和数据的邮件正文预览。"
+
+#: visitors/templates/visitors/email_preview.html:19
+msgid "実際の送信時も、ほぼこの内容で送信されます。"
+msgstr "实际发送时也将以几乎相同的内容发送。"
 
 #: visitors/templates/visitors/history.html:5
 #: visitors/templates/visitors/history.html:18
@@ -1062,34 +1417,16 @@ msgid "Visitor 一覧 CSV をアップロード（全件入れ替え）"
 msgstr "上传 Visitor 一览 CSV（全部替换）"
 
 #: visitors/templates/visitors/settings.html:125
-msgid ""
-"※ ダウンロードした CSV を編集してアップロードすると、Visitor データが全件入れ"
-"替えられます。"
-msgstr ""
+msgid "※ ダウンロードした CSV を編集してアップロードすると、Visitor データが全件入れ替えられます。"
+msgstr "※ 编辑下载的 CSV 并上传后，Visitor 数据将被全部替换。"
 
-#~ msgid "CS課題"
-#~ msgstr "CS课题"
+#: visitors/views.py:195 visitors/views.py:198 visitors/views.py:224
+#: visitors/views.py:350 visitors/views.py:404 visitors/views.py:407
+#| msgid "本日以降の来訪予定はありません。"
+msgid "この来訪予定を編集する権限がありません。"
+msgstr "您没有编辑此来访预定的权限。"
 
-#~ msgid "備考"
-#~ msgstr "备注"
-
-#~ msgid "来訪予定の編集"
-#~ msgstr "编辑来访预定"
-
-#~ msgid "編集ページ"
-#~ msgstr "编辑页面"
-
-#~ msgid "戻る"
-#~ msgstr "返回"
-
-#~ msgid "この来訪予定をキャンセルしますか？"
-#~ msgstr "是否取消该来访预定？"
-
-#~ msgid "キャンセル"
-#~ msgstr "取消"
-
-#~ msgid "編集"
-#~ msgstr "编辑"
-
-#~ msgid "来訪予定を登録する"
-#~ msgstr "登记来访预定"
+#: visitors/views.py:630
+#, python-format
+msgid "VisitorデータをCSVから再登録しました（%(count)s件）。"
+msgstr "已从 CSV 重新登记 Visitor 数据（%(count)s 条）。"

@@ -9,6 +9,7 @@ from django.views.decorators.http import require_POST
 from django.db import transaction
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
+from django.utils.translation import gettext as _
 
 from .forms import VisitorForm
 from .models import Visitor, MailingAddress, VisitMailConfig
@@ -191,10 +192,10 @@ def cancel_visitor(request, id):
     if not can_edit_visitor(request.user, visitor):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse(
-                {"ok": False, "error": "この来訪予定を編集する権限がありません。"},
+                {"ok": False, "error": _("この来訪予定を編集する権限がありません。")},
                 status=403,
             )
-        return HttpResponseForbidden("この来訪予定を編集する権限がありません。")
+        return HttpResponseForbidden(_("この来訪予定を編集する権限がありません。"))
 
     visitor.cancelled = not visitor.cancelled
     visitor.save()    
@@ -220,7 +221,7 @@ def edit_visitor(request, id):
 
     # ★権限チェック：本人 or 管理権限者のみ
     if not can_edit_visitor(request.user, visitor):
-        return HttpResponseForbidden("この来訪予定を編集する権限がありません。")
+        return HttpResponseForbidden(_("この来訪予定を編集する権限がありません。"))
 
     if request.method == "POST":
         form = VisitorForm(request.POST)
@@ -302,7 +303,7 @@ def settings_view(request):
                 HolidayDate.objects.create(date=d)
 
         config.save()
-        messages.success(request, "設定を保存しました。")
+        messages.success(request, _("設定を保存しました。"))
         return redirect("visitors:settings")
 
     # ===== GET（画面表示） =====
@@ -346,7 +347,7 @@ def inline_update(request):
         # ★権限チェック
         if not can_edit_visitor(request.user, v):
             return JsonResponse(
-                {"ok": False, "error": "この来訪予定を編集する権限がありません。"},
+                {"ok": False, "error": _("この来訪予定を編集する権限がありません。")},
                 status=403,
             )
 
@@ -400,10 +401,10 @@ def toggle_undecided(request, id):
     if not can_edit_visitor(request.user, visitor):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse(
-                {"ok": False, "error": "この来訪予定を編集する権限がありません。"},
+                {"ok": False, "error": _("この来訪予定を編集する権限がありません。")},
                 status=403,
             )
-        return HttpResponseForbidden("この来訪予定を編集する権限がありません。")
+        return HttpResponseForbidden(_("この来訪予定を編集する権限がありません。"))
 
     visitor.time_undecided = not visitor.time_undecided
 
@@ -486,18 +487,18 @@ def run_email(request):
 
             messages.success(
                 request,
-                f"📨 メールを送信しました。{recipients_str}"
+                _("📨 メールを送信しました。%(recipients)s") % {"recipients": recipients_str}
             )
             print(f"[VISITOR_MAIL_VIEW] manual send ok, last_sent_date={today}, result={result}")
         else:
             messages.error(
                 request,
-                f"⚠ メール送信に失敗しました。{detail}"
+                _("⚠ メール送信に失敗しました。%(detail)s") % {"detail": detail}
             )
             print(f"[VISITOR_MAIL_VIEW] manual send failed: {detail} (raw result={result})")
 
     except Exception as e:
-        messages.error(request, f"⚠ メール送信中に例外が発生しました：{e}")
+        messages.error(request, _("⚠ メール送信中に例外が発生しました：%(error)s") % {"error": e})
         print(f"[VISITOR_MAIL_VIEW] EXCEPTION: {e}")
 
     return redirect("visitors:settings")
@@ -569,7 +570,7 @@ def upload_visitor_csv(request):
 
     csv_file = request.FILES.get("csv_file")
     if not csv_file:
-        messages.error(request, "CSVファイルが選択されていません。")
+        messages.error(request, _("CSVファイルが選択されていません。"))
         return redirect("visitors:settings")
 
     try:
@@ -626,11 +627,11 @@ def upload_visitor_csv(request):
             Visitor.objects.all().delete()
             Visitor.objects.bulk_create(new_visitors)
 
-        messages.success(request, f"VisitorデータをCSVから再登録しました（{len(new_visitors)}件）。")
+        messages.success(request, _("VisitorデータをCSVから再登録しました（%(count)s件）。") % {"count": len(new_visitors)})
 
     except Exception as e:
         logger.exception("upload_visitor_csv error")
-        messages.error(request, f"CSVの読み込み中にエラーが発生しました: {e}")
+        messages.error(request, _("CSVの読み込み中にエラーが発生しました: %(error)s") % {"error": e})
 
     return redirect("visitors:settings")
 

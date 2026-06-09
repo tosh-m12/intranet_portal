@@ -46,7 +46,7 @@
             {% for d in devices %}
                 <tr>
                     <td>{{ d.id }}</td>
-                    <td>{{ d.warehouse|default:"未割当" }}</td>
+                    <td>{% if d.warehouse %}{{ d.warehouse }}{% else %}{% trans "未割当" %}{% endif %}</td>
                     <td>{{ d.temperature }}</td>
                     <td>{{ d.humidity }}</td>
                     <td>{{ d.last_seen }}</td>

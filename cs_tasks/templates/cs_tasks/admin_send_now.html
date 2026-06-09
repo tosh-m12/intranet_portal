@@ -1,11 +1,12 @@
 {% extends "admin/base_site.html" %}
+{% load i18n %}
 
 {% block content %}
-<h1>週報を今すぐ送信</h1>
-<p>週次レポートをメーリングリスト宛に今すぐ送信します。よろしいですか？</p>
+<h1>{% trans "週報を今すぐ送信" %}</h1>
+<p>{% trans "週次レポートをメーリングリスト宛に今すぐ送信します。よろしいですか？" %}</p>
 <form method="post">
     {% csrf_token %}
-    <button type="submit" class="default">送信する</button>
-    <a href="../" class="button">キャンセル</a>
+    <button type="submit" class="default">{% trans "送信する" %}</button>
+    <a href="../" class="button">{% trans "キャンセル" %}</a>
 </form>
 {% endblock %}

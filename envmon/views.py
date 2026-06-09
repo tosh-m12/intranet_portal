@@ -16,6 +16,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.utils.encoding import smart_str, escape_uri_path
 from django.utils.timezone import localtime
+from django.utils.translation import gettext as _
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -459,7 +460,7 @@ def settings_view(request: HttpRequest) -> HttpResponse:
     if not request.user.is_staff:
         messages.error(
             request,
-            "環境モニタの設定ページは管理者権限ユーザーのみアクセスできます。"
+            _("環境モニタの設定ページは管理者権限ユーザーのみアクセスできます。")
         )
         return redirect("envmon:index")
 
@@ -820,10 +821,10 @@ def fetch_history_all(request: HttpRequest) -> HttpResponse:
         call_command("fetch_env_history")
         messages.success(
             request,
-            "履歴データの取得処理を実行しました。（旧 fetch_history_all ルート）"
+            _("履歴データの取得処理を実行しました。（旧 fetch_history_all ルート）")
         )
     except Exception as e:
-        messages.error(request, f"履歴データの取得に失敗しました: {e}")
+        messages.error(request, _("履歴データの取得に失敗しました: %(error)s") % {"error": e})
 
     return redirect("envmon:settings")
 
@@ -983,7 +984,7 @@ def download_history_csv(request: HttpRequest) -> HttpResponse:
     """
     sn = request.POST.get("sn")
     if not sn:
-        messages.error(request, "シリアルナンバーが指定されていません。")
+        messages.error(request, _("シリアルナンバーが指定されていません。"))
         return redirect("envmon:settings")
 
     qs = DeviceHistory.objects.filter(sn=sn).order_by("recorded_at")
@@ -992,7 +993,7 @@ def download_history_csv(request: HttpRequest) -> HttpResponse:
     response = create_csv_response(filename)
 
     writer = csv.writer(response)
-    writer.writerow(["SN", "記録日時", "温度", "湿度"])
+    writer.writerow([_("SN"), _("記録日時"), _("温度"), _("湿度")])
     for row in qs:
         writer.writerow([
             row.sn,
@@ -1014,12 +1015,12 @@ def download_history_by_warehouse(request: HttpRequest) -> HttpResponse:
     """
     location_code = request.POST.get("location_code")
     if not location_code:
-        messages.error(request, "倉庫ロケーションが指定されていません。")
+        messages.error(request, _("倉庫ロケーションが指定されていません。"))
         return redirect("envmon:settings")
 
     location = Location.objects.filter(code=location_code).first()
     if not location:
-        messages.error(request, f"指定されたロケーションが見つかりません: {location_code}")
+        messages.error(request, _("指定されたロケーションが見つかりません: %(code)s") % {"code": location_code})
         return redirect("envmon:settings")
 
     # 現在このロケーションに割り当てられているデバイスID一覧
@@ -1028,7 +1029,7 @@ def download_history_by_warehouse(request: HttpRequest) -> HttpResponse:
         .values_list("device_id", flat=True)
     )
     if not sns:
-        messages.info(request, f"ロケーション {location.code} / {location.name} に割当されたデバイスがありません。")
+        messages.info(request, _("ロケーション %(code)s / %(name)s に割当されたデバイスがありません。") % {"code": location.code, "name": location.name})
         return redirect("envmon:settings")
 
     # 期間指定のパース
@@ -1060,7 +1061,7 @@ def download_history_by_warehouse(request: HttpRequest) -> HttpResponse:
     qs = qs.order_by("sn", "recorded_at")
 
     if not qs.exists():
-        messages.info(request, "指定条件に該当する履歴データがありません。")
+        messages.info(request, _("指定条件に該当する履歴データがありません。"))
         return redirect("envmon:settings")
 
     # CSV レスポンス
@@ -1071,7 +1072,7 @@ def download_history_by_warehouse(request: HttpRequest) -> HttpResponse:
     response = create_csv_response(filename)
 
     writer = csv.writer(response)
-    writer.writerow(["倉庫コード", "倉庫名", "SN", "記録日時", "温度", "湿度"])
+    writer.writerow([_("倉庫コード"), _("倉庫名"), _("SN"), _("記録日時"), _("温度"), _("湿度")])
 
     for row in qs:
         writer.writerow([
@@ -1097,18 +1098,18 @@ def download_history_all_range(request: HttpRequest) -> HttpResponse:
     date_to_str = request.POST.get("date_to") or ""
 
     if not date_from_str or not date_to_str:
-        messages.error(request, "開始日と終了日を指定してください。")
+        messages.error(request, _("開始日と終了日を指定してください。"))
         return redirect("envmon:settings")
 
     date_from = parse_date(date_from_str)
     date_to = parse_date(date_to_str)
 
     if not date_from or not date_to:
-        messages.error(request, "日付の形式が不正です。")
+        messages.error(request, _("日付の形式が不正です。"))
         return redirect("envmon:settings")
 
     if date_from > date_to:
-        messages.error(request, "開始日は終了日以前の日付を指定してください。")
+        messages.error(request, _("開始日は終了日以前の日付を指定してください。"))
         return redirect("envmon:settings")
 
     default_tz = timezone.get_default_timezone()
@@ -1128,7 +1129,7 @@ def download_history_all_range(request: HttpRequest) -> HttpResponse:
     )
 
     if not qs.exists():
-        messages.info(request, "指定期間の履歴データが存在しません。")
+        messages.info(request, _("指定期間の履歴データが存在しません。"))
         return redirect("envmon:settings")
 
     filename = f"history_all_{date_from_str}_{date_to_str}.csv"
@@ -1136,7 +1137,7 @@ def download_history_all_range(request: HttpRequest) -> HttpResponse:
     response = create_csv_response(filename)
 
     writer = csv.writer(response)
-    writer.writerow(["SN", "記録日時", "温度", "湿度"])
+    writer.writerow([_("SN"), _("記録日時"), _("温度"), _("湿度")])
 
     for row in qs:
         writer.writerow([
@@ -1423,7 +1424,7 @@ def manual_fetch_history(request):
     if env.is_fetching_history:
         messages.warning(
             request,
-            "履歴データ取得処理がすでに実行中のため、手動実行はスキップしました。"
+            _("履歴データ取得処理がすでに実行中のため、手動実行はスキップしました。")
         )
         return redirect("envmon:settings")
 
@@ -1432,12 +1433,12 @@ def manual_fetch_history(request):
         call_command("fetch_env_history")
         messages.success(
             request,
-            "履歴データの取得処理を実行しました。詳細はログを確認してください。"
+            _("履歴データの取得処理を実行しました。詳細はログを確認してください。")
         )
     except Exception as e:
         messages.error(
             request,
-            f"履歴データ取得処理中にエラーが発生しました: {e}"
+            _("履歴データ取得処理中にエラーが発生しました: %(error)s") % {"error": e}
         )
 
     return redirect("envmon:settings")
@@ -1457,14 +1458,14 @@ def manual_cache(request):
     if env.is_fetching_history:
         messages.warning(
             request,
-            "現在、履歴データ取得中のためキャッシュ手動取得は実行できません。"
+            _("現在、履歴データ取得中のためキャッシュ手動取得は実行できません。")
         )
         return redirect("envmon:settings")
 
     try:
         call_command("run_env_cache")
-        messages.success(request, "キャッシュの手動取得を実行しました。")
+        messages.success(request, _("キャッシュの手動取得を実行しました。"))
     except Exception as e:
-        messages.error(request, f"キャッシュ手動取得中にエラーが発生しました: {e}")
+        messages.error(request, _("キャッシュ手動取得中にエラーが発生しました: %(error)s") % {"error": e})
 
     return redirect("envmon:settings")
