@@ -1,6 +1,10 @@
 {# cs_tasks/_subnav.html #}
 {% load i18n %}
 <div class="subnav">
+    <a href="{% url 'cs_tasks:index' %}?cat=incident"
+       class="incident {% if active_tab == 'incident' %}active{% endif %}">
+        <svg class="ic"><use href="#ic-tag"/></svg>{% trans "クレーム・インシデント (Bad News First)" %}
+    </a>
     <a href="{% url 'cs_tasks:index' %}?cat=existing"
        class="{% if active_tab == 'existing' %}active{% endif %}">
         <svg class="ic"><use href="#ic-list"/></svg>{% trans "既存顧客課題" %}
@@ -12,10 +16,6 @@
     <a href="{% url 'cs_tasks:index' %}?cat=internal"
        class="{% if active_tab == 'internal' %}active{% endif %}">
         <svg class="ic"><use href="#ic-users"/></svg>{% trans "部内課題" %}
-    </a>
-    <a href="{% url 'cs_tasks:index' %}?cat=incident"
-       class="{% if active_tab == 'incident' %}active{% endif %}">
-        <svg class="ic"><use href="#ic-tag"/></svg>{% trans "インシデント (Bad News First)" %}
     </a>
     <a href="{% url 'cs_tasks:my' %}"
        class="{% if active_tab == 'my' %}active{% endif %}">

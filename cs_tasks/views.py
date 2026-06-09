@@ -200,7 +200,7 @@ _CATEGORY_TITLE = {
     Task.CATEGORY_EXISTING: "既存顧客課題",
     Task.CATEGORY_NEW: "新規顧客課題",
     Task.CATEGORY_INTERNAL: "部内課題",
-    Task.CATEGORY_INCIDENT: "インシデント (Bad News First)",
+    Task.CATEGORY_INCIDENT: "クレーム・インシデント (Bad News First)",
 }
 
 
