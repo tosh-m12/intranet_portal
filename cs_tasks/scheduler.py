@@ -1,6 +1,7 @@
 # cs_tasks/scheduler.py
 import os
 import subprocess
+import sys
 import threading
 import time
 import datetime
@@ -104,12 +105,36 @@ def _auto_deploy_check():
         logger.error("[AUTO_DEPLOY] pull failed, abort restart")
         return
 
-    # 新マイグレーション適用(無ければ no-op)
+    # 新マイグレーション適用は「別プロセス」で行う。
+    # 現プロセスは起動時の settings/INSTALLED_APPS のままなので、pull で新規追加された
+    # アプリの migration を取りこぼす(=テーブル未作成)。別プロセスなら pull 後のコードを
+    # 確実に読み込むため、新規アプリも含めて適用される。
+    py = sys.executable
     try:
-        call_command("migrate", "--noinput")
+        mig = subprocess.run(
+            [py, "manage.py", "migrate", "--noinput"],
+            cwd=cwd, capture_output=True, text=True, timeout=600,
+        )
     except Exception:
-        logger.exception("[AUTO_DEPLOY] migrate failed, abort restart")
+        logger.exception("[AUTO_DEPLOY] migrate subprocess failed, abort restart")
         return
+    if mig.returncode != 0:
+        logger.error(
+            "[AUTO_DEPLOY] migrate failed (rc=%d), abort restart\nstdout=%s\nstderr=%s",
+            mig.returncode, (mig.stdout or "").strip(), (mig.stderr or "").strip(),
+        )
+        return
+
+    # 静的ファイル収集・翻訳コンパイル(失敗してもデプロイは継続=best effort)
+    for sub in (["collectstatic", "--noinput"], ["compilemessages"]):
+        try:
+            r = subprocess.run([py, "manage.py"] + sub, cwd=cwd,
+                               capture_output=True, text=True, timeout=600)
+            if r.returncode != 0:
+                logger.warning("[AUTO_DEPLOY] %s rc=%d stderr=%s",
+                               sub[0], r.returncode, (r.stderr or "").strip()[:500])
+        except Exception:
+            logger.warning("[AUTO_DEPLOY] %s failed", sub[0], exc_info=True)
 
     _last_deploy_at = time.monotonic()
     logger.warning(
