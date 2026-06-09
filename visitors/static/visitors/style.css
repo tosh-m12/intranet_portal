@@ -13,26 +13,29 @@
 }
 
 /* ------------ フォント（日中で適切なCJKフォントを当て、中文のチグハグを防ぐ） ------------ */
-/* 既定（日本語）: モダンなゴシック。Noto Sans JP が無い環境は OS 標準にフォールバック。 */
+/* 既定（日本語）: contract_manager と同じ Hiragino/Yu Gothic 系の OS フォント。 */
 body {
-    /* 日本語優先。中国語名(担当者等)も Noto Sans SC でフォールバックして同じ Noto で統一 */
-    font-family: "Noto Sans JP", "Noto Sans SC", "Hiragino Sans", "Hiragino Kaku Gothic ProN",
-                 "Yu Gothic UI", "Yu Gothic", "Meiryo", "PingFang SC", "Microsoft YaHei",
+    /* contract_manager(契約書管理アプリ)と統一: Hiragino 系の OS フォント。
+       中国語名(担当者等)は似た系統の PingFang SC / Microsoft YaHei でフォールバック。 */
+    font-family: "Hiragino Sans", "Yu Gothic", "Meiryo",
+                 "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB",
                  system-ui, -apple-system, sans-serif;
     margin: 0;
     background-color: #f5f5f5;
     min-height: 100vh;
-    font-size: 16px;                 /* 既定より小さくしない（ボード等は個別に拡大） */
+    font-size: 14px;                 /* contract_manager と統一 */
+    line-height: 1.5;                /* contract_manager と統一 */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-feature-settings: "palt";   /* 約物の詰めで読みやすく */
     color: #1c1f24;
 }
-/* 中国語表示時は簡体字フォントを優先（和文混在による“チグハグ”を防止）。JPもフォールバックに残す */
+/* 中国語表示時は簡体字フォントを優先（和文混在による“チグハグ”を防止）。
+   contract_manager の Hiragino 系に近い PingFang SC / Microsoft YaHei / Hiragino Sans GB を当てる。JPもフォールバックに残す */
 html[lang^="zh"] body {
-    font-family: "Noto Sans SC", "Noto Sans JP", "PingFang SC", "Microsoft YaHei",
-                 "Hiragino Sans GB", "Source Han Sans SC", "Hiragino Sans",
-                 "Yu Gothic UI", system-ui, sans-serif;
+    font-family: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB",
+                 "Source Han Sans SC", "Hiragino Sans", "Yu Gothic", "Meiryo",
+                 system-ui, sans-serif;
 }
 
 /* ------------ トップバー（横型ナビ） ------------ */

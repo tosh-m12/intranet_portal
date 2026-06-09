@@ -5,11 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}NGLS-CS Portal{% endblock %}</title>
-    {# モダンなCJKフォント。ネット不可の環境では OS 標準フォントにフォールバック #}
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+    {# フォントは contract_manager(契約書管理アプリ)と統一: OS 標準の Hiragino/Yu Gothic 系。Webフォント不要。 #}
     <link rel="stylesheet" href="{% static 'visitors/style.css' %}">
     <link rel="stylesheet" href="{% static 'cs_tasks/style.css' %}">
     {% block extra_head %}{% endblock %}
