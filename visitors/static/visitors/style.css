@@ -65,13 +65,14 @@ html[lang^="zh"] body {
     height: 100vh;
     box-shadow: 2px 0 6px rgba(0, 25, 70, .18);
 }
-/* サイドバー上部: ブランド + 言語トグル(縦並び) */
+/* サイドバー上部: ブランド + 言語トグル(横並び・トグルは右) */
 .sidebar-head {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 14px 16px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 14px 14px;
     border-bottom: 1px solid rgba(255, 255, 255, .12);
 }
 .sidebar .brand {
@@ -80,7 +81,7 @@ html[lang^="zh"] body {
     gap: 8px;
     color: #fff;
     text-decoration: none;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: bold;
     white-space: nowrap;
 }
