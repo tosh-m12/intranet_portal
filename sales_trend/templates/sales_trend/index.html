@@ -1,0 +1,51 @@
+{% extends "portal/base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "売上推移" %}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'sales_trend/style.css' %}?v=1">
+{% endblock %}
+
+{% block app_name %}
+<h1><svg class="ic"><use href="#ic-chart"/></svg> {% trans "売上推移" %}</h1>
+{% endblock %}
+
+{% block content %}
+<div class="sales-trend-app" data-api-url="{% url 'sales_trend:data_api' %}"
+     data-total-label="{% trans '計' %}">
+
+  <div class="st-controls">
+    <div class="st-group">
+      <span class="st-label">{% trans "期間" %}</span>
+      <div class="st-seg" data-toggle="period">
+        <button type="button" data-val="qtr" class="active">{% trans "四半期" %}</button>
+        <button type="button" data-val="month">{% trans "月別" %}</button>
+      </div>
+    </div>
+    <div class="st-group">
+      <span class="st-label">Faurecia</span>
+      <div class="st-seg" data-toggle="faurecia">
+        <button type="button" data-val="1" class="active">{% trans "含む" %}</button>
+        <button type="button" data-val="0">{% trans "除く" %}</button>
+      </div>
+    </div>
+    <div class="st-group">
+      <span class="st-label">{% trans "グレー" %}</span>
+      <div class="st-seg" data-toggle="grey">
+        <button type="button" data-val="1">{% trans "含む" %}</button>
+        <button type="button" data-val="0" class="active">{% trans "除く" %}</button>
+      </div>
+    </div>
+    <span class="st-unit">{% trans "単位: 百万円" %}</span>
+  </div>
+
+  <div class="st-chartwrap">
+    <canvas id="stChart"></canvas>
+  </div>
+
+</div>
+
+<script src="{% static 'sales_trend/chart.umd.min.js' %}"></script>
+<script src="{% static 'sales_trend/app.js' %}?v=3"></script>
+{% endblock %}
