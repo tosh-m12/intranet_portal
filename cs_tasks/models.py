@@ -35,14 +35,16 @@ def pick_lang(primary, ja, lang):
 
 
 class Task(models.Model):
-    # 区分（サブナビのタブ）: 既存顧客課題 / 新規顧客課題 / 部内課題
+    # 区分（サブナビのタブ）: 既存顧客課題 / 新規顧客課題 / 部内課題 / インシデント
     CATEGORY_EXISTING = "existing"
     CATEGORY_NEW = "new"
     CATEGORY_INTERNAL = "internal"
+    CATEGORY_INCIDENT = "incident"
     CATEGORY_CHOICES = [
         (CATEGORY_EXISTING, "既存顧客課題"),
         (CATEGORY_NEW, "新規顧客課題"),
         (CATEGORY_INTERNAL, "部内課題"),
+        (CATEGORY_INCIDENT, "インシデント (Bad News First)"),
     ]
     category = models.CharField(
         verbose_name="区分", max_length=16,
