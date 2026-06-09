@@ -207,7 +207,7 @@ html[lang^="zh"] body {
     align-items: center;
     gap: 8px;
 }
-.main-content h1 .ic { width: 22px; height: 22px; stroke: var(--nx-blue); }
+.main-content h1 .ic { display: none; }   /* ページ見出しのアイコンは非表示(テキストのみ) */
 
 footer {
     text-align: center;
