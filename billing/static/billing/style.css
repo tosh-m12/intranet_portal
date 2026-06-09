@@ -6,6 +6,7 @@
   --calc-bg:#eef2f8; --warn-b:#fff2cc; --warn-t:#bf8f00; --ok-b:#e2efda; --ok-t:#548235;
   color:#222;
 }
+.billing-app input,.billing-app select,.billing-app textarea,.billing-app .ro-field,.billing-app .btn{box-sizing:border-box}
 .billing-app h2.sec{font-size:18px;color:var(--navy);margin:0}
 .billing-app h3.sec{font-size:15px;color:var(--blue);margin:20px 0 10px;border-bottom:2px solid var(--blue);padding-bottom:4px}
 .billing-app .muted{color:#8a93a0}
@@ -55,7 +56,7 @@
 .billing-app .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 12px;
   background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px}
 .billing-app .form-grid label{display:flex;flex-direction:column;font-size:11px;color:#6b7480;gap:4px;font-weight:600}
-.billing-app .form-grid input{padding:7px 9px;border:1px solid #c7ccd4;border-radius:6px;font-size:14px;font-family:inherit;background:#fff}
+.billing-app .form-grid input,.billing-app .form-grid select{width:100%;box-sizing:border-box;padding:7px 9px;border:1px solid #c7ccd4;border-radius:6px;font-size:14px;font-family:inherit;background:#fff}
 .billing-app .form-grid input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(46,84,150,.15)}
 .billing-app .form-grid label.wide{grid-column:span 2}
 .billing-app .form-grid input.alnum-up,.billing-app .form-grid input.iso-cur{text-transform:uppercase}

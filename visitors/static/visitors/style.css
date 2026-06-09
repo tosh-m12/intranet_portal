@@ -66,7 +66,12 @@ html[lang^="zh"] body {
     white-space: nowrap;
 }
 
-/* 横並びナビ */
+/* トップバーは2段構成: 1段目=ブランド+右側操作、2段目=ナビ(全幅) */
+.topbar .brand { order: 0; }
+.topbar-right { order: 1; }
+.topnav { order: 2; flex-basis: 100%; margin-top: 4px; }
+
+/* 横並びナビ(2段目・全幅) */
 .topnav {
     display: flex;
     align-items: center;
