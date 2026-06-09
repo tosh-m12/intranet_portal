@@ -1,0 +1,60 @@
+{% extends "billing/base.html" %}
+{% load humanize i18n %}
+{% block title %}{% trans "請求明細" %} {{ obj.serial }} — {% trans "請求書管理" %}{% endblock %}
+{% block content %}
+<div class="billing-app">
+<div class="detail-head">
+  <h2 class="sec">{% trans "請求明細" %}{% if obj.is_cancelled %} <span class="badge bad">{% trans "取消済" %}</span>{% endif %}</h2>
+  <div class="head-actions">
+    <a class="back" href="{% url 'billing:list' %}">← {% trans "請求一覧へ" %}</a>
+    <a class="btn primary" href="{% url 'billing:edit' obj.pk %}"
+       onclick="return confirm('{% trans "編集モードに入ります。内容を変更できる状態になります。よろしいですか？" %}');">{% trans "編集" %}</a>
+  </div>
+</div>
+
+<dl class="kv">
+  <dt>{% trans "連番" %}</dt><dd>{{ obj.serial }}</dd>
+  <dt>{% trans "担当者" %}</dt><dd>{{ obj.assignee|default:'—' }}</dd>
+  <dt>{% trans "顧客グループ" %}</dt><dd>{{ obj.customer_gc|default:'—' }}</dd>
+  <dt>{% trans "請求先会社名" %}</dt><dd>{{ obj.bill_to|default:'—' }}</dd>
+  <dt>{% trans "区分" %}</dt><dd>{{ obj.bill_cat|default:'—' }}</dd>
+  <dt>{% trans "通貨" %}</dt><dd>{{ obj.currency|default:'—' }}</dd>
+  <dt>{% trans "計上月" %}</dt><dd>{% if obj.bill_year %}{{ obj.bill_year }}/{{ obj.bill_month }}{% else %}—{% endif %}</dd>
+</dl>
+
+<h3 class="sec">{% trans "費目" %}</h3>
+<table class="grid">
+  <thead><tr><th>{% trans "費目" %}</th><th class="r">{% trans "税抜" %}</th><th class="c">{% trans "税率" %}%</th><th class="r">{% trans "税額" %}</th><th class="r">{% trans "税込" %}</th></tr></thead>
+  <tbody>
+    {% for ff in fee_rows %}
+    <tr>
+      <td>{{ ff.label }}</td>
+      <td class="r">{{ ff.net|floatformat:2|intcomma }}</td>
+      <td class="c">{{ ff.rate|default_if_none:'' }}</td>
+      <td class="r">{{ ff.tax|floatformat:2|intcomma }}</td>
+      <td class="r">{{ ff.incl|floatformat:2|intcomma }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <th>{% trans "合計" %}</th>
+      <td class="r strong">{{ obj.total_before_tax|floatformat:2|intcomma }}</td>
+      <td></td>
+      <td class="r strong">{{ obj.tax_amount|floatformat:2|intcomma }}</td>
+      <td class="r strong">{{ obj.total_after_tax|floatformat:2|intcomma }}</td>
+    </tr>
+  </tfoot>
+</table>
+
+{% if obj.exrate %}
+<h3 class="sec">{% trans "第2通貨" %}</h3>
+<dl class="kv">
+  <dt>{% trans "通貨" %}</dt><dd>{{ obj.fx_currency|default:'—' }}</dd>
+  <dt>{% trans "為替レート" %}</dt><dd>{{ obj.exrate }}</dd>
+  <dt>{% trans "レート日付" %}</dt><dd>{{ obj.rate_date|date:'Y-m-d'|default:'—' }}</dd>
+  <dt>{% trans "換算後金額" %}</dt><dd>{{ obj.converted_amount|floatformat:2|intcomma|default:'—' }}</dd>
+</dl>
+{% endif %}
+</div>
+{% endblock %}

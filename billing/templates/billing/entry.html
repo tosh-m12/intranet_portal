@@ -1,0 +1,138 @@
+{% extends "billing/base.html" %}
+{% load billing_extra i18n %}
+{% block title %}{% trans "請求入力" %} — {% trans "請求書管理" %}{% endblock %}
+{% block content %}
+<div class="billing-app">
+<div class="detail-head">
+  <h2 class="sec">{% if obj %}{% trans "請求明細を編集" %} <span class="muted">{{ obj.serial }}</span>{% else %}{% trans "請求入力（新規）" %}{% endif %}</h2>
+  {% if obj %}<a class="back" href="{% url 'billing:detail' obj.pk %}">← {% trans "詳細へ戻る" %}</a>
+  {% else %}<a class="back" href="{% url 'billing:list' %}">← {% trans "請求一覧へ" %}</a>{% endif %}
+</div>
+
+<form method="post" id="entryForm"
+      action="{% if obj %}{% url 'billing:edit' obj.pk %}{% else %}{% url 'billing:entry' %}{% endif %}"
+      data-master-add="{% url 'billing:master_add' %}"
+      data-api-parties="{% url 'billing:api_parties' %}"
+      data-api-check="{% url 'billing:api_check_company' %}"
+      data-api-serial="{% url 'billing:api_next_serial' %}">
+  {% csrf_token %}
+
+  <h3 class="sec">{% trans "識別・取引先" %}</h3>
+  <div class="form-grid">
+    <label>{% trans "連番" %}
+      <span class="ro-field" id="ro_serial"{% if not obj.serial %} data-auto="1"{% endif %}>{% if obj.serial %}{{ obj.serial }}{% else %}{% trans "保存時に自動採番" %}{% endif %}</span>
+    </label>
+    <label>{% trans "担当者" %}
+      <input type="text" name="assignee" id="id_assignee" value="{{ obj.assignee|default:'' }}" autocomplete="off">
+    </label>
+    <label class="ac-wrap">{% trans "顧客グループ" %}
+      <input type="text" name="customer_gc" id="id_customer_gc" data-ac="group" class="alnum-up"
+             value="{{ obj.customer_gc|default:'' }}" autocomplete="off" autocapitalize="characters"
+             spellcheck="false" placeholder="{% trans '例: HAKUTO' %}">
+    </label>
+    <label class="ac-wrap wide">{% trans "請求先会社名" %}
+      <input type="text" name="bill_to" id="id_bill_to" data-ac="company"
+             value="{{ obj.bill_to|default:'' }}" autocomplete="off">
+    </label>
+    <label>{% trans "区分" %}
+      <input type="text" name="bill_cat" class="alnum-up" value="{{ obj.bill_cat|default:'' }}"
+             autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="{% trans '任意' %}">
+    </label>
+    <label>{% trans "通貨" %}
+      <input type="text" name="currency" class="iso-cur" list="dl-currencies" maxlength="3"
+             value="{{ obj.currency|default:'CNY' }}" autocomplete="off" autocapitalize="characters"
+             spellcheck="false" placeholder="CNY">
+    </label>
+    <label>{% trans "計上年" %}
+      <input type="number" name="bill_year" value="{{ obj.bill_year|default:'' }}" autocomplete="off" inputmode="numeric" placeholder="2025">
+    </label>
+    <label>{% trans "計上月" %}
+      <input type="number" name="bill_month" value="{{ obj.bill_month|default:'' }}" autocomplete="off" inputmode="numeric" placeholder="1〜12">
+    </label>
+  </div>
+  <datalist id="dl-currencies">{% for c in currencies %}<option value="{{ c }}">{% endfor %}</datalist>
+
+  <div id="companyWarn" class="company-warn" hidden>
+    ⚠ {% trans "会社名" %}「<span id="warnName"></span>」{% trans "は取引先マスタに存在しません。" %}
+    <a href="#" id="warnRegister">{% trans "この会社名でマスタ登録" %} →</a>
+  </div>
+
+  <h3 class="sec">{% trans "費目" %}</h3>
+  <table class="fee-table">
+    <colgroup>
+      <col class="col-fee"><col class="col-chk"><col class="col-amt">
+      <col class="col-rate"><col class="col-net"><col class="col-incl">
+    </colgroup>
+    <thead>
+      <tr>
+        <th>{% trans "費目" %}</th>
+        <th class="col-chk"><label class="chk-head"><input type="checkbox" id="id_net_all" checked>{% trans "税抜" %}</label></th>
+        <th>{% trans "入力額" %}</th>
+        <th>{% trans "税率" %} %</th>
+        <th>{% trans "税抜" %}</th>
+        <th>{% trans "税込" %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for key, label in fees %}
+      <tr data-fee-row="{{ key }}">
+        <td class="fee-label">{{ label }}</td>
+        <td class="chk-cell"><input type="checkbox" class="fee-net-chk" data-fee="{{ key }}"
+                   name="{{ key }}_net" value="net" checked></td>
+        <td><input type="text" inputmode="decimal" class="num fee-amt" data-fee="{{ key }}"
+                   name="{{ key }}" value="{{ obj|fee_val:key }}" autocomplete="off"></td>
+        <td><input type="text" inputmode="decimal" class="num fee-rate" data-fee="{{ key }}"
+                   name="{{ key }}_rate" value="{{ obj|fee_rate_val:key }}" placeholder="—" autocomplete="off"></td>
+        <td class="auto-cell"><span class="fee-net" data-fee="{{ key }}">0.00</span></td>
+        <td class="auto-cell"><span class="fee-incl" data-fee="{{ key }}">0.00</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div id="rateWarn" class="rate-warn" hidden>
+    ⚠ {% trans "金額が入力されているのに税率が空欄の費目があります" %}（<span id="rateWarnList"></span>）。
+  </div>
+
+  <table class="total-table">
+    <tbody>
+      <tr><th>{% trans "税抜合計" %}</th><td class="r"><span class="calc strong" id="sumBefore">0.00</span></td></tr>
+      <tr><th>{% trans "税額" %}</th><td class="r"><span class="calc" id="sumTax">0.00</span></td></tr>
+      <tr class="grand"><th>{% trans "税込合計" %}</th><td class="r"><span class="calc strong big" id="sumAfter">0.00</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="sec">{% trans "第2通貨" %}</h3>
+  <div class="form-grid">
+    <label>{% trans "通貨" %}
+      <input type="text" name="fx_currency" class="iso-cur" list="dl-currencies" maxlength="3"
+             value="{{ obj.fx_currency|default:'' }}" autocomplete="off" autocapitalize="characters"
+             spellcheck="false" placeholder="{% trans '任意（例: USD）' %}">
+    </label>
+    <label>{% trans "為替レート" %}
+      <input type="text" inputmode="decimal" class="num" id="id_exrate" name="exrate" value="{{ obj.exrate|default_if_none:'' }}" autocomplete="off">
+    </label>
+    <label>{% trans "レート日付" %}
+      <input type="date" name="rate_date" value="{% if obj.rate_date %}{{ obj.rate_date|date:'Y-m-d' }}{% endif %}">
+    </label>
+    <label>{% trans "換算後金額" %}
+      <div class="ro-field" id="ro_converted">{{ obj.converted_amount|default_if_none:'—' }}</div>
+    </label>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn primary" name="save">{% trans "保存" %}</button>
+    <button type="submit" class="btn" name="save_new">{% trans "保存して次を入力" %}</button>
+    {% if obj %}<a class="btn ghost" href="{% url 'billing:entry' %}">＋ {% trans "新規" %}</a>{% endif %}
+  </div>
+</form>
+
+{% if obj %}
+<form method="post" action="{% url 'billing:cancel' obj.pk %}" class="del-form"
+      onsubmit="return confirm('{% trans "この請求明細を取消します。よろしいですか？" %}');">
+  {% csrf_token %}
+  <button type="submit" class="btn danger-strong">{% trans "この明細を取消" %}</button>
+</form>
+{% endif %}
+</div>
+{% endblock %}

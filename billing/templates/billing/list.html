@@ -1,0 +1,64 @@
+{% extends "billing/base.html" %}
+{% load humanize i18n %}
+{% block title %}{% trans "請求一覧" %} — {% trans "請求書管理" %}{% endblock %}
+{% block content %}
+<div class="billing-app">
+<div class="detail-head">
+  <h2 class="sec">{% trans "請求一覧" %}</h2>
+  <a class="btn primary" href="{% url 'billing:entry' %}">＋ {% trans "新規入力" %}</a>
+</div>
+
+<form class="filters" id="filterForm" method="get" action="{% url 'billing:list' %}">
+  <label>{% trans "担当者" %}
+    <select name="assignee">
+      <option value="">{% trans "すべて" %}</option>
+      {% for a in assignees %}<option value="{{ a }}" {% if a == f.assignee %}selected{% endif %}>{{ a }}</option>{% endfor %}
+    </select>
+  </label>
+  <label>{% trans "計上年" %}
+    <select name="year">
+      <option value="">{% trans "すべて" %}</option>
+      {% for y in years %}<option value="{{ y }}" {% if y|stringformat:'s' == f.year %}selected{% endif %}>{{ y }}</option>{% endfor %}
+    </select>
+  </label>
+  <label>{% trans "計上月" %}
+    <input type="number" name="month" value="{{ f.month }}" min="1" max="12">
+  </label>
+  <label>{% trans "検索" %}
+    <input type="text" name="q" class="q-wide" value="{{ f.q }}">
+  </label>
+  <a class="btn" id="clearFilters" href="{% url 'billing:list' %}">{% trans "クリア" %}</a>
+</form>
+
+<div id="listResult">
+<div class="count">{{ count }} {% trans "件" %} ／ {% trans "税込合計" %} <strong>{{ total_after_tax|floatformat:2|intcomma }}</strong>（{% trans "表示は最大500件" %}）</div>
+<div class="tablewrap">
+<table class="grid">
+  <thead>
+    <tr>
+      <th class="c">{% trans "連番" %}</th><th>{% trans "顧客グループ" %}</th><th>{% trans "請求先会社名" %}</th>
+      <th class="c">{% trans "計上月" %}</th><th class="r">{% trans "税抜" %}</th><th class="r">{% trans "税込" %}</th>
+      <th class="c">{% trans "通貨" %}</th><th>{% trans "担当者" %}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in rows %}
+    <tr class="rowlink" data-href="{% url 'billing:detail' r.pk %}">
+      <td class="c">{{ r.serial|default:'' }}</td>
+      <td>{{ r.customer_gc }}</td>
+      <td>{{ r.bill_to }}</td>
+      <td class="c">{% if r.bill_year %}{{ r.bill_year }}/{{ r.bill_month }}{% endif %}</td>
+      <td class="r">{{ r.total_before_tax|floatformat:2|intcomma }}</td>
+      <td class="r">{{ r.total_after_tax|floatformat:2|intcomma }}</td>
+      <td class="c">{{ r.currency }}</td>
+      <td>{{ r.assignee }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="8" class="c muted">{% trans "データがありません。" %} <a href="{% url 'billing:entry' %}">{% trans "新規入力" %}</a></td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+</div>
+</div>
+{% endblock %}

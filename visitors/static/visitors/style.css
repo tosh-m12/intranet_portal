@@ -13,11 +13,22 @@
 }
 
 /* ------------ フォント（日中で適切なCJKフォントを当て、中文のチグハグを防ぐ） ------------ */
-/* 既定（日本語）: contract_manager と同じ Hiragino/Yu Gothic 系の OS フォント。 */
+/* 全OSで同一の見た目にするため Noto Sans JP を自前ホスト(Webフォント)。
+   日本語・ラテンを Noto で統一。Noto が持たない簡体字等は OS の CJK フォントへ自動フォールバック。 */
+@font-face{font-family:'Noto Sans JP';font-style:normal;font-weight:400;font-display:swap;
+    src:url('fonts/notosansjp-jp-400.woff2') format('woff2');}
+@font-face{font-family:'Noto Sans JP';font-style:normal;font-weight:400;font-display:swap;
+    src:url('fonts/notosansjp-latin-400.woff2') format('woff2');
+    unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:'Noto Sans JP';font-style:normal;font-weight:700;font-display:swap;
+    src:url('fonts/notosansjp-jp-700.woff2') format('woff2');}
+@font-face{font-family:'Noto Sans JP';font-style:normal;font-weight:700;font-display:swap;
+    src:url('fonts/notosansjp-latin-700.woff2') format('woff2');
+    unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+
+/* 既定（日本語）: Noto Sans JP を最優先。未収録グリフは OS フォントへフォールバック。 */
 body {
-    /* contract_manager(契約書管理アプリ)と統一: Hiragino 系の OS フォント。
-       中国語名(担当者等)は似た系統の PingFang SC / Microsoft YaHei でフォールバック。 */
-    font-family: "Hiragino Sans", "Yu Gothic", "Meiryo",
+    font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo",
                  "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB",
                  system-ui, -apple-system, sans-serif;
     margin: 0;
@@ -39,55 +50,84 @@ html[lang^="zh"] body {
 }
 
 /* ------------ トップバー（横型ナビ） ------------ */
-.topbar {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 6px 18px;
+/* ===== レイアウト: 左サイドバー + 右コンテンツ ===== */
+.layout { display: flex; align-items: stretch; min-height: 100vh; }
+
+.sidebar {
+    width: 216px;
+    flex-shrink: 0;
     background-color: var(--nx-navy);
     color: #fff;
-    min-height: 54px;
-    padding: 7px 22px;
+    display: flex;
+    flex-direction: column;
     position: sticky;
     top: 0;
-    z-index: 100;
-    box-shadow: 0 2px 6px rgba(0, 25, 70, .25);
+    height: 100vh;
+    box-shadow: 2px 0 6px rgba(0, 25, 70, .18);
 }
-.topbar .brand .ic { color: var(--nx-accent); }
-
-.topbar .brand {
+/* サイドバー上部: 1行目=ブランド+言語トグル / 2行目=氏名+ログアウト */
+.sidebar-head {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, .12);
+}
+.sidebar-head-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+.sidebar-user {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 4px;
+}
+.sidebar .brand {
     display: flex;
     align-items: center;
     gap: 8px;
     color: #fff;
     text-decoration: none;
-    font-size: 19px;
+    font-size: 15px;
     font-weight: bold;
     white-space: nowrap;
 }
+.sidebar .brand .ic { color: var(--nx-accent); }
 
-/* 横並びナビ */
-.topnav {
+/* 縦ナビ */
+.sidenav {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 10px 8px;
+    flex: 1;
+    overflow-y: auto;
+}
+.sidenav a {
     display: flex;
     align-items: center;
-    gap: 2px;
-    flex-wrap: wrap;
-}
-.topnav a {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+    gap: 11px;
     color: #cfe0f5;
     text-decoration: none;
-    padding: 8px 11px;
+    padding: 10px 14px;
     border-radius: 6px;
-    font-size: 15px;
+    font-size: 14.5px;
     white-space: nowrap;
+    border-left: 3px solid transparent;
     transition: background-color .12s, color .12s;
 }
-.topnav a:hover { background-color: rgba(255, 255, 255, .14); color: #fff; }
-.topnav a.active { color: var(--nx-green); font-weight: bold; }
-.topnav a.disabled { opacity: .45; pointer-events: none; }
+.sidenav a:hover { background-color: rgba(255, 255, 255, .12); color: #fff; }
+.sidenav a.active {
+    color: #fff;
+    background-color: rgba(142, 196, 0, .16);
+    border-left-color: var(--nx-green);
+    font-weight: bold;
+}
+.sidenav a.active .ic { color: var(--nx-green); }
+.sidenav a.disabled { opacity: .45; pointer-events: none; }
 
 /* SVG アイコン（線・現在色） */
 .ic {
@@ -111,14 +151,14 @@ html[lang^="zh"] body {
 .lang-toggle {
     display: inline-flex;
     border: 1px solid #cce0ff;
-    border-radius: 12px;
+    border-radius: 9px;
     overflow: hidden;
     flex-shrink: 0;
 }
 .lang-toggle .lang-opt {
-    padding: 2px 9px;
-    font-size: 14px;
-    line-height: 1.6;
+    padding: 1px 7px;
+    font-size: 11px;
+    line-height: 1.5;
     color: #cce0ff;
     text-decoration: none;
     background: transparent;
@@ -135,22 +175,18 @@ html[lang^="zh"] body {
     background: #004080;
 }
 
-/* 右側クラスタ（言語・ユーザー・ログアウト） */
-.topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-left: auto;
-}
-.topbar-right .user-chip {
-    font-size: 14px;
+/* ユーザー行(氏名 + ログアウト) */
+.sidebar-user .user-chip {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 150px;
+    font-size: 13px;
     color: #cfe0f5;
-    max-width: 220px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-.topbar-right .icon-btn {
+.sidebar-user .icon-btn {
     background: transparent;
     border: none;
     color: #cfe0f5;
@@ -160,14 +196,16 @@ html[lang^="zh"] body {
     display: inline-flex;
     align-items: center;
 }
-.topbar-right .icon-btn:hover { background-color: rgba(255, 255, 255, .14); color: #fff; }
-.topbar-right .login-link { color: #ffddaa; text-decoration: none; font-size: 15px; }
+.sidebar-user .icon-btn:hover { background-color: rgba(255, 255, 255, .14); color: #fff; }
+.sidebar-user .login-link { color: #ffddaa; text-decoration: none; font-size: 14px; }
 
 /* ------------ メインコンテンツ ------------ */
 .main-content {
+    flex: 1;
+    min-width: 0;
     padding: 20px 30px;
     background-color: #fff;
-    min-height: calc(100vh - 52px);
+    min-height: 100vh;
     box-sizing: border-box;
 }
 
@@ -181,7 +219,7 @@ html[lang^="zh"] body {
     align-items: center;
     gap: 8px;
 }
-.main-content h1 .ic { width: 22px; height: 22px; stroke: var(--nx-blue); }
+.main-content h1 .ic { display: none; }   /* ページ見出しのアイコンは非表示(テキストのみ) */
 
 footer {
     text-align: center;
@@ -323,7 +361,7 @@ footer {
     border-radius: 6px 6px 0 0;
     transition: color .12s, border-color .12s, background-color .12s;
 }
-.subnav a .ic { width: 16px; height: 16px; }
+.subnav a .ic { display: none; }   /* サブナビはアイコン非表示(テキストのみ) */
 .subnav a:hover {
     color: var(--nx-blue);
     background-color: #f3f7fc;

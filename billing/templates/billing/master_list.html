@@ -1,0 +1,34 @@
+{% extends "billing/base.html" %}
+{% load i18n %}
+{% block title %}{% trans "取引先マスタ" %} — {% trans "請求書管理" %}{% endblock %}
+{% block content %}
+<div class="billing-app">
+<div class="detail-head">
+  <h2 class="sec">{% trans "取引先マスタ" %}</h2>
+  <a class="btn primary" href="{% url 'billing:master_add' %}">＋ {% trans "新規登録" %}</a>
+</div>
+
+<form class="filters" id="filterForm" method="get" action="{% url 'billing:master' %}">
+  <label>{% trans "検索" %}
+    <input type="text" name="q" class="q-wide" value="{{ q }}" placeholder="{% trans 'グループ・会社名・担当者' %}">
+  </label>
+  <a class="btn" id="clearFilters" href="{% url 'billing:master' %}">{% trans "クリア" %}</a>
+</form>
+
+<div id="listResult">
+<div class="count">{{ count }} / {{ total }} {% trans "件" %}</div>
+<div class="tablewrap">
+<table class="grid">
+  <thead><tr><th>{% trans "グループ名" %}</th><th>{% trans "会社名" %}</th><th>{% trans "担当者" %}</th></tr></thead>
+  <tbody>
+    {% for r in rows %}
+    <tr><td>{{ r.group_name }}</td><td>{{ r.company_name }}</td><td>{{ r.assignee }}</td></tr>
+    {% empty %}
+    <tr><td colspan="3" class="c muted">{% trans "該当なし" %}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+</div>
+</div>
+{% endblock %}

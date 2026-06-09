@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'authsys',
     'visitors.apps.VisitorsConfig',
     "meetings.apps.MeetingsConfig",
@@ -52,6 +53,7 @@ INSTALLED_APPS = [
     'envmon',
     'scheduler.apps.SchedulerConfig',
     'cs_tasks.apps.CsTasksConfig',
+    'billing.apps.BillingConfig',
 ]
 
 MIDDLEWARE = [
