@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-09 17:17+0800\n"
+"POT-Creation-Date: 2026-06-10 02:07+0800\n"
 "PO-Revision-Date: 2025-07-23 23:45+0800\n"
 "Last-Translator: TMurayama <example@example.com>\n"
 "Language-Team: Chinese Simplified\n"
@@ -75,7 +75,7 @@ msgstr "返回登录画面"
 
 #: authsys/templates/authsys/user_management.html:4
 #: authsys/templates/authsys/user_management.html:7
-#: templates/portal/base.html:60
+#: templates/portal/base.html:87
 msgid "ユーザー管理"
 msgstr "用户管理"
 
@@ -178,7 +178,6 @@ msgid "ユーザーを削除しました。"
 msgstr "已删除用户。"
 
 #: authsys/views.py:86
-#| msgid "メールアドレス"
 msgid "メールアドレスは必須です。"
 msgstr "邮箱地址为必填项。"
 
@@ -189,19 +188,412 @@ msgstr "已新建 %(name)s。"
 
 #: authsys/views.py:196
 #, python-format
-#| msgid "パスワードの変更が完了しました。"
 msgid "%(name)s さんのパスワードを再発行しました。"
 msgstr "已重置 %(name)s 的密码。"
 
 #: authsys/views.py:219
-#| msgid "パスワードの変更が完了しました。"
 msgid "パスワード再設定用のメールを送信しました。"
 msgstr "已发送密码重置邮件。"
 
 #: authsys/views.py:247
-#| msgid "パスワードの変更が完了しました。"
 msgid "パスワード再発行メールを送信しました。"
 msgstr "已发送密码补发邮件。"
+
+#: billing/models.py:18
+msgid "保管料 STORAGE"
+msgstr "仓储费 STORAGE"
+
+#: billing/models.py:19
+msgid "庫内作業 WAREHOUSE"
+msgstr "库内作业 WAREHOUSE"
+
+#: billing/models.py:20
+msgid "通関 CUSTOMS"
+msgstr "报关 CUSTOMS"
+
+#: billing/models.py:21
+msgid "サービス SERVICE"
+msgstr "服务 SERVICE"
+
+#: billing/models.py:22
+msgid "国内輸送 LOC_TRANSPORT"
+msgstr "国内运输 LOC_TRANSPORT"
+
+#: billing/models.py:23
+msgid "立替 DISB"
+msgstr "垫付 DISB"
+
+#: billing/models.py:24
+msgid "その他 OTH"
+msgstr "其他 OTH"
+
+#: billing/models.py:25
+msgid "3PL"
+msgstr "3PL"
+
+#: billing/models.py:52 billing/templates/billing/master_form.html:14
+#: billing/templates/billing/master_list.html:22
+msgid "グループ名"
+msgstr "集团名"
+
+#: billing/models.py:53 billing/templates/billing/entry.html:56
+#: billing/templates/billing/master_form.html:19
+#: billing/templates/billing/master_list.html:22
+#| msgid "正式会社名"
+msgid "会社名"
+msgstr "公司名"
+
+#: billing/models.py:54
+msgid "担当者名"
+msgstr "负责人姓名"
+
+#: billing/models.py:65 billing/models.py:66
+#: billing/templates/billing/_subnav.html:5
+#: billing/templates/billing/master_list.html:3
+#: billing/templates/billing/master_list.html:7
+msgid "取引先マスタ"
+msgstr "客户主数据"
+
+#: billing/models.py:75 billing/templates/billing/detail.html:16
+#: billing/templates/billing/entry.html:22
+#: billing/templates/billing/list.html:39
+msgid "連番"
+msgstr "流水号"
+
+#: billing/models.py:76 billing/templates/billing/detail.html:18
+#: billing/templates/billing/entry.html:28
+#: billing/templates/billing/list.html:39
+msgid "顧客グループ"
+msgstr "客户集团"
+
+#: billing/models.py:77 billing/templates/billing/detail.html:19
+#: billing/templates/billing/entry.html:33
+#: billing/templates/billing/list.html:39
+msgid "請求先会社名"
+msgstr "收票公司名"
+
+#: billing/models.py:78 billing/templates/billing/detail.html:20
+#: billing/templates/billing/entry.html:37
+#| msgid "分"
+msgid "区分"
+msgstr "类别"
+
+#: billing/models.py:79 billing/models.py:109
+#: billing/templates/billing/detail.html:21
+#: billing/templates/billing/detail.html:53
+#: billing/templates/billing/entry.html:41
+#: billing/templates/billing/entry.html:107
+#: billing/templates/billing/list.html:41
+msgid "通貨"
+msgstr "货币"
+
+#: billing/models.py:80 billing/templates/billing/entry.html:46
+#: billing/templates/billing/list.html:18
+msgid "計上年"
+msgstr "入账年"
+
+#: billing/models.py:81 billing/templates/billing/detail.html:22
+#: billing/templates/billing/entry.html:49
+#: billing/templates/billing/list.html:24
+#: billing/templates/billing/list.html:40
+msgid "計上月"
+msgstr "入账月"
+
+#: billing/models.py:82 billing/templates/billing/detail.html:17
+#: billing/templates/billing/entry.html:25
+#: billing/templates/billing/list.html:12
+#: billing/templates/billing/list.html:41
+#: billing/templates/billing/master_form.html:22
+#: billing/templates/billing/master_list.html:22
+#| msgid "担当"
+msgid "担当者"
+msgstr "负责人"
+
+#: billing/models.py:103 billing/templates/billing/entry.html:99
+msgid "税抜合計"
+msgstr "不含税合计"
+
+#: billing/models.py:104 billing/templates/billing/entry.html:101
+#: billing/templates/billing/list.html:34
+msgid "税込合計"
+msgstr "含税合计"
+
+#: billing/models.py:107 billing/templates/billing/detail.html:54
+#: billing/templates/billing/entry.html:112
+msgid "為替レート"
+msgstr "汇率"
+
+#: billing/models.py:108 billing/templates/billing/detail.html:55
+#: billing/templates/billing/entry.html:115
+msgid "レート日付"
+msgstr "汇率日期"
+
+#: billing/models.py:110 billing/templates/billing/detail.html:56
+#: billing/templates/billing/entry.html:118
+msgid "換算後金額"
+msgstr "换算后金额"
+
+#: billing/models.py:117 meetings/templates/meetings/add.html:40
+#: meetings/templates/meetings/history.html:36
+#: meetings/templates/meetings/index.html:36
+#: visitors/templates/visitors/add.html:39
+#: visitors/templates/visitors/history.html:36
+#: visitors/templates/visitors/index.html:35
+msgid "入力者"
+msgstr "填写人"
+
+#: billing/models.py:118 meetings/templates/meetings/history.html:37
+#: meetings/templates/meetings/index.html:37
+#: visitors/templates/visitors/history.html:37
+#: visitors/templates/visitors/index.html:36
+msgid "取消"
+msgstr "取消"
+
+#: billing/models.py:125 billing/models.py:126
+#: billing/templates/billing/detail.html:3
+#: billing/templates/billing/detail.html:7
+msgid "請求明細"
+msgstr "账单明细"
+
+#: billing/templates/billing/_subnav.html:3
+#: billing/templates/billing/entry.html:3
+msgid "請求入力"
+msgstr "账单录入"
+
+#: billing/templates/billing/_subnav.html:4
+#: billing/templates/billing/list.html:3 billing/templates/billing/list.html:7
+msgid "請求一覧"
+msgstr "账单一览"
+
+#: billing/templates/billing/base.html:10
+#: billing/templates/billing/detail.html:3
+#: billing/templates/billing/entry.html:3 billing/templates/billing/list.html:3
+#: billing/templates/billing/master_form.html:3
+#: billing/templates/billing/master_list.html:3
+msgid "請求書管理"
+msgstr "账单管理"
+
+#: billing/templates/billing/detail.html:7
+#| msgid "取消"
+msgid "取消済"
+msgstr "已取消"
+
+#: billing/templates/billing/detail.html:9
+#: billing/templates/billing/entry.html:9
+msgid "請求一覧へ"
+msgstr "账单一览"
+
+#: billing/templates/billing/detail.html:11
+#| msgid "週報をメーリングリスト宛に今すぐ送信します。よろしいですか？"
+msgid "編集モードに入ります。内容を変更できる状態になります。よろしいですか？"
+msgstr "进入编辑模式。内容将变为可修改状态。确定吗？"
+
+#: billing/templates/billing/detail.html:11
+msgid "編集"
+msgstr "编辑"
+
+#: billing/templates/billing/detail.html:25
+#: billing/templates/billing/detail.html:27
+#: billing/templates/billing/entry.html:60
+#: billing/templates/billing/entry.html:68
+msgid "費目"
+msgstr "费目"
+
+#: billing/templates/billing/detail.html:27
+#: billing/templates/billing/entry.html:69
+#: billing/templates/billing/entry.html:72
+#: billing/templates/billing/list.html:40
+msgid "税抜"
+msgstr "不含税"
+
+#: billing/templates/billing/detail.html:27
+#: billing/templates/billing/entry.html:71
+msgid "税率"
+msgstr "税率"
+
+#: billing/templates/billing/detail.html:27
+#: billing/templates/billing/entry.html:100
+msgid "税額"
+msgstr "税额"
+
+#: billing/templates/billing/detail.html:27
+#: billing/templates/billing/entry.html:73
+#: billing/templates/billing/list.html:40
+msgid "税込"
+msgstr "含税"
+
+#: billing/templates/billing/detail.html:41
+#| msgid "計"
+msgid "合計"
+msgstr "合计"
+
+#: billing/templates/billing/detail.html:51
+#: billing/templates/billing/entry.html:105
+msgid "第2通貨"
+msgstr "第二货币"
+
+#: billing/templates/billing/entry.html:7
+msgid "請求明細を編集"
+msgstr "编辑账单明细"
+
+#: billing/templates/billing/entry.html:7
+msgid "請求入力（新規）"
+msgstr "账单录入（新建）"
+
+#: billing/templates/billing/entry.html:8
+msgid "詳細へ戻る"
+msgstr "返回详情"
+
+#: billing/templates/billing/entry.html:20
+msgid "識別・取引先"
+msgstr "标识・客户"
+
+#: billing/templates/billing/entry.html:23
+msgid "保存時に自動採番"
+msgstr "保存时自动编号"
+
+#: billing/templates/billing/entry.html:31
+#: billing/templates/billing/master_form.html:16
+msgid "例: HAKUTO"
+msgstr "例: HAKUTO"
+
+#: billing/templates/billing/entry.html:39
+msgid "任意"
+msgstr "选填"
+
+#: billing/templates/billing/entry.html:56
+#| msgid "指定期間の履歴データが存在しません。"
+msgid "は取引先マスタに存在しません。"
+msgstr "在客户主数据中不存在。"
+
+#: billing/templates/billing/entry.html:57
+msgid "この会社名でマスタ登録"
+msgstr "用此公司名登记主数据"
+
+#: billing/templates/billing/entry.html:70
+#| msgid "入力者"
+msgid "入力額"
+msgstr "录入额"
+
+#: billing/templates/billing/entry.html:94
+msgid "金額が入力されているのに税率が空欄の費目があります"
+msgstr "有费目已输入金额但税率为空"
+
+#: billing/templates/billing/entry.html:110
+msgid "任意（例: USD）"
+msgstr "选填（例: USD）"
+
+#: billing/templates/billing/entry.html:124
+#: meetings/templates/meetings/add.html:110 templates/envmon/locations.html:45
+#: templates/envmon/settings.html:78 visitors/templates/visitors/add.html:99
+msgid "保存"
+msgstr "保存"
+
+#: billing/templates/billing/entry.html:125
+msgid "保存して次を入力"
+msgstr "保存并录入下一条"
+
+#: billing/templates/billing/entry.html:126
+#| msgid "当週新規"
+msgid "新規"
+msgstr "新建"
+
+#: billing/templates/billing/entry.html:132
+msgid "この請求明細を取消します。よろしいですか？"
+msgstr "将取消此账单明细。确定吗？"
+
+#: billing/templates/billing/entry.html:134
+msgid "この明細を取消"
+msgstr "取消此明细"
+
+#: billing/templates/billing/list.html:8 billing/templates/billing/list.html:57
+msgid "新規入力"
+msgstr "新建录入"
+
+#: billing/templates/billing/list.html:14
+#: billing/templates/billing/list.html:20
+msgid "すべて"
+msgstr "全部"
+
+#: billing/templates/billing/list.html:27
+#: billing/templates/billing/master_list.html:12
+msgid "検索"
+msgstr "搜索"
+
+#: billing/templates/billing/list.html:30
+#: billing/templates/billing/master_list.html:15
+#| msgid "クローズ"
+msgid "クリア"
+msgstr "清除"
+
+#: billing/templates/billing/list.html:34
+#: billing/templates/billing/master_list.html:19
+#: cs_tasks/templates/cs_tasks/weekly_report.html:77
+#: cs_tasks/templates/cs_tasks/weekly_report.html:78
+#: cs_tasks/templates/cs_tasks/weekly_report.html:79
+msgid "件"
+msgstr "件"
+
+#: billing/templates/billing/list.html:34
+msgid "表示は最大500件"
+msgstr "最多显示500条"
+
+#: billing/templates/billing/list.html:57
+#| msgid "入力データがありません。"
+msgid "データがありません。"
+msgstr "暂无数据。"
+
+#: billing/templates/billing/master_form.html:3
+#| msgid "新規登録"
+msgid "取引先 新規登録"
+msgstr "客户 新建登记"
+
+#: billing/templates/billing/master_form.html:7
+msgid "取引先マスタ 新規登録"
+msgstr "客户主数据 新建登记"
+
+#: billing/templates/billing/master_form.html:8
+msgid "マスタ一覧へ"
+msgstr "返回主数据一览"
+
+#: billing/templates/billing/master_form.html:14
+#: billing/templates/billing/master_form.html:19
+msgid "必須"
+msgstr "必填"
+
+#: billing/templates/billing/master_form.html:20
+msgid "正式社名(基準表記)"
+msgstr "正式公司名(标准写法)"
+
+#: billing/templates/billing/master_form.html:23
+msgid "担当CS名"
+msgstr "负责CS姓名"
+
+#: billing/templates/billing/master_form.html:26
+#: cs_tasks/templates/cs_tasks/new.html:28
+msgid "登録"
+msgstr "登记"
+
+#: billing/templates/billing/master_form.html:27
+#: cs_tasks/templates/cs_tasks/admin_send_now.html:10
+#: cs_tasks/templates/cs_tasks/edit.html:27
+#: cs_tasks/templates/cs_tasks/new.html:27
+msgid "キャンセル"
+msgstr "取消"
+
+#: billing/templates/billing/master_list.html:8
+#: meetings/templates/meetings/_subnav.html:18
+#: visitors/templates/visitors/_subnav.html:15
+msgid "新規登録"
+msgstr "新建登记"
+
+#: billing/templates/billing/master_list.html:13
+msgid "グループ・会社名・担当者"
+msgstr "集团・公司名・负责人"
+
+#: billing/templates/billing/master_list.html:27
+msgid "該当なし"
+msgstr "无匹配"
 
 #: cs_tasks/templates/cs_tasks/_subnav.html:6
 msgid "クレーム・インシデント (Bad News First)"
@@ -234,12 +626,10 @@ msgid "週報"
 msgstr "周报"
 
 #: cs_tasks/templates/cs_tasks/admin_send_now.html:5
-#| msgid "今すぐ送信"
 msgid "週報を今すぐ送信"
 msgstr "立即发送周报"
 
 #: cs_tasks/templates/cs_tasks/admin_send_now.html:6
-#| msgid "週報をメーリングリスト宛に今すぐ送信します。よろしいですか？"
 msgid "週次レポートをメーリングリスト宛に今すぐ送信します。よろしいですか？"
 msgstr "立即向邮件列表发送周报。确定吗？"
 
@@ -247,20 +637,13 @@ msgstr "立即向邮件列表发送周报。确定吗？"
 msgid "送信する"
 msgstr "发送"
 
-#: cs_tasks/templates/cs_tasks/admin_send_now.html:10
-#: cs_tasks/templates/cs_tasks/edit.html:27
-#: cs_tasks/templates/cs_tasks/new.html:27
-msgid "キャンセル"
-msgstr "取消"
-
 #: cs_tasks/templates/cs_tasks/board.html:4
 #: cs_tasks/templates/cs_tasks/board.html:7
 #: cs_tasks/templates/cs_tasks/edit.html:7
 #: cs_tasks/templates/cs_tasks/mailing_list.html:7
 #: cs_tasks/templates/cs_tasks/new.html:7
 #: cs_tasks/templates/cs_tasks/weekly_report.html:7
-#: templates/portal/base.html:58
-#| msgid "CS課題"
+#: templates/portal/base.html:84
 msgid "CS課題管理"
 msgstr "CS课题管理"
 
@@ -334,7 +717,6 @@ msgid "課題を編集"
 msgstr "编辑课题"
 
 #: cs_tasks/templates/cs_tasks/edit.html:28
-#| msgid "最終更新"
 msgid "更新"
 msgstr "更新"
 
@@ -389,11 +771,6 @@ msgstr "添加课题 - 内部门户"
 #: cs_tasks/templates/cs_tasks/new.html:15
 msgid "課題を追加"
 msgstr "添加课题"
-
-#: cs_tasks/templates/cs_tasks/new.html:28
-#| msgid "新規登録"
-msgid "登録"
-msgstr "登记"
 
 #: cs_tasks/templates/cs_tasks/weekly_report.html:4
 #: cs_tasks/templates/cs_tasks/weekly_report.html:16
@@ -459,12 +836,6 @@ msgstr "汇总"
 msgid "進行中"
 msgstr "进行中"
 
-#: cs_tasks/templates/cs_tasks/weekly_report.html:77
-#: cs_tasks/templates/cs_tasks/weekly_report.html:78
-#: cs_tasks/templates/cs_tasks/weekly_report.html:79
-msgid "件"
-msgstr "件"
-
 #: cs_tasks/templates/cs_tasks/weekly_report.html:78
 msgid "完了"
 msgstr "完成"
@@ -482,7 +853,6 @@ msgid "課題を登録しました。"
 msgstr "已登记课题。"
 
 #: cs_tasks/views.py:280
-#| msgid "選択してください"
 msgid "課題名を入力してください。"
 msgstr "请输入课题名称。"
 
@@ -516,7 +886,6 @@ msgid "クローズ操作の権限がありません。"
 msgstr "您没有关闭操作的权限。"
 
 #: cs_tasks/views.py:563 cs_tasks/views.py:565
-#| msgid "本日以降の来訪予定はありません。"
 msgid "中止操作の権限がありません。"
 msgstr "您没有中止操作的权限。"
 
@@ -525,7 +894,6 @@ msgid "宛先を追加しました。"
 msgstr "已添加收件人。"
 
 #: cs_tasks/views.py:598
-#| msgid "メール送信先を 1 行ずつ追加してください。"
 msgid "メールアドレスを入力してください。"
 msgstr "请输入邮箱地址。"
 
@@ -579,7 +947,6 @@ msgid "湿度"
 msgstr "湿度"
 
 #: envmon/views.py:1018
-#| msgid "宛先が登録されていません。"
 msgid "倉庫ロケーションが指定されていません。"
 msgstr "未指定仓库位置。"
 
@@ -602,7 +969,6 @@ msgid "倉庫コード"
 msgstr "仓库代码"
 
 #: envmon/views.py:1075
-#| msgid "倉庫"
 msgid "倉庫名"
 msgstr "仓库名称"
 
@@ -640,7 +1006,6 @@ msgid "現在、履歴データ取得中のためキャッシュ手動取得は�
 msgstr "当前正在获取历史数据，无法执行缓存手动获取。"
 
 #: envmon/views.py:1467
-#| msgid "パスワードの変更が完了しました。"
 msgid "キャッシュの手動取得を実行しました。"
 msgstr "已执行缓存手动获取。"
 
@@ -658,11 +1023,6 @@ msgstr "今后一览"
 #: visitors/templates/visitors/_subnav.html:11
 msgid "過去一覧"
 msgstr "历史一览"
-
-#: meetings/templates/meetings/_subnav.html:18
-#: visitors/templates/visitors/_subnav.html:15
-msgid "新規登録"
-msgstr "新建登记"
 
 #: meetings/templates/meetings/_subnav.html:25
 #: visitors/templates/visitors/_subnav.html:22
@@ -747,15 +1107,6 @@ msgstr "目的"
 msgid "訪問・WEB"
 msgstr "拜访・网络"
 
-#: meetings/templates/meetings/add.html:40
-#: meetings/templates/meetings/history.html:36
-#: meetings/templates/meetings/index.html:36
-#: visitors/templates/visitors/add.html:39
-#: visitors/templates/visitors/history.html:36
-#: visitors/templates/visitors/index.html:35
-msgid "入力者"
-msgstr "填写人"
-
 #: meetings/templates/meetings/add.html:92
 #: meetings/templates/meetings/add.html:309
 #: meetings/templates/meetings/add.html:443
@@ -763,11 +1114,6 @@ msgstr "填写人"
 #: meetings/templates/meetings/index.html:451
 msgid "選択してください"
 msgstr "请选择"
-
-#: meetings/templates/meetings/add.html:110 templates/envmon/locations.html:45
-#: templates/envmon/settings.html:78 visitors/templates/visitors/add.html:99
-msgid "保存"
-msgstr "保存"
 
 #: meetings/templates/meetings/add.html:113
 #: visitors/templates/visitors/add.html:102
@@ -809,13 +1155,6 @@ msgstr "来访者（姓）"
 #: visitors/templates/visitors/index.html:31
 msgid "来訪者（名）"
 msgstr "来访者（名）"
-
-#: meetings/templates/meetings/history.html:37
-#: meetings/templates/meetings/index.html:37
-#: visitors/templates/visitors/history.html:37
-#: visitors/templates/visitors/index.html:36
-msgid "取消"
-msgstr "取消"
 
 #: meetings/templates/meetings/history.html:153
 msgid "該当する過去の訪問・WEB会議予定はありません。"
@@ -918,12 +1257,10 @@ msgid "この行を更新する権限がありません。"
 msgstr "您没有更新此行的权限。"
 
 #: meetings/views.py:392 visitors/views.py:306
-#| msgid "設定を保存"
 msgid "設定を保存しました。"
 msgstr "已保存设置。"
 
 #: meetings/views.py:489 visitors/views.py:573
-#| msgid "宛先が登録されていません。"
 msgid "CSVファイルが選択されていません。"
 msgstr "未选择 CSV 文件。"
 
@@ -958,7 +1295,7 @@ msgid "⚠ メール送信中に例外が発生しました：%(error)s"
 msgstr "⚠ 邮件发送中发生异常：%(error)s"
 
 #: templates/authsys/login.html:4 templates/authsys/login.html:7
-#: templates/authsys/login.html:23 templates/portal/base.html:81
+#: templates/authsys/login.html:23 templates/portal/base.html:73
 msgid "ログイン"
 msgstr "登录"
 
@@ -1231,25 +1568,29 @@ msgstr "未分配设备"
 msgid "設定画面に戻る"
 msgstr "返回设置画面"
 
-#: templates/portal/base.html:54
+#: templates/portal/base.html:68
+msgid "ログアウト"
+msgstr "退出登录"
+
+#: templates/portal/base.html:80
 msgid "ホーム"
 msgstr "主页"
 
-#: templates/portal/base.html:55
+#: templates/portal/base.html:81
 msgid "来客予定"
 msgstr "来客预定"
 
-#: templates/portal/base.html:56
+#: templates/portal/base.html:82
 msgid "客先訪問・WEB会議"
 msgstr "客户拜访・网络会议"
 
-#: templates/portal/base.html:57
+#: templates/portal/base.html:83
 msgid "温湿度モニター"
 msgstr "温湿度监控"
 
-#: templates/portal/base.html:76
-msgid "ログアウト"
-msgstr "退出登录"
+#: templates/portal/base.html:85
+msgid "請求書"
+msgstr "账单"
 
 #: templates/portal/home.html:4
 msgid "ポータルトップ"
@@ -1362,7 +1703,6 @@ msgstr "访问地点"
 
 #: visitors/templates/visitors/email_preview.html:4
 #: visitors/templates/visitors/email_preview.html:15
-#| msgid "メールプレビュー"
 msgid "来客予定メール プレビュー"
 msgstr "来访预定邮件 预览"
 
@@ -1422,7 +1762,6 @@ msgstr "※ 编辑下载的 CSV 并上传后，Visitor 数据将被全部替换�
 
 #: visitors/views.py:195 visitors/views.py:198 visitors/views.py:224
 #: visitors/views.py:350 visitors/views.py:404 visitors/views.py:407
-#| msgid "本日以降の来訪予定はありません。"
 msgid "この来訪予定を編集する権限がありません。"
 msgstr "您没有编辑此来访预定的权限。"
 

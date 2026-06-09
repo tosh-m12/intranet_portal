@@ -28,7 +28,7 @@
     <label class="ac-wrap">{% trans "顧客グループ" %}
       <input type="text" name="customer_gc" id="id_customer_gc" data-ac="group" class="alnum-up"
              value="{{ obj.customer_gc|default:'' }}" autocomplete="off" autocapitalize="characters"
-             spellcheck="false" placeholder="例: HAKUTO">
+             spellcheck="false" placeholder="{% trans '例: HAKUTO' %}">
     </label>
     <label class="ac-wrap wide">{% trans "請求先会社名" %}
       <input type="text" name="bill_to" id="id_bill_to" data-ac="company"
@@ -36,7 +36,7 @@
     </label>
     <label>{% trans "区分" %}
       <input type="text" name="bill_cat" class="alnum-up" value="{{ obj.bill_cat|default:'' }}"
-             autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="任意">
+             autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="{% trans '任意' %}">
     </label>
     <label>{% trans "通貨" %}
       <input type="text" name="currency" class="iso-cur" list="dl-currencies" maxlength="3"
@@ -107,7 +107,7 @@
     <label>{% trans "通貨" %}
       <input type="text" name="fx_currency" class="iso-cur" list="dl-currencies" maxlength="3"
              value="{{ obj.fx_currency|default:'' }}" autocomplete="off" autocapitalize="characters"
-             spellcheck="false" placeholder="任意（例: USD）">
+             spellcheck="false" placeholder="{% trans '任意（例: USD）' %}">
     </label>
     <label>{% trans "為替レート" %}
       <input type="text" inputmode="decimal" class="num" id="id_exrate" name="exrate" value="{{ obj.exrate|default_if_none:'' }}" autocomplete="off">

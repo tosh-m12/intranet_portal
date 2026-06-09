@@ -13,7 +13,7 @@
   <input type="hidden" name="next" value="{{ next }}">
   <label>{% trans "グループ名" %} <span class="req">{% trans "必須" %}</span>
     <input type="text" name="group_name" value="{{ prefill_group }}" list="dl-groups" class="alnum-up"
-           autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="例: HAKUTO" required autofocus>
+           autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="{% trans '例: HAKUTO' %}" required autofocus>
   </label>
   <datalist id="dl-groups">{% for g in groups %}<option value="{{ g }}">{% endfor %}</datalist>
   <label>{% trans "会社名" %} <span class="req">{% trans "必須" %}</span>
