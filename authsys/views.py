@@ -190,7 +190,6 @@ def reset_user_password(request, user_id):
         "ログイン後はパスワードの変更をお願いします。\n"
     )
     from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None)
-
     send_mail(subject, message, from_email, recipient_list, fail_silently=False)
 
     messages.success(request, f"{target.last_name} {target.first_name} さんのパスワードを再発行しました。")
