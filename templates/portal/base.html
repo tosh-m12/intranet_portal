@@ -48,9 +48,17 @@
 
 {# ---- 左サイドバー ---- #}
 <aside class="sidebar">
-    <a class="brand" href="{% url 'home' %}">
-        <span>NGLS-CS Portal</span>
-    </a>
+    <div class="sidebar-head">
+        <a class="brand" href="{% url 'home' %}">
+            <span>NGLS-CS Portal</span>
+        </a>
+        <div class="lang-toggle" role="group" aria-label="language switch">
+            <a href="{% url 'switch_language' 'ja' %}"
+               class="lang-opt {% if LANGUAGE_CODE == 'ja' %}active{% endif %}">日</a>
+            <a href="{% url 'switch_language' 'zh-hans' %}"
+               class="lang-opt {% if LANGUAGE_CODE == 'zh-hans' %}active{% endif %}">中</a>
+        </div>
+    </div>
 
     {% with ns=request.resolver_match.namespace un=request.resolver_match.url_name %}
     <nav class="sidenav">
@@ -67,14 +75,8 @@
     {% endwith %}
 
     <div class="sidebar-foot">
-        <div class="lang-toggle" role="group" aria-label="language switch">
-            <a href="{% url 'switch_language' 'ja' %}"
-               class="lang-opt {% if LANGUAGE_CODE == 'ja' %}active{% endif %}">日</a>
-            <a href="{% url 'switch_language' 'zh-hans' %}"
-               class="lang-opt {% if LANGUAGE_CODE == 'zh-hans' %}active{% endif %}">中</a>
-        </div>
         {% if user.is_authenticated %}
-            <span class="user-chip" title="{{ user.email }}">{{ user.email }}</span>
+            <span class="user-chip" title="{{ user.email }}">{% if user.last_name or user.first_name %}{{ user.last_name }} {{ user.first_name }}{% else %}{{ user.email }}{% endif %}</span>
             <form method="post" action="{% url 'logout' %}" style="display:inline;">
                 {% csrf_token %}
                 <button type="submit" class="icon-btn" title="{% trans 'ログアウト' %}" aria-label="{% trans 'ログアウト' %}">
