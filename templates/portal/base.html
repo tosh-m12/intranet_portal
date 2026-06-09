@@ -56,6 +56,7 @@
         <a href="{% url 'meetings:index' %}" class="{% if ns == 'meetings' %}active{% endif %}"><svg class="ic"><use href="#ic-video"/></svg><span>{% trans "客先訪問・WEB会議" %}</span></a>
         <a href="{% url 'envmon:index' %}" class="{% if ns == 'envmon' %}active{% endif %}"><svg class="ic"><use href="#ic-thermometer"/></svg><span>{% trans "温湿度モニター" %}</span></a>
         <a href="{% url 'cs_tasks:index' %}" class="{% if ns == 'cs_tasks' %}active{% endif %}"><svg class="ic"><use href="#ic-clipboard"/></svg><span>{% trans "CS課題管理" %}</span></a>
+        <a href="{% url 'billing:index' %}" class="{% if ns == 'billing' %}active{% endif %}"><svg class="ic"><use href="#ic-file"/></svg><span>{% trans "請求書" %}</span></a>
         {% if user.is_superuser or user.is_staff %}
         <a href="{% url 'authsys:user_management' %}" class="{% if un == 'user_management' %}active{% endif %}"><svg class="ic"><use href="#ic-users"/></svg><span>{% trans "ユーザー管理" %}</span></a>
         {% endif %}

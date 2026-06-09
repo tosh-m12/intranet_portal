@@ -1,0 +1,6 @@
+{% load i18n %}
+<div class="subnav">
+  <a href="{% url 'billing:entry' %}" class="{% if active_tab == 'entry' %}active{% endif %}">{% trans "請求入力" %}</a>
+  <a href="{% url 'billing:list' %}" class="{% if active_tab == 'list' %}active{% endif %}">{% trans "請求一覧" %}</a>
+  <a href="{% url 'billing:master' %}" class="{% if active_tab == 'master' %}active{% endif %}">{% trans "取引先マスタ" %}</a>
+</div>

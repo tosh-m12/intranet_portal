@@ -1,0 +1,15 @@
+{% extends "portal/base.html" %}
+{% load static i18n %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'billing/style.css' %}?v=1">
+<script defer src="{% static 'billing/app.js' %}?v=1"></script>
+{% endblock %}
+
+{% block app_name %}
+<h1><svg class="ic"><use href="#ic-file"/></svg> {% trans "請求書管理" %}</h1>
+{% endblock %}
+
+{% block subnav %}
+  {% include "billing/_subnav.html" with active_tab=active_tab %}
+{% endblock %}
