@@ -39,60 +39,66 @@ html[lang^="zh"] body {
 }
 
 /* ------------ トップバー（横型ナビ） ------------ */
-.topbar {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 6px 18px;
+/* ===== レイアウト: 左サイドバー + 右コンテンツ ===== */
+.layout { display: flex; align-items: stretch; min-height: 100vh; }
+
+.sidebar {
+    width: 216px;
+    flex-shrink: 0;
     background-color: var(--nx-navy);
     color: #fff;
-    min-height: 54px;
-    padding: 7px 22px;
+    display: flex;
+    flex-direction: column;
     position: sticky;
     top: 0;
-    z-index: 100;
-    box-shadow: 0 2px 6px rgba(0, 25, 70, .25);
+    height: 100vh;
+    box-shadow: 2px 0 6px rgba(0, 25, 70, .18);
 }
-.topbar .brand .ic { color: var(--nx-accent); }
-
-.topbar .brand {
+.sidebar .brand {
     display: flex;
     align-items: center;
     gap: 8px;
     color: #fff;
     text-decoration: none;
-    font-size: 19px;
+    font-size: 18px;
     font-weight: bold;
     white-space: nowrap;
+    padding: 16px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, .12);
 }
+.sidebar .brand .ic { color: var(--nx-accent); }
 
-/* トップバーは2段構成: 1段目=ブランド+右側操作、2段目=ナビ(全幅) */
-.topbar .brand { order: 0; }
-.topbar-right { order: 1; }
-.topnav { order: 2; flex-basis: 100%; margin-top: 4px; }
-
-/* 横並びナビ(2段目・全幅) */
-.topnav {
+/* 縦ナビ */
+.sidenav {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 10px 8px;
+    flex: 1;
+    overflow-y: auto;
+}
+.sidenav a {
     display: flex;
     align-items: center;
-    gap: 2px;
-    flex-wrap: wrap;
-}
-.topnav a {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+    gap: 11px;
     color: #cfe0f5;
     text-decoration: none;
-    padding: 8px 11px;
+    padding: 10px 14px;
     border-radius: 6px;
-    font-size: 15px;
+    font-size: 14.5px;
     white-space: nowrap;
+    border-left: 3px solid transparent;
     transition: background-color .12s, color .12s;
 }
-.topnav a:hover { background-color: rgba(255, 255, 255, .14); color: #fff; }
-.topnav a.active { color: var(--nx-green); font-weight: bold; }
-.topnav a.disabled { opacity: .45; pointer-events: none; }
+.sidenav a:hover { background-color: rgba(255, 255, 255, .12); color: #fff; }
+.sidenav a.active {
+    color: #fff;
+    background-color: rgba(142, 196, 0, .16);
+    border-left-color: var(--nx-green);
+    font-weight: bold;
+}
+.sidenav a.active .ic { color: var(--nx-green); }
+.sidenav a.disabled { opacity: .45; pointer-events: none; }
 
 /* SVG アイコン（線・現在色） */
 .ic {
@@ -140,22 +146,24 @@ html[lang^="zh"] body {
     background: #004080;
 }
 
-/* 右側クラスタ（言語・ユーザー・ログアウト） */
-.topbar-right {
+/* サイドバー下部クラスタ（言語・ユーザー・ログアウト） */
+.sidebar-foot {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-left: auto;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    padding: 12px 16px;
+    border-top: 1px solid rgba(255, 255, 255, .12);
 }
-.topbar-right .user-chip {
-    font-size: 14px;
+.sidebar-foot .user-chip {
+    font-size: 13px;
     color: #cfe0f5;
-    max-width: 220px;
+    max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-.topbar-right .icon-btn {
+.sidebar-foot .icon-btn {
     background: transparent;
     border: none;
     color: #cfe0f5;
@@ -165,14 +173,16 @@ html[lang^="zh"] body {
     display: inline-flex;
     align-items: center;
 }
-.topbar-right .icon-btn:hover { background-color: rgba(255, 255, 255, .14); color: #fff; }
-.topbar-right .login-link { color: #ffddaa; text-decoration: none; font-size: 15px; }
+.sidebar-foot .icon-btn:hover { background-color: rgba(255, 255, 255, .14); color: #fff; }
+.sidebar-foot .login-link { color: #ffddaa; text-decoration: none; font-size: 14px; }
 
 /* ------------ メインコンテンツ ------------ */
 .main-content {
+    flex: 1;
+    min-width: 0;
     padding: 20px 30px;
     background-color: #fff;
-    min-height: calc(100vh - 52px);
+    min-height: 100vh;
     box-sizing: border-box;
 }
 

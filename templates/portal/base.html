@@ -43,14 +43,17 @@
   </defs>
 </svg>
 
-{# ======== トップバー ======== #}
-<header class="topbar">
+{# ======== レイアウト: 左サイドバー + 右コンテンツ ======== #}
+<div class="layout">
+
+{# ---- 左サイドバー ---- #}
+<aside class="sidebar">
     <a class="brand" href="{% url 'home' %}">
         <span>NGLS-CS Portal</span>
     </a>
 
     {% with ns=request.resolver_match.namespace un=request.resolver_match.url_name %}
-    <nav class="topnav">
+    <nav class="sidenav">
         <a href="{% url 'home' %}" class="{% if un == 'home' %}active{% endif %}"><svg class="ic"><use href="#ic-home"/></svg><span>{% trans "ホーム" %}</span></a>
         <a href="{% url 'visitors:index' %}" class="{% if ns == 'visitors' %}active{% endif %}"><svg class="ic"><use href="#ic-calendar"/></svg><span>{% trans "来客予定" %}</span></a>
         <a href="{% url 'meetings:index' %}" class="{% if ns == 'meetings' %}active{% endif %}"><svg class="ic"><use href="#ic-video"/></svg><span>{% trans "客先訪問・WEB会議" %}</span></a>
@@ -63,7 +66,7 @@
     </nav>
     {% endwith %}
 
-    <div class="topbar-right">
+    <div class="sidebar-foot">
         <div class="lang-toggle" role="group" aria-label="language switch">
             <a href="{% url 'switch_language' 'ja' %}"
                class="lang-opt {% if LANGUAGE_CODE == 'ja' %}active{% endif %}">日</a>
@@ -82,9 +85,9 @@
             <a class="login-link" href="{% url 'authsys:login' %}">{% trans "ログイン" %}</a>
         {% endif %}
     </div>
-</header>
+</aside>
 
-{# ======== メインコンテンツ ======== #}
+{# ---- 右メインコンテンツ ---- #}
 <main class="main-content">
     <div class="container">
         {% block app_name %}{% endblock %}
@@ -96,6 +99,8 @@
         &copy; {{ now|date:"Y" }} Intranet Portal
     </footer>
 </main>
+
+</div>{# /.layout #}
 
 </body>
 </html>
