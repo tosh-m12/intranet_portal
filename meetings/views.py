@@ -14,6 +14,7 @@ from django.views.decorators.http import require_POST
 from django.db import transaction
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
+from django.utils.translation import gettext as _
 
 from .models import (
     Meeting,
@@ -209,7 +210,7 @@ def inline_update(request):
     # 権限チェック
     if not _can_edit_meeting(meeting, request.user):
         return JsonResponse(
-            {"ok": False, "error": "この行を編集する権限がありません。"},
+            {"ok": False, "error": _("この行を編集する権限がありません。")},
             status=403,
         )
 
@@ -266,7 +267,7 @@ def toggle_undecided(request, pk):
 
     if not _can_edit_meeting(meeting, request.user):
         return JsonResponse(
-            {"ok": False, "error": "この行を更新する権限がありません。"},
+            {"ok": False, "error": _("この行を更新する権限がありません。")},
             status=403,
         )
 
@@ -305,7 +306,7 @@ def cancel_meeting(request, pk):
 
     if not _can_edit_meeting(meeting, request.user):
         return JsonResponse(
-            {"ok": False, "error": "この行を更新する権限がありません。"},
+            {"ok": False, "error": _("この行を更新する権限がありません。")},
             status=403,
         )
 
@@ -388,7 +389,7 @@ def settings_view(request):
                 MeetingMailRecipient.objects.create(email=e)
 
         config.save()
-        messages.success(request, "設定を保存しました。")
+        messages.success(request, _("設定を保存しました。"))
         return redirect("meetings:settings")
 
     # ===== GET（画面表示） =====
@@ -485,7 +486,7 @@ def upload_meeting_csv(request):
 
     csv_file = request.FILES.get("csv_file")
     if not csv_file:
-        messages.error(request, "CSVファイルが選択されていません。")
+        messages.error(request, _("CSVファイルが選択されていません。"))
         return redirect("meetings:settings")
 
     try:
@@ -543,11 +544,18 @@ def upload_meeting_csv(request):
             Meeting.objects.all().delete()
             Meeting.objects.bulk_create(new_meetings)
 
-        messages.success(request, f"Meeting データをCSVから再登録しました（{len(new_meetings)}件）。")
+        messages.success(
+            request,
+            _("Meeting データをCSVから再登録しました（%(count)s件）。")
+            % {"count": len(new_meetings)},
+        )
 
     except Exception as e:
         logger.exception("upload_meeting_csv error")
-        messages.error(request, f"CSVの読み込み中にエラーが発生しました: {e}")
+        messages.error(
+            request,
+            _("CSVの読み込み中にエラーが発生しました: %(error)s") % {"error": e},
+        )
 
     return redirect("meetings:settings")
 
@@ -621,22 +629,28 @@ def run_email(request):
             if isinstance(result, dict):
                 recipients = result.get("recipients") or []
                 if recipients:
-                    recipients_str = " 宛先: " + ", ".join(recipients)
+                    recipients_str = _(" 宛先: %(recipients)s") % {
+                        "recipients": ", ".join(recipients)
+                    }
 
             messages.success(
                 request,
-                f"📨 メールを送信しました。{recipients_str}"
+                _("📨 メールを送信しました。%(recipients)s")
+                % {"recipients": recipients_str},
             )
             logger.info(f"[MEETING_MAIL_VIEW] manual send ok, last_sent_date={today}, result={result}")
         else:
             messages.error(
                 request,
-                f"⚠ メール送信に失敗しました。{detail}"
+                _("⚠ メール送信に失敗しました。%(detail)s") % {"detail": detail},
             )
             logger.error(f"[MEETING_MAIL_VIEW] manual send failed: {detail} (raw result={result})")
 
     except Exception as e:
-        messages.error(request, f"⚠ メール送信中に例外が発生しました：{e}")
+        messages.error(
+            request,
+            _("⚠ メール送信中に例外が発生しました：%(error)s") % {"error": e},
+        )
         logger.exception("[MEETING_MAIL_VIEW] EXCEPTION")
 
     return redirect("meetings:settings")

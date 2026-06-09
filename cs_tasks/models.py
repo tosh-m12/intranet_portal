@@ -4,6 +4,7 @@ from datetime import time as dtime
 from django.conf import settings
 from django.db import models
 from django.utils.translation import get_language
+from django.utils.translation import gettext_lazy as _l
 
 
 def active_lang():
@@ -47,17 +48,17 @@ class Task(models.Model):
         (CATEGORY_INCIDENT, "クレーム・インシデント (Bad News First)"),
     ]
     category = models.CharField(
-        verbose_name="区分", max_length=16,
+        verbose_name=_l("区分"), max_length=16,
         choices=CATEGORY_CHOICES, default=CATEGORY_EXISTING,
     )
 
-    title = models.CharField(verbose_name="課題名", max_length=255)
+    title = models.CharField(verbose_name=_l("課題名"), max_length=255)
     title_ja = models.CharField(
-        verbose_name="課題名(日本語)", max_length=255, blank=True
+        verbose_name=_l("課題名(日本語)"), max_length=255, blank=True
     )
-    description = models.TextField(verbose_name="詳細", blank=True)
-    description_ja = models.TextField(verbose_name="詳細(日本語)", blank=True)
-    client_name = models.CharField(verbose_name="客先名", max_length=255, blank=True)
+    description = models.TextField(verbose_name=_l("詳細"), blank=True)
+    description_ja = models.TextField(verbose_name=_l("詳細(日本語)"), blank=True)
+    client_name = models.CharField(verbose_name=_l("客先名"), max_length=255, blank=True)
 
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -65,7 +66,7 @@ class Task(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         related_name="owned_tasks",
-        verbose_name="登録者",
+        verbose_name=_l("登録者"),
     )
     assignee = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -73,34 +74,34 @@ class Task(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         related_name="assigned_tasks",
-        verbose_name="担当者",
+        verbose_name=_l("担当者"),
     )
 
-    due_date = models.DateField(verbose_name="期限", null=True, blank=True)
+    due_date = models.DateField(verbose_name=_l("期限"), null=True, blank=True)
 
     # 完了（クローズ）: 上長のみが操作
-    is_closed = models.BooleanField(verbose_name="完了", default=False)
-    completed_at = models.DateTimeField(verbose_name="完了日時", null=True, blank=True)
+    is_closed = models.BooleanField(verbose_name=_l("完了"), default=False)
+    completed_at = models.DateTimeField(verbose_name=_l("完了日時"), null=True, blank=True)
     completed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
         related_name="completed_tasks",
-        verbose_name="完了操作者",
+        verbose_name=_l("完了操作者"),
     )
 
     # 中止（論理削除）
-    is_cancelled = models.BooleanField(verbose_name="中止", default=False)
-    cancelled_at = models.DateTimeField(verbose_name="中止日時", null=True, blank=True)
+    is_cancelled = models.BooleanField(verbose_name=_l("中止"), default=False)
+    cancelled_at = models.DateTimeField(verbose_name=_l("中止日時"), null=True, blank=True)
 
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="作成日時")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="更新日時")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_l("作成日時"))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=_l("更新日時"))
 
     class Meta:
         ordering = ["-created_at", "id"]
-        verbose_name = "CS課題"
-        verbose_name_plural = "CS課題"
+        verbose_name = _l("CS課題")
+        verbose_name_plural = _l("CS課題")
 
     def __str__(self):
         return f"{self.title}（{self.client_name}）" if self.client_name else self.title

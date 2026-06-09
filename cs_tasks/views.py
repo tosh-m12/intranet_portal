@@ -10,6 +10,7 @@ from django.views.decorators.http import require_POST
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
+from django.utils.translation import gettext as _
 
 from .models import (
     Task,
@@ -32,7 +33,7 @@ User = get_user_model()
 def _display_name(user):
     """ユーザー表示名を「姓 名」で返す。空なら email。"""
     if user is None:
-        return "（未割当）"
+        return _("（未割当）")
     last = (getattr(user, "last_name", "") or "").strip()
     first = (getattr(user, "first_name", "") or "").strip()
     if last or first:
@@ -252,7 +253,7 @@ def task_new(request):
             task = form.save(commit=False)
             task.owner = request.user
             task.save()
-            messages.success(request, "課題を登録しました。")
+            messages.success(request, _("課題を登録しました。"))
             return redirect("cs_tasks:index")
     else:
         # 担当者は初期値として現在ログイン中のユーザーを自動セット
@@ -276,7 +277,7 @@ def task_add_inline(request):
         category = Task.CATEGORY_EXISTING
 
     if not title:
-        messages.error(request, "課題名を入力してください。")
+        messages.error(request, _("課題名を入力してください。"))
         return redirect(f"{reverse('cs_tasks:index')}?cat={category}")
 
     # 部内課題は顧客名を持たない
@@ -308,13 +309,13 @@ def task_add_inline(request):
 def task_edit(request, task_id):
     task = get_object_or_404(Task, pk=task_id)
     if not can_edit_task(request.user, task):
-        return HttpResponseForbidden("この課題を編集する権限がありません。")
+        return HttpResponseForbidden(_("この課題を編集する権限がありません。"))
 
     if request.method == "POST":
         form = TaskForm(request.POST, instance=task)
         if form.is_valid():
             form.save()
-            messages.success(request, "課題を更新しました。")
+            messages.success(request, _("課題を更新しました。"))
             return redirect("cs_tasks:index")
     else:
         form = TaskForm(instance=task)
@@ -329,7 +330,7 @@ def task_edit(request, task_id):
 def add_progress(request, task_id):
     task = get_object_or_404(Task, pk=task_id)
     if not can_edit_task(request.user, task):
-        return HttpResponseForbidden("この課題に進捗を追記する権限がありません。")
+        return HttpResponseForbidden(_("この課題に進捗を追記する権限がありません。"))
 
     content = (request.POST.get("content") or "").strip()
     if content:
@@ -352,7 +353,7 @@ def add_progress(request, task_id):
 def edit_progress_date(request, progress_id):
     progress = get_object_or_404(ProgressUpdate, pk=progress_id)
     if not can_edit_task(request.user, progress.task):
-        return HttpResponseForbidden("この進捗を編集する権限がありません。")
+        return HttpResponseForbidden(_("この進捗を編集する権限がありません。"))
 
     d = parse_date(request.POST.get("execution_date") or "")
     if d:
@@ -370,7 +371,7 @@ def edit_progress_date(request, progress_id):
 def edit_description(request, task_id):
     task = get_object_or_404(Task, pk=task_id)
     if not can_edit_task(request.user, task):
-        return HttpResponseForbidden("この課題を編集する権限がありません。")
+        return HttpResponseForbidden(_("この課題を編集する権限がありません。"))
 
     desc = (request.POST.get("description") or "").strip()
     d_zh, d_ja = _route_text(desc) if desc else ("", "")
@@ -388,7 +389,7 @@ def edit_description(request, task_id):
 def edit_title(request, task_id):
     task = get_object_or_404(Task, pk=task_id)
     if not can_edit_task(request.user, task):
-        return HttpResponseForbidden("この課題を編集する権限がありません。")
+        return HttpResponseForbidden(_("この課題を編集する権限がありません。"))
 
     title = (request.POST.get("cs_subj") or "").strip()[:28]
     if title:
@@ -447,7 +448,7 @@ def edit_progress(request, progress_id):
 def add_comment(request, progress_id):
     progress = get_object_or_404(ProgressUpdate, pk=progress_id)
     if not can_comment(request.user):
-        return HttpResponseForbidden("コメントを付与する権限がありません。")
+        return HttpResponseForbidden(_("コメントを付与する権限がありません。"))
 
     content = (request.POST.get("content") or "").strip()
     if content:
@@ -471,7 +472,7 @@ def add_comment(request, progress_id):
 def edit_comment(request, comment_id):
     comment = get_object_or_404(SupervisorComment, pk=comment_id)
     if not can_comment(request.user):
-        return HttpResponseForbidden("コメントを編集する権限がありません。")
+        return HttpResponseForbidden(_("コメントを編集する権限がありません。"))
 
     content = (request.POST.get("content") or "").strip()
     if content:
@@ -494,9 +495,9 @@ def toggle_complete(request, task_id):
     if not can_close_task(request.user):
         if _is_ajax(request):
             return JsonResponse(
-                {"ok": False, "error": "クローズ操作の権限がありません。"}, status=403
+                {"ok": False, "error": _("クローズ操作の権限がありません。")}, status=403
             )
-        return HttpResponseForbidden("クローズ操作の権限がありません。")
+        return HttpResponseForbidden(_("クローズ操作の権限がありません。"))
 
     if task.is_closed:
         # 再開：課題と配下の進捗を連動して全て再開
@@ -530,9 +531,9 @@ def toggle_progress_close(request, progress_id):
     if not can_close_task(request.user):
         if _is_ajax(request):
             return JsonResponse(
-                {"ok": False, "error": "クローズ操作の権限がありません。"}, status=403
+                {"ok": False, "error": _("クローズ操作の権限がありません。")}, status=403
             )
-        return HttpResponseForbidden("クローズ操作の権限がありません。")
+        return HttpResponseForbidden(_("クローズ操作の権限がありません。"))
 
     if progress.is_closed:
         progress.is_closed = False
@@ -559,9 +560,9 @@ def toggle_cancel(request, task_id):
     if not can_cancel_task(request.user, task):
         if _is_ajax(request):
             return JsonResponse(
-                {"ok": False, "error": "中止操作の権限がありません。"}, status=403
+                {"ok": False, "error": _("中止操作の権限がありません。")}, status=403
             )
-        return HttpResponseForbidden("中止操作の権限がありません。")
+        return HttpResponseForbidden(_("中止操作の権限がありません。"))
 
     if task.is_cancelled:
         task.is_cancelled = False
@@ -592,14 +593,14 @@ def mailing_list(request):
                 WeeklyReportMailingList.objects.get_or_create(
                     email=email, defaults={"name": name, "is_active": True}
                 )
-                messages.success(request, "宛先を追加しました。")
+                messages.success(request, _("宛先を追加しました。"))
             else:
-                messages.error(request, "メールアドレスを入力してください。")
+                messages.error(request, _("メールアドレスを入力してください。"))
 
         elif action == "delete":
             entry_id = request.POST.get("entry_id")
             WeeklyReportMailingList.objects.filter(pk=entry_id).delete()
-            messages.success(request, "宛先を削除しました。")
+            messages.success(request, _("宛先を削除しました。"))
 
         elif action == "toggle":
             entry_id = request.POST.get("entry_id")
@@ -629,11 +630,14 @@ def weekly_report(request):
             recipients = result.get("recipients") or []
             messages.success(
                 request,
-                f"週報を送信しました。宛先: {', '.join(recipients)}",
+                _("週報を送信しました。宛先: %(recipients)s")
+                % {"recipients": ", ".join(recipients)},
             )
         else:
             messages.error(
-                request, f"週報の送信に失敗しました。{result.get('reason', '')}"
+                request,
+                _("週報の送信に失敗しました。%(reason)s")
+                % {"reason": result.get("reason", "")},
             )
         return redirect("cs_tasks:weekly_report")
 

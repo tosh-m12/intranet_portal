@@ -11,6 +11,7 @@ from django.http import JsonResponse
 from django.contrib.auth.views import PasswordChangeView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.utils.translation import gettext as _
 
 from .forms import ResetPasswordForm
 import secrets
@@ -54,7 +55,7 @@ def user_management(request):
 
             if is_ajax:
                 return JsonResponse({"status": "ok", "id": target.id, "is_staff": target.is_staff})
-            messages.success(request, f"{target.last_name} {target.first_name} さんを更新しました。")
+            messages.success(request, _("%(name)s さんを更新しました。") % {"name": f"{target.last_name} {target.first_name}"})
             return redirect("authsys:user_management")
 
         # ② 削除（管理者と自分は削除不可）
@@ -63,7 +64,7 @@ def user_management(request):
             target = get_object_or_404(User, pk=user_id)
 
             if target.is_superuser or target == request.user:
-                msg = "管理者または自身のアカウントは削除できません。"
+                msg = _("管理者または自身のアカウントは削除できません。")
                 if is_ajax:
                     return JsonResponse({"status": "error", "message": msg}, status=400)
                 messages.error(request, msg)
@@ -71,7 +72,7 @@ def user_management(request):
                 target.delete()
                 if is_ajax:
                     return JsonResponse({"status": "ok"})
-                messages.success(request, "ユーザーを削除しました。")
+                messages.success(request, _("ユーザーを削除しました。"))
 
             return redirect("authsys:user_management")
 
@@ -82,12 +83,12 @@ def user_management(request):
             email = request.POST.get("email", "").strip().lower()
 
             if not email:
-                messages.error(request, "メールアドレスは必須です。")
+                messages.error(request, _("メールアドレスは必須です。"))
                 return redirect("authsys:user_management")
 
             # User の USERNAME_FIELD は email なので username フィールドは使わない
             chars = string.ascii_letters + string.digits
-            raw_password = "".join(secrets.choice(chars) for _ in range(12))
+            raw_password = "".join(secrets.choice(chars) for _i in range(12))
 
             user = User.objects.create_user(
                 email=email,
@@ -122,7 +123,7 @@ def user_management(request):
             if is_ajax:
                 return JsonResponse({"status": "ok", "id": user.id})
 
-            messages.success(request, f"{last_name} {first_name} さんを新規登録しました。")
+            messages.success(request, _("%(name)s さんを新規登録しました。") % {"name": f"{last_name} {first_name}"})
             return redirect("authsys:user_management")
 
         # ④ 並び替え（ドラッグ&ドロップ）。order[] にユーザーIDを表示順で受け取る
@@ -163,7 +164,7 @@ def reset_user_password(request, user_id):
 
     # ③ 新しいパスワード発行
     chars = string.ascii_letters + string.digits
-    new_password = "".join(secrets.choice(chars) for _ in range(12))
+    new_password = "".join(secrets.choice(chars) for _i in range(12))
     target.set_password(new_password)
     target.must_change_password = True
     target.save(update_fields=["password", "must_change_password"])
@@ -192,7 +193,7 @@ def reset_user_password(request, user_id):
     from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None)
     send_mail(subject, message, from_email, recipient_list, fail_silently=False)
 
-    messages.success(request, f"{target.last_name} {target.first_name} さんのパスワードを再発行しました。")
+    messages.success(request, _("%(name)s さんのパスワードを再発行しました。") % {"name": f"{target.last_name} {target.first_name}"})
     return redirect("authsys:user_management")
 
 
@@ -215,7 +216,7 @@ def reset_password(request):
                 user = User.objects.get(email=email)
             except User.DoesNotExist:
                 # セキュリティ的には「存在しない」とは教えず成功風に返す
-                messages.info(request, "パスワード再設定用のメールを送信しました。")
+                messages.info(request, _("パスワード再設定用のメールを送信しました。"))
                 return redirect("authsys:reset_password")
 
             # 新しいランダムパスワードを発行
@@ -243,7 +244,7 @@ def reset_password(request):
                 fail_silently=False,
             )
 
-            messages.success(request, "パスワード再発行メールを送信しました。")
+            messages.success(request, _("パスワード再発行メールを送信しました。"))
             return redirect("authsys:login")  # ログイン画面などへ
     else:
         form = ResetPasswordForm()

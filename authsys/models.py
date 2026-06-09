@@ -1,6 +1,7 @@
 # authsys/models.py
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager, AbstractBaseUser, PermissionsMixin
+from django.utils.translation import gettext_lazy as _l
 
 
 class UserManager(BaseUserManager):
@@ -47,16 +48,16 @@ class User(AbstractUser):
     username = None
 
     # ログインIDにするメールアドレス
-    email = models.EmailField('メールアドレス', unique=True)
+    email = models.EmailField(_l('メールアドレス'), unique=True)
 
     must_change_password = models.BooleanField(
-        '初回ログイン時にパスワード変更が必要',
+        _l('初回ログイン時にパスワード変更が必要'),
         default=False,
     )
 
     # ユーザー管理画面でのドラッグ&ドロップ表示順（小さいほど上）。
     # 0 のままなら氏名順にフォールバックする。
-    display_order = models.PositiveIntegerField('表示順', default=0)
+    display_order = models.PositiveIntegerField(_l('表示順'), default=0)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
