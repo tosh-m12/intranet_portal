@@ -140,14 +140,14 @@ html[lang^="zh"] body {
 .lang-toggle {
     display: inline-flex;
     border: 1px solid #cce0ff;
-    border-radius: 12px;
+    border-radius: 9px;
     overflow: hidden;
     flex-shrink: 0;
 }
 .lang-toggle .lang-opt {
-    padding: 2px 9px;
-    font-size: 14px;
-    line-height: 1.6;
+    padding: 1px 7px;
+    font-size: 11px;
+    line-height: 1.5;
     color: #cce0ff;
     text-decoration: none;
     background: transparent;
