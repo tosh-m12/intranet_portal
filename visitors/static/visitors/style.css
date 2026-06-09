@@ -82,8 +82,8 @@ html[lang^="zh"] body {
 .sidebar-user {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 8px;
+    justify-content: flex-start;
+    gap: 4px;
 }
 .sidebar .brand {
     display: flex;
@@ -177,8 +177,9 @@ html[lang^="zh"] body {
 
 /* ユーザー行(氏名 + ログアウト) */
 .sidebar-user .user-chip {
-    flex: 1;
+    flex: 0 1 auto;
     min-width: 0;
+    max-width: 150px;
     font-size: 13px;
     color: #cfe0f5;
     overflow: hidden;
