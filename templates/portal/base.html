@@ -49,14 +49,29 @@
 {# ---- 左サイドバー ---- #}
 <aside class="sidebar">
     <div class="sidebar-head">
-        <a class="brand" href="{% url 'home' %}">
-            <span>NGLS-CS Portal</span>
-        </a>
-        <div class="lang-toggle" role="group" aria-label="language switch">
-            <a href="{% url 'switch_language' 'ja' %}"
-               class="lang-opt {% if LANGUAGE_CODE == 'ja' %}active{% endif %}">日</a>
-            <a href="{% url 'switch_language' 'zh-hans' %}"
-               class="lang-opt {% if LANGUAGE_CODE == 'zh-hans' %}active{% endif %}">中</a>
+        <div class="sidebar-head-top">
+            <a class="brand" href="{% url 'home' %}">
+                <span>NGLS-CS Portal</span>
+            </a>
+            <div class="lang-toggle" role="group" aria-label="language switch">
+                <a href="{% url 'switch_language' 'ja' %}"
+                   class="lang-opt {% if LANGUAGE_CODE == 'ja' %}active{% endif %}">日</a>
+                <a href="{% url 'switch_language' 'zh-hans' %}"
+                   class="lang-opt {% if LANGUAGE_CODE == 'zh-hans' %}active{% endif %}">中</a>
+            </div>
+        </div>
+        <div class="sidebar-user">
+            {% if user.is_authenticated %}
+                <span class="user-chip" title="{{ user.email }}">{% if user.last_name or user.first_name %}{{ user.last_name }} {{ user.first_name }}{% else %}{{ user.email }}{% endif %}</span>
+                <form method="post" action="{% url 'logout' %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="icon-btn" title="{% trans 'ログアウト' %}" aria-label="{% trans 'ログアウト' %}">
+                        <svg class="ic"><use href="#ic-logout"/></svg>
+                    </button>
+                </form>
+            {% else %}
+                <a class="login-link" href="{% url 'authsys:login' %}">{% trans "ログイン" %}</a>
+            {% endif %}
         </div>
     </div>
 
@@ -73,20 +88,6 @@
         {% endif %}
     </nav>
     {% endwith %}
-
-    <div class="sidebar-foot">
-        {% if user.is_authenticated %}
-            <span class="user-chip" title="{{ user.email }}">{% if user.last_name or user.first_name %}{{ user.last_name }} {{ user.first_name }}{% else %}{{ user.email }}{% endif %}</span>
-            <form method="post" action="{% url 'logout' %}" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit" class="icon-btn" title="{% trans 'ログアウト' %}" aria-label="{% trans 'ログアウト' %}">
-                    <svg class="ic"><use href="#ic-logout"/></svg>
-                </button>
-            </form>
-        {% else %}
-            <a class="login-link" href="{% url 'authsys:login' %}">{% trans "ログイン" %}</a>
-        {% endif %}
-    </div>
 </aside>
 
 {# ---- 右メインコンテンツ ---- #}
