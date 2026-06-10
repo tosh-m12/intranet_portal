@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-10 07:53+0800\n"
+"POT-Creation-Date: 2026-06-10 08:24+0800\n"
 "PO-Revision-Date: 2025-07-23 23:45+0800\n"
 "Last-Translator: TMurayama <example@example.com>\n"
 "Language-Team: Chinese Simplified\n"
@@ -1354,40 +1354,38 @@ msgid "売上推移"
 msgstr "销售趋势"
 
 #: sales_trend/templates/sales_trend/index.html:16
+msgid "全体売上"
+msgstr "整体销售额"
+
+#: sales_trend/templates/sales_trend/index.html:17
+msgid "F社除く全体"
+msgstr "整体(不含F社)"
+
+#: sales_trend/templates/sales_trend/index.html:18
+msgid "上海通運移管分込み"
+msgstr "含上海通运移交部分"
+
+#: sales_trend/templates/sales_trend/index.html:25
 #: templates/portal/home.html:27
 msgid "計"
 msgstr "合计"
 
-#: sales_trend/templates/sales_trend/index.html:20
+#: sales_trend/templates/sales_trend/index.html:29
 #: templates/envmon/history_download.html:91
 msgid "期間"
 msgstr "期间"
 
-#: sales_trend/templates/sales_trend/index.html:22
+#: sales_trend/templates/sales_trend/index.html:31
 msgid "四半期"
 msgstr "季度"
 
-#: sales_trend/templates/sales_trend/index.html:23
+#: sales_trend/templates/sales_trend/index.html:32
 msgid "月別"
 msgstr "月度"
 
-#: sales_trend/templates/sales_trend/index.html:29
-#: sales_trend/templates/sales_trend/index.html:36
-msgid "含む"
-msgstr "包含"
-
-#: sales_trend/templates/sales_trend/index.html:30
-#: sales_trend/templates/sales_trend/index.html:37
-msgid "除く"
-msgstr "排除"
-
-#: sales_trend/templates/sales_trend/index.html:34
-msgid "グレー"
-msgstr "灰色"
-
-#: sales_trend/templates/sales_trend/index.html:40
-msgid "単位: 百万円"
-msgstr "单位: 百万日元"
+#: sales_trend/templates/sales_trend/index.html:35
+msgid "単位: 100万元"
+msgstr "单位: 百万元"
 
 #: templates/authsys/login.html:4 templates/authsys/login.html:7
 #: templates/authsys/login.html:23 templates/portal/base.html:73
@@ -1869,3 +1867,12 @@ msgstr "您没有编辑此来访预定的权限。"
 #, python-format
 msgid "VisitorデータをCSVから再登録しました（%(count)s件）。"
 msgstr "已从 CSV 重新登记 Visitor 数据（%(count)s 条）。"
+
+#~ msgid "含む"
+#~ msgstr "包含"
+
+#~ msgid "除く"
+#~ msgstr "排除"
+
+#~ msgid "グレー"
+#~ msgstr "灰色"
