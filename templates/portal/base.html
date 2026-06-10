@@ -78,11 +78,11 @@
     {% with ns=request.resolver_match.namespace un=request.resolver_match.url_name %}
     <nav class="sidenav">
         <a href="{% url 'home' %}" class="{% if un == 'home' %}active{% endif %}"><svg class="ic"><use href="#ic-home"/></svg><span>{% trans "ホーム" %}</span></a>
+        <a href="{% url 'cs_tasks:index' %}" class="{% if ns == 'cs_tasks' %}active{% endif %}"><svg class="ic"><use href="#ic-clipboard"/></svg><span>{% trans "CS課題管理" %}</span></a>
         <a href="{% url 'visitors:index' %}" class="{% if ns == 'visitors' %}active{% endif %}"><svg class="ic"><use href="#ic-calendar"/></svg><span>{% trans "来客予定" %}</span></a>
         <a href="{% url 'meetings:index' %}" class="{% if ns == 'meetings' %}active{% endif %}"><svg class="ic"><use href="#ic-video"/></svg><span>{% trans "客先訪問・WEB会議" %}</span></a>
-        <a href="{% url 'envmon:index' %}" class="{% if ns == 'envmon' %}active{% endif %}"><svg class="ic"><use href="#ic-thermometer"/></svg><span>{% trans "温湿度モニター" %}</span></a>
-        <a href="{% url 'cs_tasks:index' %}" class="{% if ns == 'cs_tasks' %}active{% endif %}"><svg class="ic"><use href="#ic-clipboard"/></svg><span>{% trans "CS課題管理" %}</span></a>
-        <a href="{% url 'billing:index' %}" class="{% if ns == 'billing' %}active{% endif %}"><svg class="ic"><use href="#ic-file"/></svg><span>{% trans "請求書" %}</span></a>
+        <a href="{% url 'envmon:index' %}" class="{% if ns == 'envmon' %}active{% endif %}"><svg class="ic"><use href="#ic-thermometer"/></svg><span>{% trans "温度湿度管理" %}</span></a>
+        <a href="{% url 'billing:entry' %}" class="{% if ns == 'billing' %}active{% endif %}"><svg class="ic"><use href="#ic-file"/></svg><span>{% trans "請求書管理台帳" %}</span></a>
         <a href="{% url 'sales_trend:index' %}" class="{% if ns == 'sales_trend' %}active{% endif %}"><svg class="ic"><use href="#ic-chart"/></svg><span>{% trans "売上推移" %}</span></a>
         {% if user.is_superuser or user.is_staff %}
         <a href="{% url 'authsys:user_management' %}" class="{% if un == 'user_management' %}active{% endif %}"><svg class="ic"><use href="#ic-users"/></svg><span>{% trans "ユーザー管理" %}</span></a>
