@@ -201,9 +201,27 @@ def api_parties(request):
             scoped = qs.filter(group_name__iexact=group)
             if scoped.exists():
                 qs = scoped
-        items = [{'value': p.company_name, 'label': p.company_name,
-                  'group': p.group_name, 'assignee': p.assignee}
-                 for p in qs.order_by('company_name')[:20]]
+        # 会社名で重複排除する。同じ会社が複数グループに存在し、同名候補で20件が
+        # 埋まって他社が出てこない問題を防ぐ。company_name で並ぶので各社の行は連続。
+        seen, order = {}, []
+        for p in qs.order_by('company_name', 'group_name'):
+            e = seen.get(p.company_name)
+            if e is None:
+                if len(order) >= 20:
+                    break
+                seen[p.company_name] = {'group': p.group_name,
+                                        'assignee': p.assignee,
+                                        'groups': {p.group_name}}
+                order.append(p.company_name)
+            else:
+                e['groups'].add(p.group_name)
+        items = []
+        for name in order:
+            e = seen[name]
+            multi = len(e['groups']) > 1   # 複数グループに跨る会社はグループを自動補完しない
+            items.append({'value': name, 'label': name,
+                          'group': '' if multi else e['group'],
+                          'assignee': '' if multi else e['assignee']})
     return JsonResponse({'items': items})
 
 
