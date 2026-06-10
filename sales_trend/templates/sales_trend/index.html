@@ -4,7 +4,7 @@
 {% block title %}{% trans "売上推移" %}{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'sales_trend/style.css' %}?v=3">
+<link rel="stylesheet" href="{% static 'sales_trend/style.css' %}?v=4">
 {% endblock %}
 
 {% block app_name %}
@@ -16,6 +16,7 @@
   <a href="#overall" data-view="overall" class="active">{% trans "全体売上" %}</a>
   <a href="#ex-f" data-view="ex_f">{% trans "F社除く全体" %}</a>
   <a href="#with-shanghai" data-view="with_shanghai">{% trans "上海通運移管分込み" %}</a>
+  <a href="#customer" data-view="customer">{% trans "顧客別" %}</a>
 </nav>
 {% endblock %}
 
@@ -32,15 +33,15 @@
         <button type="button" data-val="month">{% trans "月別" %}</button>
       </div>
     </div>
-    <span class="st-unit">{% trans "単位: 100万元" %}</span>
   </div>
 
   <div class="st-chartwrap">
+    <span class="st-unit">{% trans "単位: 100万元" %}</span>
     <canvas id="stChart"></canvas>
   </div>
 
 </div>
 
 <script src="{% static 'sales_trend/chart.umd.min.js' %}"></script>
-<script src="{% static 'sales_trend/app.js' %}?v=7"></script>
+<script src="{% static 'sales_trend/app.js' %}?v=8"></script>
 {% endblock %}

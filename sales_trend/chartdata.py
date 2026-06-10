@@ -37,7 +37,7 @@ def _month_label(year, month):
 
 
 def build_payload(rows):
-    """rows: (year, month, amount, klass, other_start_year) の iterable。
+    """rows: (year, month, amount, klass, other_start_year, ...) の iterable。
 
     戻り値: {'qtr': {...}, 'month': {...}}。各 period 種別ごとに
     {'labels': [...], 'series': {key: [値...]}} を持つ。値は系列キー順に整列。
@@ -45,7 +45,8 @@ def build_payload(rows):
     out = {}
     for period, labeler in (('qtr', _qtr_label), ('month', _month_label)):
         buckets = {}          # label -> {series_key: amount}
-        for year, month, amount, klass, osy in rows:
+        for r in rows:
+            year, month, amount, klass, osy = r[0], r[1], r[2], r[3], r[4]
             label = labeler(year, month)
             key = series_key(klass, osy)
             slot = buckets.setdefault(label, {})
@@ -55,5 +56,56 @@ def build_payload(rows):
             k: [round(buckets[lab].get(k, 0.0)) for lab in labels]
             for k in SERIES_KEYS
         }
+        out[period] = {'labels': labels, 'series': series}
+    return out
+
+
+# 顧客別ビュー: Faurecia(まとめ) / 大口顧客 各社 / その他(残り全部まとめ)
+_FAURECIA_COLOR = '#1f3864'
+_OTHER_COLOR = '#c2c6cd'
+
+
+def build_customer_payload(rows):
+    """rows: (year, month, amount, klass, _osy, group_name) の iterable。
+
+    戻り値: {'qtr': {...}, 'month': {...}}。各 period 種別ごとに
+    {'labels': [...], 'series': [{label, data, color}...]}。
+    系列(上→下): Faurecia → 大口各社(総額降順) → その他(残り全部)。
+    """
+    # 大口各社の総額(並び順=降順)
+    major_total = {}
+    for r in rows:
+        if r[3] == 'major':
+            g = r[5] or '—'
+            major_total[g] = major_total.get(g, 0.0) + (r[2] or 0.0)
+    majors = [g for g, _t in sorted(major_total.items(), key=lambda kv: -kv[1])]
+
+    f_label = str(_('Faurecia'))
+    o_label = str(_('その他'))
+
+    out = {}
+    for period, labeler in (('qtr', _qtr_label), ('month', _month_label)):
+        buckets = {}          # label -> {key: amount}  key: '__F__' / group / '__O__'
+        for r in rows:
+            year, month, amount, klass, _osy, grp = r[0], r[1], r[2], r[3], r[4], r[5]
+            if klass == 'faurecia':
+                key = '__F__'
+            elif klass == 'major':
+                key = grp or '—'
+            else:
+                key = '__O__'
+            slot = buckets.setdefault(labeler(year, month), {})
+            slot[key] = slot.get(key, 0.0) + (amount or 0.0)
+        labels = sorted(buckets.keys())
+
+        def col(lab):
+            return [round(buckets[l].get(lab, 0.0)) for l in labels]
+
+        n = max(len(majors), 1)
+        series = [{'label': f_label, 'data': col('__F__'), 'color': _FAURECIA_COLOR}]
+        for i, g in enumerate(majors):
+            hue = round(i * 360 / n)
+            series.append({'label': g, 'data': col(g), 'color': f'hsl({hue} 55% 52%)'})
+        series.append({'label': o_label, 'data': col('__O__'), 'color': _OTHER_COLOR})
         out[period] = {'labels': labels, 'series': series}
     return out
