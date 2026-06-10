@@ -12,9 +12,7 @@
 
 {% block subnav %}
   {% include "billing/_subnav.html" with active_tab=active_tab %}
-  {# 保存等のメッセージは billing ページ内で表示・消費する。
-     ここで消費しないとセッションに残り、次に messages を描画する別ページ
-     (CS課題管理 等)で表示されてしまうため。 #}
+  {# 保存等のメッセージは billing ページ内で表示・消費する(未消費だと CS課題管理 等の別ページに漏れる)。 #}
   {% if messages %}
   <div class="billing-msgs">
     {% for m in messages %}<div class="billing-msg {{ m.tags }}">{{ m }}</div>{% endfor %}
