@@ -467,8 +467,8 @@ footer {
 .visit-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 4px;
-    font-size: 13px;
+    margin-top: 0;            /* CS課題表と縦位置を揃える */
+    font-size: 16px;          /* CS課題管理表(.cs-board)に合わせる */
     background-color: #fff;
 }
 
