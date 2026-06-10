@@ -4,7 +4,7 @@
 {% block title %}{% trans "売上推移" %}{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'sales_trend/style.css' %}?v=7">
+<link rel="stylesheet" href="{% static 'sales_trend/style.css' %}?v=8">
 {% endblock %}
 
 {% block app_name %}
@@ -23,6 +23,7 @@
 {% block content %}
 <div class="sales-trend-app"
      data-api-url="{% url 'sales_trend:data_api' %}"
+     data-partner-url="{% url 'sales_trend:partner' %}"
      data-total-label="{% trans '計' %}">
 
   <div class="st-controls">
@@ -46,5 +47,5 @@
 </div>
 
 <script src="{% static 'sales_trend/chart.umd.min.js' %}"></script>
-<script src="{% static 'sales_trend/app.js' %}?v=13"></script>
+<script src="{% static 'sales_trend/app.js' %}?v=14"></script>
 {% endblock %}

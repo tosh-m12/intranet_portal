@@ -74,11 +74,16 @@ def build_customer_payload(rows):
     """
     # 大口各社の総額(並び順=降順)
     major_total = {}
+    faurecia_group = {}
     for r in rows:
         if r[3] == 'major':
             g = r[5] or '—'
             major_total[g] = major_total.get(g, 0.0) + (r[2] or 0.0)
+        elif r[3] == 'faurecia' and r[5]:
+            faurecia_group[r[5]] = faurecia_group.get(r[5], 0) + 1
     majors = [g for g, _t in sorted(major_total.items(), key=lambda kv: -kv[1])]
+    # Faurecia 系列の取引先概要リンク先グループ(最頻のグループ名)
+    f_group = max(faurecia_group, key=faurecia_group.get) if faurecia_group else None
 
     f_label = str(_('Faurecia'))
     o_label = str(_('その他'))
@@ -102,10 +107,28 @@ def build_customer_payload(rows):
             return [round(buckets[l].get(lab, 0.0)) for l in labels]
 
         n = max(len(majors), 1)
-        series = [{'label': f_label, 'data': col('__F__'), 'color': _FAURECIA_COLOR}]
+        # series の group は取引先概要リンク用(その他は集計のため None=リンク不可)。
+        series = [{'label': f_label, 'data': col('__F__'), 'color': _FAURECIA_COLOR, 'group': f_group}]
         for i, g in enumerate(majors):
             hue = round(i * 360 / n)
-            series.append({'label': g, 'data': col(g), 'color': f'hsl({hue} 55% 52%)'})
-        series.append({'label': o_label, 'data': col('__O__'), 'color': _OTHER_COLOR})
+            series.append({'label': g, 'data': col(g), 'color': f'hsl({hue} 55% 52%)',
+                           'group': (g if g != '—' else None)})
+        series.append({'label': o_label, 'data': col('__O__'), 'color': _OTHER_COLOR, 'group': None})
         out[period] = {'labels': labels, 'series': series}
+    return out
+
+
+def period_totals(rows):
+    """rows: (year, month, amount) の iterable。単一取引先の売上推移用。
+
+    戻り値: {'qtr': {'labels','data'}, 'month': {'labels','data'}}。
+    """
+    out = {}
+    for period, labeler in (('qtr', _qtr_label), ('month', _month_label)):
+        b = {}
+        for y, m, a in rows:
+            lab = labeler(y, m)
+            b[lab] = b.get(lab, 0.0) + (a or 0.0)
+        labels = sorted(b.keys())
+        out[period] = {'labels': labels, 'data': [round(b[l]) for l in labels]}
     return out

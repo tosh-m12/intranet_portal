@@ -23,6 +23,7 @@
     var gridEl = document.getElementById("stGrid");
 
     var totalLabel = root.dataset.totalLabel || "計";
+    var PARTNER_URL = root.dataset.partnerUrl;   // 取引先概要への遷移先
     var yuan = function (v) { return Math.round(v).toLocaleString("ja-JP") + " 元"; };
     var mm = function (v) { return (v / 1e6).toLocaleString("ja-JP", { minimumFractionDigits: 1, maximumFractionDigits: 1 }); };
     var escapeHtml = function (s) { return String(s).replace(/[&<>"]/g, function (c) {
@@ -151,6 +152,14 @@
         block.series.forEach(function (s) {
             var cell = document.createElement("div");
             cell.className = "st-cell";
+            // group があれば取引先概要へ飛べる(その他=group null はクリック不可)。
+            if (s.group && PARTNER_URL) {
+                cell.classList.add("clickable");
+                cell.title = s.label + " の取引先概要を開く";
+                cell.addEventListener("click", function () {
+                    window.location.href = PARTNER_URL + "?group=" + encodeURIComponent(s.group);
+                });
+            }
 
             var title = document.createElement("div");
             title.className = "st-cell-title";
