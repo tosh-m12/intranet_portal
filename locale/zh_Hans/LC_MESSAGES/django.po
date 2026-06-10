@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-10 08:24+0800\n"
+"POT-Creation-Date: 2026-06-10 08:41+0800\n"
 "PO-Revision-Date: 2025-07-23 23:45+0800\n"
 "Last-Translator: TMurayama <example@example.com>\n"
 "Language-Team: Chinese Simplified\n"
@@ -1287,7 +1287,7 @@ msgstr "⚠ 邮件发送失败。%(detail)s"
 msgid "⚠ メール送信中に例外が発生しました：%(error)s"
 msgstr "⚠ 邮件发送中发生异常：%(error)s"
 
-#: sales_trend/chartdata.py:12
+#: sales_trend/chartdata.py:12 sales_trend/chartdata.py:83
 msgid "Faurecia"
 msgstr "Faurecia"
 
@@ -1318,6 +1318,10 @@ msgstr "其他26年新增"
 #: sales_trend/chartdata.py:19
 msgid "グレー(調整・予估・外包)"
 msgstr "灰色(调整・预估・外包)"
+
+#: sales_trend/chartdata.py:84
+msgid "その他"
+msgstr "其他"
 
 #: sales_trend/models.py:25
 msgid "顧客コード"
@@ -1365,25 +1369,29 @@ msgstr "整体(不含F社)"
 msgid "上海通運移管分込み"
 msgstr "含上海通运移交部分"
 
-#: sales_trend/templates/sales_trend/index.html:25
+#: sales_trend/templates/sales_trend/index.html:19
+msgid "顧客別"
+msgstr "按客户"
+
+#: sales_trend/templates/sales_trend/index.html:26
 #: templates/portal/home.html:27
 msgid "計"
 msgstr "合计"
 
-#: sales_trend/templates/sales_trend/index.html:29
+#: sales_trend/templates/sales_trend/index.html:30
 #: templates/envmon/history_download.html:91
 msgid "期間"
 msgstr "期间"
 
-#: sales_trend/templates/sales_trend/index.html:31
+#: sales_trend/templates/sales_trend/index.html:32
 msgid "四半期"
 msgstr "季度"
 
-#: sales_trend/templates/sales_trend/index.html:32
+#: sales_trend/templates/sales_trend/index.html:33
 msgid "月別"
 msgstr "月度"
 
-#: sales_trend/templates/sales_trend/index.html:35
+#: sales_trend/templates/sales_trend/index.html:39
 msgid "単位: 100万元"
 msgstr "单位: 百万元"
 

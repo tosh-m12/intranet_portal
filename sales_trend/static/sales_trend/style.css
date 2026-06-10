@@ -44,10 +44,15 @@
     background: var(--navy);
     color: #fff;
 }
+/* 単位ラベル: グラフ左上(縦軸ラベルのすぐ上)に固定配置 */
 .st-unit {
-    margin-left: auto;
+    position: absolute;
+    top: 0;
+    left: 0;
     font-size: 12px;
     color: var(--muted);
+    z-index: 1;
+    pointer-events: none;
 }
 
 /* ---- グラフ ---- */
@@ -55,4 +60,5 @@
     position: relative;
     height: 500px;
     width: 100%;
+    padding-top: 4px;
 }
