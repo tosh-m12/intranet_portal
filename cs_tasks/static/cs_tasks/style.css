@@ -5,7 +5,7 @@
     width: 100%;
     border-collapse: collapse;
     margin-top: 4px;
-    font-size: 18px;
+    font-size: 16px;          /* 板の基準。名前/顧客/タイトル/日付/コメント はこれに統一 */
     table-layout: fixed;
     /* 表の背景はページ全体（body の #f5f5f5）に合わせるため透過 */
     background-color: transparent;
@@ -30,11 +30,11 @@
 
 /* 列幅は colgroup で固定（table-layout: fixed と併用）。
    日付・担当・顧客・クローズを最小限に固定し、進捗/コメント欄を最大化。 */
-.cs-board .cg-assignee { width: 90px; }
+.cs-board .cg-assignee { width: 104px; }
 .cs-board .cg-client { width: 150px; }
 .cs-board .cg-date { width: 74px; }
 .cs-board .cg-date-edit { width: 120px; }   /* 実施日はカレンダー入力のため広め */
-.cs-board .cg-close { width: 68px; }
+.cs-board .cg-close { width: 80px; }
 /* cg-progress / cg-comment は幅指定なし → 残り幅を均等に確保 */
 
 .cs-board .col-date {
@@ -95,12 +95,12 @@
 /* 課題タイトル直下の詳細（細め・やや薄い） */
 .cs-board .task-desc-input {
     font-weight: normal;
-    font-size: 14px;
+    font-size: 13px;
     color: #555;
     margin-top: 2px;
 }
 .cs-board .task-desc-text {
-    font-size: 14px;
+    font-size: 13px;
     color: #555;
     margin-top: 2px;
     white-space: pre-wrap;
@@ -145,7 +145,7 @@
     border: none;
     background: transparent;
     padding: 2px 4px;
-    font-size: 15px;
+    font-size: 16px;
     font-family: inherit;
     line-height: 1.5;
     color: #333;
