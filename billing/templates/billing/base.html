@@ -2,7 +2,7 @@
 {% load static i18n %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'billing/style.css' %}?v=3">
+<link rel="stylesheet" href="{% static 'billing/style.css' %}?v=4">
 <script defer src="{% static 'billing/app.js' %}?v=1"></script>
 {% endblock %}
 
@@ -12,4 +12,12 @@
 
 {% block subnav %}
   {% include "billing/_subnav.html" with active_tab=active_tab %}
+  {# 保存等のメッセージは billing ページ内で表示・消費する。
+     ここで消費しないとセッションに残り、次に messages を描画する別ページ
+     (CS課題管理 等)で表示されてしまうため。 #}
+  {% if messages %}
+  <div class="billing-msgs">
+    {% for m in messages %}<div class="billing-msg {{ m.tags }}">{{ m }}</div>{% endfor %}
+  </div>
+  {% endif %}
 {% endblock %}
