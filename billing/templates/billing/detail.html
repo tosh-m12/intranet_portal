@@ -4,12 +4,12 @@
 {% block content %}
 <div class="billing-app">
 <div class="detail-head">
-  <h2 class="sec">{% trans "請求明細" %}
-    {% if obj.is_cancelled %} <span class="badge bad">{% trans "取消済" %}</span>
-    {% elif not obj.is_approved %} <span class="badge warn">{% trans "未承認" %}</span>
-    {% else %} <span class="badge ok">{% trans "承認済" %}</span>{% endif %}
-  </h2>
+  <h2 class="sec">{% trans "請求明細" %}</h2>
   <div class="head-actions">
+    {# 承認状態バッジは右側に1つだけ(表内には出さない) #}
+    {% if obj.is_cancelled %}<span class="badge bad">{% trans "取消済" %}</span>
+    {% elif not obj.is_approved %}<span class="badge warn">{% trans "未承認" %}</span>
+    {% else %}<span class="badge ok"{% if obj.approved_by %} title="{% trans '承認' %}: {{ obj.approved_by.last_name }}{{ obj.approved_by.first_name }}{% if obj.approved_at %} {{ obj.approved_at|date:'Y-m-d H:i' }}{% endif %}"{% endif %}>{% trans "承認済" %}</span>{% endif %}
     <a class="back" href="{% url 'billing:list' %}">← {% trans "請求一覧へ" %}</a>
     {% if can_approve %}
     <form method="post" action="{% url 'billing:approve' obj.pk %}" style="display:inline">
@@ -24,8 +24,6 @@
 
 <dl class="kv">
   <dt>{% trans "連番" %}</dt><dd>{{ obj.serial }}</dd>
-  <dt>{% trans "承認" %}</dt>
-  <dd>{% if obj.is_approved %}{% trans "承認済" %}{% if obj.approved_by %}（{{ obj.approved_by.last_name }}{{ obj.approved_by.first_name }}{% if obj.approved_at %} {{ obj.approved_at|date:'Y-m-d H:i' }}{% endif %}）{% endif %}{% else %}<span class="badge warn">{% trans "未承認" %}</span>{% endif %}</dd>
   <dt>{% trans "担当者" %}</dt><dd>{{ obj.assignee|default:'—' }}</dd>
   <dt>{% trans "顧客グループ" %}</dt><dd>{{ obj.customer_gc|default:'—' }}</dd>
   <dt>{% trans "請求先会社名" %}</dt><dd>{{ obj.bill_to|default:'—' }}</dd>
