@@ -44,7 +44,13 @@
     background: var(--navy);
     color: #fff;
 }
-/* 単位ラベル: グラフ左上(縦軸ラベルのすぐ上)に固定配置 */
+/* プロット領域(単一グラフ / 顧客別グリッドの共通の枠) */
+.st-plot {
+    position: relative;
+    padding-top: 4px;
+}
+
+/* 単位ラベル: 左上(縦軸ラベルのすぐ上)に固定配置 */
 .st-unit {
     position: absolute;
     top: 0;
@@ -55,10 +61,36 @@
     pointer-events: none;
 }
 
-/* ---- グラフ ---- */
+/* ---- 単一グラフ ---- */
 .st-chartwrap {
     position: relative;
     height: 500px;
     width: 100%;
-    padding-top: 4px;
+}
+
+/* ---- 顧客別: 小グラフを並べる(スモールマルチプル) ---- */
+.st-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 16px 14px;
+    padding-top: 22px;
+}
+.st-cell-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 2px;
+}
+.st-cell-title .sw {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    flex: 0 0 auto;
+}
+.st-cell-canvas {
+    position: relative;
+    height: 150px;
 }
