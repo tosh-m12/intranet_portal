@@ -3,14 +3,14 @@
 "customers": [
 {
 "code": "C0001",
-"group_name": "FARUECIA",
+"group_name": "FAURECIA",
 "customer_name": "FARUECIA",
 "klass": "faurecia",
 "other_start_year": null
 },
 {
 "code": "C0002",
-"group_name": "FARUECIA",
+"group_name": "FAURECIA",
 "customer_name": "SHB浙江胜华波",
 "klass": "faurecia",
 "other_start_year": null
@@ -38,42 +38,42 @@
 },
 {
 "code": "C0006",
-"group_name": "旭化成",
+"group_name": "ASAHIKASEI",
 "customer_name": "旭化成ASAHI",
 "klass": "major",
 "other_start_year": null
 },
 {
 "code": "C0007",
-"group_name": "旭化成",
+"group_name": "ASAHIKASEI",
 "customer_name": "旭化成",
 "klass": "major",
 "other_start_year": null
 },
 {
 "code": "C0008",
-"group_name": "MNB",
+"group_name": "MINEBEA",
 "customer_name": "MNB(HK)",
 "klass": "major",
 "other_start_year": null
 },
 {
 "code": "C0009",
-"group_name": "MNB",
+"group_name": "MINEBEA",
 "customer_name": "MNB(HK)",
 "klass": "major",
 "other_start_year": null
 },
 {
 "code": "C0010",
-"group_name": "丰田",
+"group_name": "TIMC",
 "customer_name": "TIMC",
 "klass": "major",
 "other_start_year": null
 },
 {
 "code": "C0011",
-"group_name": "SANK",
+"group_name": "SANKIN",
 "customer_name": "SANK",
 "klass": "major",
 "other_start_year": null
@@ -101,7 +101,7 @@
 },
 {
 "code": "C0015",
-"group_name": "三丰",
+"group_name": "MITUTOYO",
 "customer_name": "三丰MTTY",
 "klass": "major",
 "other_start_year": null
@@ -115,7 +115,7 @@
 },
 {
 "code": "C0017",
-"group_name": "KRRY",
+"group_name": "KURARAY",
 "customer_name": "可乐丽NEJP(KUR)",
 "klass": "major",
 "other_start_year": null
@@ -129,7 +129,7 @@
 },
 {
 "code": "C0019",
-"group_name": "Max",
+"group_name": "MAX",
 "customer_name": "Max",
 "klass": "major",
 "other_start_year": null
@@ -171,7 +171,7 @@
 },
 {
 "code": "C0025",
-"group_name": "HAKT",
+"group_name": "HAKUTO",
 "customer_name": "HAKT伯东",
 "klass": "other",
 "other_start_year": 2022
@@ -185,7 +185,7 @@
 },
 {
 "code": "C0027",
-"group_name": "GEM(MDLS)",
+"group_name": "MDLS",
 "customer_name": "GEM(MDLS)捷敏",
 "klass": "other",
 "other_start_year": 2022
@@ -206,7 +206,7 @@
 },
 {
 "code": "C0030",
-"group_name": "MZDA",
+"group_name": "MAZDA",
 "customer_name": "MZDA",
 "klass": "other",
 "other_start_year": 2022
@@ -227,7 +227,7 @@
 },
 {
 "code": "C0033",
-"group_name": "KIT",
+"group_name": "KYOCERA",
 "customer_name": "KIT",
 "klass": "other",
 "other_start_year": 2022
@@ -332,7 +332,7 @@
 },
 {
 "code": "C0048",
-"group_name": "HFDK",
+"group_name": "FDK",
 "customer_name": "FDK",
 "klass": "other",
 "other_start_year": 2022
@@ -346,7 +346,7 @@
 },
 {
 "code": "C0050",
-"group_name": "ORIENTAL",
+"group_name": "ORIENTALMO",
 "customer_name": "欧立恩拓马达ORIENTAL",
 "klass": "other",
 "other_start_year": 2022
@@ -451,7 +451,7 @@
 },
 {
 "code": "C0065",
-"group_name": "DENSO",
+"group_name": "TJDENSO",
 "customer_name": "NETJ(DENSO)天津电装",
 "klass": "other",
 "other_start_year": 2022
@@ -1067,21 +1067,21 @@
 },
 {
 "code": "C0153",
-"group_name": "住友精化",
+"group_name": "SUMITOMOSEIKA",
 "customer_name": "SMTM住友精化",
 "klass": "other",
 "other_start_year": 2024
 },
 {
 "code": "C0154",
-"group_name": "朝日电器",
+"group_name": "ELPA",
 "customer_name": "ELPAHK朝日电器",
 "klass": "other",
 "other_start_year": 2024
 },
 {
 "code": "C0155",
-"group_name": "FRKW",
+"group_name": "FURUKAWA",
 "customer_name": "NECN SH(FRKW)古河电工",
 "klass": "other",
 "other_start_year": 2024
@@ -1214,7 +1214,7 @@
 },
 {
 "code": "C0174",
-"group_name": "NSKW",
+"group_name": "NISHIKAWA",
 "customer_name": "NISHIKAWA西川橡胶",
 "klass": "other",
 "other_start_year": 2025
@@ -1312,7 +1312,7 @@
 },
 {
 "code": "C0188",
-"group_name": "长濑",
+"group_name": "NAGASE",
 "customer_name": "NECNSH(NGSE)",
 "klass": "other",
 "other_start_year": 2025
@@ -13518,24 +13518,6 @@
 "year": 2025,
 "month": 12,
 "amount": 1892.09
-},
-{
-"code": "C0047",
-"year": 2026,
-"month": 1,
-"amount": 3414.05
-},
-{
-"code": "C0047",
-"year": 2026,
-"month": 3,
-"amount": 1930.16
-},
-{
-"code": "C0047",
-"year": 2026,
-"month": 4,
-"amount": 3791.38
 },
 {
 "code": "C0048",
@@ -26514,6 +26496,534 @@
 "year": 2026,
 "month": 4,
 "amount": 11389.95
+},
+{
+"code": "C0001",
+"year": 2026,
+"month": 5,
+"amount": 1944289.87
+},
+{
+"code": "C0004",
+"year": 2026,
+"month": 5,
+"amount": 413012.59
+},
+{
+"code": "C0005",
+"year": 2026,
+"month": 5,
+"amount": 870049.41
+},
+{
+"code": "C0006",
+"year": 2026,
+"month": 5,
+"amount": 575998.15
+},
+{
+"code": "C0008",
+"year": 2026,
+"month": 5,
+"amount": 220765.41
+},
+{
+"code": "C0009",
+"year": 2026,
+"month": 5,
+"amount": 44452.54
+},
+{
+"code": "C0010",
+"year": 2026,
+"month": 5,
+"amount": 157725.48
+},
+{
+"code": "C0011",
+"year": 2026,
+"month": 5,
+"amount": 82601.97
+},
+{
+"code": "C0012",
+"year": 2026,
+"month": 5,
+"amount": 78759.62
+},
+{
+"code": "C0013",
+"year": 2026,
+"month": 5,
+"amount": 7275.72
+},
+{
+"code": "C0014",
+"year": 2026,
+"month": 5,
+"amount": 33711.15
+},
+{
+"code": "C0015",
+"year": 2026,
+"month": 5,
+"amount": 3253.56
+},
+{
+"code": "C0016",
+"year": 2026,
+"month": 5,
+"amount": 99710.03
+},
+{
+"code": "C0019",
+"year": 2026,
+"month": 5,
+"amount": 60085.05
+},
+{
+"code": "C0020",
+"year": 2026,
+"month": 5,
+"amount": 151796.21
+},
+{
+"code": "C0021",
+"year": 2026,
+"month": 5,
+"amount": 187386.1
+},
+{
+"code": "C0022",
+"year": 2026,
+"month": 5,
+"amount": 82083.99
+},
+{
+"code": "C0023",
+"year": 2026,
+"month": 5,
+"amount": 86687.65
+},
+{
+"code": "C0024",
+"year": 2026,
+"month": 5,
+"amount": 88354.6
+},
+{
+"code": "C0025",
+"year": 2026,
+"month": 5,
+"amount": 44295.33
+},
+{
+"code": "C0026",
+"year": 2026,
+"month": 5,
+"amount": 5175.44
+},
+{
+"code": "C0027",
+"year": 2026,
+"month": 5,
+"amount": 36505.69
+},
+{
+"code": "C0028",
+"year": 2026,
+"month": 5,
+"amount": 24816.14
+},
+{
+"code": "C0029",
+"year": 2026,
+"month": 5,
+"amount": 57987.16
+},
+{
+"code": "C0030",
+"year": 2026,
+"month": 5,
+"amount": 14431.17
+},
+{
+"code": "C0031",
+"year": 2026,
+"month": 5,
+"amount": 16983.04
+},
+{
+"code": "C0036",
+"year": 2026,
+"month": 5,
+"amount": 2536.58
+},
+{
+"code": "C0038",
+"year": 2026,
+"month": 5,
+"amount": 10944.75
+},
+{
+"code": "C0041",
+"year": 2026,
+"month": 5,
+"amount": 1818.6
+},
+{
+"code": "C0042",
+"year": 2026,
+"month": 5,
+"amount": 5752.72
+},
+{
+"code": "C0043",
+"year": 2026,
+"month": 5,
+"amount": 1189.07
+},
+{
+"code": "C0045",
+"year": 2026,
+"month": 5,
+"amount": 860.0
+},
+{
+"code": "C0046",
+"year": 2026,
+"month": 5,
+"amount": 2120.0
+},
+{
+"code": "C0047",
+"year": 2026,
+"month": 5,
+"amount": 10489.94
+},
+{
+"code": "C0048",
+"year": 2026,
+"month": 5,
+"amount": 1507.72
+},
+{
+"code": "C0051",
+"year": 2026,
+"month": 5,
+"amount": 2764.26
+},
+{
+"code": "C0054",
+"year": 2026,
+"month": 5,
+"amount": 3344.55
+},
+{
+"code": "C0055",
+"year": 2026,
+"month": 5,
+"amount": 1696.0
+},
+{
+"code": "C0061",
+"year": 2026,
+"month": 5,
+"amount": 1668.7
+},
+{
+"code": "C0065",
+"year": 2026,
+"month": 5,
+"amount": 778.04
+},
+{
+"code": "C0070",
+"year": 2026,
+"month": 5,
+"amount": 2064.2
+},
+{
+"code": "C0071",
+"year": 2026,
+"month": 5,
+"amount": 580.03
+},
+{
+"code": "C0072",
+"year": 2026,
+"month": 5,
+"amount": 465.0
+},
+{
+"code": "C0103",
+"year": 2026,
+"month": 5,
+"amount": 2119.48
+},
+{
+"code": "C0113",
+"year": 2026,
+"month": 5,
+"amount": 2471.2
+},
+{
+"code": "C0133",
+"year": 2026,
+"month": 5,
+"amount": 96570.88
+},
+{
+"code": "C0134",
+"year": 2026,
+"month": 5,
+"amount": 8526.75
+},
+{
+"code": "C0136",
+"year": 2026,
+"month": 5,
+"amount": 88375.33
+},
+{
+"code": "C0137",
+"year": 2026,
+"month": 5,
+"amount": 21728.62
+},
+{
+"code": "C0139",
+"year": 2026,
+"month": 5,
+"amount": 14824.95
+},
+{
+"code": "C0140",
+"year": 2026,
+"month": 5,
+"amount": 80617.15
+},
+{
+"code": "C0141",
+"year": 2026,
+"month": 5,
+"amount": 15842.26
+},
+{
+"code": "C0142",
+"year": 2026,
+"month": 5,
+"amount": 16441.96
+},
+{
+"code": "C0143",
+"year": 2026,
+"month": 5,
+"amount": 2968.0
+},
+{
+"code": "C0153",
+"year": 2026,
+"month": 5,
+"amount": 112783.01
+},
+{
+"code": "C0154",
+"year": 2026,
+"month": 5,
+"amount": 102373.69
+},
+{
+"code": "C0155",
+"year": 2026,
+"month": 5,
+"amount": 6247.65
+},
+{
+"code": "C0174",
+"year": 2026,
+"month": 5,
+"amount": 6020.0
+},
+{
+"code": "C0179",
+"year": 2026,
+"month": 5,
+"amount": 4020.97
+},
+{
+"code": "C0180",
+"year": 2026,
+"month": 5,
+"amount": 32807.85
+},
+{
+"code": "C0181",
+"year": 2026,
+"month": 5,
+"amount": 9257.35
+},
+{
+"code": "C0184",
+"year": 2026,
+"month": 5,
+"amount": 23808.98
+},
+{
+"code": "C0185",
+"year": 2026,
+"month": 5,
+"amount": 5230.08
+},
+{
+"code": "C0186",
+"year": 2026,
+"month": 5,
+"amount": 1136.89
+},
+{
+"code": "C0187",
+"year": 2026,
+"month": 5,
+"amount": 23098.05
+},
+{
+"code": "C0188",
+"year": 2026,
+"month": 5,
+"amount": 17012.67
+},
+{
+"code": "C0190",
+"year": 2026,
+"month": 5,
+"amount": 4099.23
+},
+{
+"code": "C0191",
+"year": 2026,
+"month": 5,
+"amount": 20117.34
+},
+{
+"code": "C0193",
+"year": 2026,
+"month": 5,
+"amount": 16069.06
+},
+{
+"code": "C0197",
+"year": 2026,
+"month": 5,
+"amount": 36830.05
+},
+{
+"code": "C0198",
+"year": 2026,
+"month": 5,
+"amount": 5064.15
+},
+{
+"code": "C0210",
+"year": 2026,
+"month": 5,
+"amount": 15900.63
+},
+{
+"code": "C0211",
+"year": 2026,
+"month": 5,
+"amount": 5522.56
+},
+{
+"code": "C0213",
+"year": 2026,
+"month": 5,
+"amount": -83521.05
+},
+{
+"code": "C0214",
+"year": 2026,
+"month": 5,
+"amount": 75615.94
+},
+{
+"code": "C0216",
+"year": 2026,
+"month": 5,
+"amount": -10300.0
+},
+{
+"code": "C0217",
+"year": 2026,
+"month": 5,
+"amount": 5000.0
+},
+{
+"code": "C0218",
+"year": 2026,
+"month": 5,
+"amount": 5877.94
+},
+{
+"code": "C0220",
+"year": 2026,
+"month": 5,
+"amount": 24000.0
+},
+{
+"code": "C0222",
+"year": 2026,
+"month": 5,
+"amount": 27534.77
+},
+{
+"code": "C0223",
+"year": 2026,
+"month": 5,
+"amount": 23566.87
+},
+{
+"code": "C0224",
+"year": 2026,
+"month": 5,
+"amount": 22394.84
+},
+{
+"code": "C0225",
+"year": 2026,
+"month": 5,
+"amount": 1801.06
+},
+{
+"code": "C0226",
+"year": 2026,
+"month": 5,
+"amount": 8945.24
+},
+{
+"code": "C0047",
+"year": 2026,
+"month": 1,
+"amount": 8523.16
+},
+{
+"code": "C0047",
+"year": 2026,
+"month": 2,
+"amount": 5125.93
+},
+{
+"code": "C0047",
+"year": 2026,
+"month": 3,
+"amount": 8453.89
+},
+{
+"code": "C0047",
+"year": 2026,
+"month": 4,
+"amount": 9936.42
 }
 ]
 }
