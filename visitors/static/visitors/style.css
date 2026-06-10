@@ -500,30 +500,30 @@ footer {
     transform: scale(1.1);
 }
 
-/* 来訪日（1列目）を固定幅 */
+/* 来訪日（1列目）を固定幅（16px の日付「YYYY年MM月DD日」が収まる幅） */
 .visit-table th:nth-child(1),
 .visit-table td:nth-child(1) {
-    width: 115px;
-    min-width: 115px;
-    max-width: 115px;
+    width: 142px;
+    min-width: 142px;
+    max-width: 142px;
     white-space: nowrap;
 }
 
-/* 未定（2列目）を固定幅 */
+/* 未定（2列目）を固定幅（見出し「未定」が収まる幅） */
 .visit-table th:nth-child(2),
 .visit-table td:nth-child(2) {
-    width: 30px;
-    min-width: 30px;
-    max-width: 30px;
+    width: 48px;
+    min-width: 48px;
+    max-width: 48px;
     white-space: nowrap;
 }
 
 /* 時間（3列目）を固定幅 */
 .visit-table th:nth-child(3),
 .visit-table td:nth-child(3) {
-    width: 55px;
-    min-width: 55px;
-    max-width: 55px;
+    width: 66px;
+    min-width: 66px;
+    max-width: 66px;
     white-space: nowrap;
 }
 
@@ -534,7 +534,7 @@ footer {
     border: none;
     background: transparent;
     padding: 2px 4px;
-    font-size: 13px;
+    font-size: 16px;          /* 表示セル(16px)と揃える */
     font-family: inherit;
     width: 100%;
     box-sizing: border-box;
