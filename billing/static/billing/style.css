@@ -7,7 +7,7 @@
   color:#222;
 }
 .billing-app input,.billing-app select,.billing-app textarea,.billing-app .ro-field,.billing-app .btn{box-sizing:border-box}
-.billing-app h2.sec{font-size:18px;color:var(--navy);margin:0}
+.billing-app h2.sec{font-size:17px;color:var(--navy);margin:0}
 .billing-app h3.sec{font-size:15px;color:var(--blue);margin:20px 0 10px;border-bottom:2px solid var(--blue);padding-bottom:4px}
 .billing-app .muted{color:#8a93a0}
 .billing-app a{color:var(--blue);text-decoration:none}

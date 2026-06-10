@@ -226,6 +226,11 @@ html[lang^="zh"] body {
 }
 .main-content h1 .ic { display: none; }   /* ページ見出しのアイコンは非表示(テキストのみ) */
 
+/* コンテンツ見出しの階層を全アプリで統一(ページ名h1=20 > 見出しh2=17 > 小見出しh3=15)。
+   既定の特大H2/H3(約24/19px)がページ名より大きくなる逆転を防ぐ。 */
+.main-content h2 { font-size: 17px; font-weight: bold; color: #1a2b3c; }
+.main-content h3 { font-size: 15px; font-weight: bold; color: #1a2b3c; }
+
 footer {
     text-align: center;
     font-size: 11px;
