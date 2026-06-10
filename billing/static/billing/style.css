@@ -128,3 +128,9 @@
 .billing-app .ac-item.active,.billing-app .ac-item:hover{background:#eef4fc}
 .billing-app .ac-item .sub{display:block;font-size:11px;color:#8a93a3}
 .billing-app .ac-item mark{background:#fff2b0;color:inherit;padding:0;border-radius:2px}
+
+/* 保存等のメッセージ(subnav 直下。.billing-app の外に出るため非スコープ) */
+.billing-msgs{margin:10px 0 0}
+.billing-msg{padding:9px 13px;border-radius:8px;font-size:14px;margin-bottom:6px}
+.billing-msg.success{background:#e2efda;color:#548235}
+.billing-msg.error,.billing-msg.warning{background:#f8d7da;color:#c00000}
