@@ -19,8 +19,8 @@
   <label>{% trans "会社名" %} <span class="req">{% trans "必須" %}</span>
     <input type="text" name="company_name" value="{{ prefill_company }}" autocomplete="off" placeholder="{% trans '正式社名(基準表記)' %}" required>
   </label>
-  <label>{% trans "担当者" %}
-    <input type="text" name="assignee" autocomplete="off" placeholder="{% trans '担当CS名' %}">
+  <label>{% trans "業務概要" %}
+    <textarea name="business_summary" rows="3" autocomplete="off" placeholder="{% trans '取引・業務の概要(任意)' %}"></textarea>
   </label>
   <div class="form-actions">
     <button type="submit" class="btn primary">{% trans "登録" %}</button>

@@ -2,7 +2,8 @@
 {% load i18n %}
 {% block title %}{% trans "取引先マスタ" %} — {% trans "請求書管理" %}{% endblock %}
 {% block content %}
-<div class="billing-app">
+<div class="billing-app" data-summary-url="{% url 'billing:master_summary' 0 %}">
+{% csrf_token %}
 <div class="detail-head">
   <h2 class="sec">{% trans "取引先マスタ" %}</h2>
   <a class="btn primary" href="{% url 'billing:master_add' %}">＋ {% trans "新規登録" %}</a>
@@ -10,7 +11,7 @@
 
 <form class="filters" id="filterForm" method="get" action="{% url 'billing:master' %}">
   <label>{% trans "検索" %}
-    <input type="text" name="q" class="q-wide" value="{{ q }}" placeholder="{% trans 'グループ・会社名・担当者' %}">
+    <input type="text" name="q" class="q-wide" value="{{ q }}" placeholder="{% trans 'グループ・会社名・業務概要' %}">
   </label>
   <a class="btn" id="clearFilters" href="{% url 'billing:master' %}">{% trans "クリア" %}</a>
 </form>
@@ -18,11 +19,24 @@
 <div id="listResult">
 <div class="count">{{ count }} / {{ total }} {% trans "件" %}</div>
 <div class="tablewrap">
-<table class="grid">
-  <thead><tr><th>{% trans "グループ名" %}</th><th>{% trans "会社名" %}</th><th>{% trans "担当者" %}</th></tr></thead>
+<table class="grid sort-table master-table" id="masterTable">
+  <colgroup><col class="c-grp"><col class="c-co"><col class="c-biz"></colgroup>
+  <thead><tr>
+    <th class="sortable">{% trans "グループ名" %}<span class="sort-ind"></span></th>
+    <th class="sortable">{% trans "会社名" %}<span class="sort-ind"></span></th>
+    <th class="sortable">{% trans "業務概要" %}<span class="sort-ind"></span></th>
+  </tr></thead>
   <tbody>
     {% for r in rows %}
-    <tr><td>{{ r.group_name }}</td><td>{{ r.company_name }}</td><td>{{ r.assignee }}</td></tr>
+    <tr>
+      <td>{{ r.group_name }}</td>
+      <td>{{ r.company_name }}</td>
+      <td class="biz-cell">
+        <textarea class="biz-edit" data-pk="{{ r.pk }}" rows="1"
+                  placeholder="{% trans '業務概要を入力' %}">{{ r.business_summary }}</textarea>
+        <span class="biz-saved" aria-hidden="true">{% trans "保存" %}</span>
+      </td>
+    </tr>
     {% empty %}
     <tr><td colspan="3" class="c muted">{% trans "該当なし" %}</td></tr>
     {% endfor %}

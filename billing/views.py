@@ -11,9 +11,21 @@ from django.views.decorators.http import require_POST
 
 from .models import CURRENCIES, FEE_KEYS, FEES, InvoiceLine, MasterParty
 
-# 入力フォームで扱うテキスト/整数フィールド(費目・合計を除く)
-HEADER_TEXT = ['customer_gc', 'bill_to', 'bill_cat', 'currency', 'assignee', 'fx_currency']
+# 入力フォームで扱うテキスト/整数フィールド(費目・合計を除く)。
+# assignee はフォームから取らず、ログインユーザーから自動設定する。
+HEADER_TEXT = ['customer_gc', 'bill_to', 'bill_cat', 'currency', 'fx_currency']
 HEADER_INT = ['bill_year', 'bill_month']
+
+
+def display_name(user):
+    """請求担当者として記録する表示名。氏名(姓+名) 優先、無ければメール。"""
+    name = f'{user.last_name or ""}{user.first_name or ""}'.strip()
+    return name or (user.email or '')
+
+
+def is_admin(user):
+    """承認できるのは管理者権限(staff または superuser)。"""
+    return bool(user.is_staff or user.is_superuser)
 EXTRA_FLOAT = ['exrate']  # 為替レート(換算後金額は save() で自動計算)
 
 
@@ -83,8 +95,33 @@ def detail(request, pk):
         incl = obj.fee_incl(k) if net else None
         fee_rows.append({'label': label, 'net': net, 'rate': getattr(obj, f'{k}_rate'),
                          'tax': _r2(incl - net) if net else None, 'incl': incl})
-    return render(request, 'billing/detail.html',
-                  {'active_tab': 'list', 'obj': obj, 'fee_rows': fee_rows})
+    admin = is_admin(request.user)
+    return render(request, 'billing/detail.html', {
+        'active_tab': 'list', 'obj': obj, 'fee_rows': fee_rows,
+        'is_admin': admin,
+        # 管理者かつ未承認・未取消のとき承認可能
+        'can_approve': admin and not obj.is_approved and not obj.is_cancelled,
+    })
+
+
+@login_required
+@require_POST
+def approve(request, pk):
+    """請求明細を承認(管理者のみ)。承認後は次の未承認へ、無ければ一覧へ。"""
+    if not is_admin(request.user):
+        messages.error(request, '承認は管理者のみ可能です。')
+        return redirect('billing:detail', pk=pk)
+    obj = get_object_or_404(InvoiceLine, pk=pk)
+    if not obj.is_approved and not obj.is_cancelled:
+        obj.is_approved = True
+        obj.approved_by = request.user
+        obj.approved_at = timezone.now()
+        obj.save(update_fields=['is_approved', 'approved_by', 'approved_at', 'updated_at'])
+        messages.success(request, f'請求明細 {obj.serial} を承認しました。')
+    # 次の未承認(一覧と同じ並び=新しい順)へ。無ければ一覧へ。
+    nxt = (InvoiceLine.objects.filter(is_approved=False, is_cancelled=False)
+           .exclude(pk=obj.pk).first())
+    return redirect('billing:detail', pk=nxt.pk) if nxt else redirect('billing:list')
 
 
 # ---------------------------------------------------------------- 入力/編集
@@ -114,6 +151,8 @@ def entry(request, pk=None):
         obj.rate_date = (request.POST.get('rate_date') or '').strip() or None
         if is_new:
             obj.created_by = request.user
+            obj.assignee = display_name(request.user)   # 担当者はログインユーザーから自動
+            obj.is_approved = False                      # 新規は未承認(管理者承認待ち)
         obj.save()
         messages.success(request, f'請求明細を保存しました（税込合計 {obj.total_after_tax:,.2f}）。')
         if 'save_new' in request.POST:
@@ -126,6 +165,8 @@ def entry(request, pk=None):
         'fees': FEES,
         'today': datetime.date.today().isoformat(),
         'currencies': CURRENCIES,
+        # 担当者は自動(新規=ログインユーザー / 編集=既存値)。読み取り専用表示。
+        'auto_assignee': (obj.assignee if obj else '') or display_name(request.user),
     }
     return render(request, 'billing/entry.html', ctx)
 
@@ -148,7 +189,7 @@ def master_list(request):
     qs = MasterParty.objects.all()
     if q:
         qs = qs.filter(Q(group_name__icontains=q) | Q(company_name__icontains=q)
-                       | Q(assignee__icontains=q))
+                       | Q(business_summary__icontains=q))
     return render(request, 'billing/master_list.html',
                   {'active_tab': 'master', 'rows': qs, 'count': qs.count(),
                    'total': MasterParty.objects.count(), 'q': q})
@@ -161,13 +202,14 @@ def master_add(request):
     if request.method == 'POST':
         group = (request.POST.get('group_name') or '').strip().upper()
         company = (request.POST.get('company_name') or '').strip()
-        assignee = (request.POST.get('assignee') or '').strip()
+        business_summary = (request.POST.get('business_summary') or '').strip()
         if not group or not company:
             messages.error(request, 'グループ名と会社名は必須です。')
         elif MasterParty.objects.filter(group_name=group, company_name=company).exists():
             messages.error(request, f'「{group} / {company}」は既に登録済みです。')
         else:
-            MasterParty.objects.create(group_name=group, company_name=company, assignee=assignee)
+            MasterParty.objects.create(group_name=group, company_name=company,
+                                       business_summary=business_summary)
             messages.success(request, f'取引先「{group} / {company}」を登録しました。')
             nxt = request.POST.get('next')
             return redirect(nxt) if nxt else redirect('billing:master')
@@ -181,6 +223,16 @@ def master_add(request):
         'groups': list(MasterParty.objects.values_list('group_name', flat=True)
                        .distinct().order_by('group_name')),
     })
+
+
+@login_required
+@require_POST
+def master_summary(request, pk):
+    """取引先マスタの業務概要をインライン更新(一覧から)。"""
+    p = get_object_or_404(MasterParty, pk=pk)
+    p.business_summary = (request.POST.get('business_summary') or '').strip()
+    p.save(update_fields=['business_summary', 'updated_at'])
+    return JsonResponse({'ok': True})
 
 
 # ---------------------------------------------------------------- JSON API
@@ -210,7 +262,6 @@ def api_parties(request):
                 if len(order) >= 20:
                     break
                 seen[p.company_name] = {'group': p.group_name,
-                                        'assignee': p.assignee,
                                         'groups': {p.group_name}}
                 order.append(p.company_name)
             else:
@@ -220,8 +271,7 @@ def api_parties(request):
             e = seen[name]
             multi = len(e['groups']) > 1   # 複数グループに跨る会社はグループを自動補完しない
             items.append({'value': name, 'label': name,
-                          'group': '' if multi else e['group'],
-                          'assignee': '' if multi else e['assignee']})
+                          'group': '' if multi else e['group']})
     return JsonResponse({'items': items})
 
 
@@ -236,13 +286,13 @@ def api_check_company(request):
                                        group_name__iexact=group).first()
         if p:
             return JsonResponse({'exists': True, 'group': p.group_name,
-                                 'company': p.company_name, 'assignee': p.assignee})
+                                 'company': p.company_name})
     others = list(MasterParty.objects.filter(company_name__iexact=company)
                   .values_list('group_name', flat=True).distinct())
     if not group and len(others) == 1:
         p = MasterParty.objects.filter(company_name__iexact=company).first()
         return JsonResponse({'exists': True, 'group': p.group_name,
-                             'company': p.company_name, 'assignee': p.assignee})
+                             'company': p.company_name})
     return JsonResponse({'exists': False, 'other_groups': others})
 
 

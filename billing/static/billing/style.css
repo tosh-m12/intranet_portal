@@ -134,3 +134,41 @@
 .billing-msg{padding:9px 13px;border-radius:8px;font-size:14px;margin-bottom:6px}
 .billing-msg.success{background:#e2efda;color:#548235}
 .billing-msg.error,.billing-msg.warning{background:#f8d7da;color:#c00000}
+
+/* 取引先マスタ: 並べ替え可能ヘッダ(上下三角)。見出しは navy 背景・白字。 */
+.billing-app .sort-table th.sortable{cursor:pointer;user-select:none;white-space:nowrap}
+.billing-app .sort-table th .sort-ind{margin-left:6px;font-size:9px;letter-spacing:-1px;color:rgba(255,255,255,.45)}
+.billing-app .sort-table th .sort-ind::after{content:"▲▼"}
+.billing-app .sort-table th.sort-asc .sort-ind::after{content:"▲"}
+.billing-app .sort-table th.sort-desc .sort-ind::after{content:"▼"}
+.billing-app .sort-table th.sort-asc .sort-ind,.billing-app .sort-table th.sort-desc .sort-ind{color:#fff}
+
+/* 取引先マスタ: グループ名/会社名は内容に合わせた最小幅(折り返しもはみ出しもなし)、
+   業務概要が残り全幅。業務概要はインライン編集。 */
+.billing-app .master-table{table-layout:auto;width:100%}
+/* グループ名・会社名は1行で全文表示(折り返し禁止)→ 列幅は最長の社名に自動フィット。 */
+.billing-app .master-table thead th:nth-child(1),
+.billing-app .master-table thead th:nth-child(2),
+.billing-app .master-table tbody td:nth-child(1),
+.billing-app .master-table tbody td:nth-child(2){white-space:nowrap}
+/* 業務概要列が残りを全て取る。 */
+.billing-app .master-table col.c-biz{width:100%}
+.billing-app .master-table td.biz-cell{position:relative;padding:4px 6px}
+.billing-app .biz-edit{width:100%;min-width:0;box-sizing:border-box;border:1px solid transparent;border-radius:6px;
+  padding:6px 9px;font-family:inherit;font-size:14px;line-height:1.4;background:#fff;color:#1c1f24;
+  resize:none;overflow:hidden;min-height:32px;display:block}
+.billing-app .biz-edit:hover{border-color:#e0e4ea}
+.billing-app .biz-edit:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(46,84,150,.15)}
+.billing-app .biz-edit::placeholder{color:#bcc3cd}
+.billing-app .biz-edit.biz-err{border-color:var(--bad-t);box-shadow:0 0 0 2px rgba(192,0,0,.12)}
+.billing-app .biz-saved{position:absolute;top:9px;right:12px;font-size:11px;color:var(--ok-t);
+  opacity:0;transition:opacity .2s;pointer-events:none}
+.billing-app .biz-saved.show{opacity:1}
+
+/* 承認フロー: 未承認行は薄い赤背景。状態バッジ・承認ボタン。 */
+.billing-app .badge.warn{background:var(--warn-b);color:var(--warn-t)}
+.billing-app .badge.ok{background:var(--ok-b);color:var(--ok-t)}
+.billing-app .grid tr.unapproved td{background:#fdeaea}
+.billing-app .grid tr.unapproved:hover td{background:#fbdcdc}
+.billing-app .btn.approve{background:var(--ok-t);color:#fff;border-color:var(--ok-t);font-weight:700}
+.billing-app .btn.approve:hover{background:#3f6328;color:#fff}

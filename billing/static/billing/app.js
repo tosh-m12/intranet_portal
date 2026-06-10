@@ -252,7 +252,7 @@ document.addEventListener('click', function (e) {
       items.forEach(function (it, idx) {
         var d = document.createElement('div');
         d.className = 'ac-item' + (idx === active ? ' active' : '');
-        var sub = it.group ? '<span class="sub">' + it.group + (it.assignee ? ' / ' + it.assignee : '') + '</span>' : '';
+        var sub = it.group ? '<span class="sub">' + it.group + '</span>' : '';
         d.innerHTML = hl(it.label, q) + sub;
         d.addEventListener('mousedown', function (ev) { ev.preventDefault(); choose(idx); });
         box.appendChild(d);
@@ -262,11 +262,9 @@ document.addEventListener('click', function (e) {
       var it = items[idx]; if (!it) return;
       input.value = it.value;
       if (field === 'company') {
-        // 会社確定 → グループ・担当者を補完、警告解除
+        // 会社確定 → グループを補完、警告解除(担当者はログイン由来のため補完しない)
         var gc = document.getElementById('id_customer_gc');
         if (gc && it.group) gc.value = it.group;
-        var asg = document.getElementById('id_assignee');
-        if (asg && it.assignee && !asg.value) asg.value = it.assignee;
         hideWarn();
       }
       close();
@@ -329,8 +327,6 @@ document.addEventListener('click', function (e) {
           hideWarn();
           var gc = document.getElementById('id_customer_gc');
           if (gc && d.group && !gc.value) gc.value = d.group;
-          var asg = document.getElementById('id_assignee');
-          if (asg && d.assignee && !asg.value) asg.value = d.assignee;
         } else {
           warnName.textContent = name;
           var gcv = (document.getElementById('id_customer_gc').value || '').trim();
@@ -352,4 +348,78 @@ document.addEventListener('click', function (e) {
     fetch(API_SERIAL).then(function (r) { return r.json(); })
       .then(function (j) { roSerial.textContent = j.next; });
   }
+})();
+
+/* ===== 取引先マスタ: ヘッダクリックで並べ替え(▲▼) ===== */
+(function () {
+  document.querySelectorAll('table.sort-table').forEach(function (table) {
+    if (!table.tHead || !table.tBodies.length) return;
+    var ths = [].slice.call(table.tHead.rows[0].cells);
+    var tbody = table.tBodies[0];
+    var st = { col: -1, dir: 1 };
+    var collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+    ths.forEach(function (th, idx) {
+      if (!th.classList.contains('sortable')) return;
+      th.addEventListener('click', function () {
+        st.dir = (st.col === idx) ? -st.dir : 1;
+        st.col = idx;
+        var rows = [].slice.call(tbody.rows).filter(function (r) {
+          return r.cells.length && !r.querySelector('td[colspan]');
+        });
+        function cellVal(cell) {
+          if (!cell) return '';
+          var ctl = cell.querySelector('textarea, input');
+          return (ctl ? ctl.value : cell.textContent).trim();
+        }
+        rows.sort(function (a, b) {
+          var av = cellVal(a.cells[idx]), bv = cellVal(b.cells[idx]);
+          if (!av && bv) return 1;            // 空欄は末尾
+          if (av && !bv) return -1;
+          return collator.compare(av, bv) * st.dir;
+        });
+        rows.forEach(function (r) { tbody.appendChild(r); });
+        ths.forEach(function (h) { h.classList.remove('sort-asc', 'sort-desc'); });
+        th.classList.add(st.dir > 0 ? 'sort-asc' : 'sort-desc');
+      });
+    });
+  });
+})();
+
+/* ===== 取引先マスタ: 業務概要のインライン編集(自動保存) ===== */
+(function () {
+  var root = document.querySelector('.billing-app[data-summary-url]');
+  if (!root) return;
+  var urlTmpl = root.dataset.summaryUrl;   // .../master/0/summary/
+  function tokenEl() { return root.querySelector('input[name=csrfmiddlewaretoken]'); }
+
+  function autogrow(el) { el.style.height = 'auto'; el.style.height = (el.scrollHeight + 2) + 'px'; }
+  function growAll() { document.querySelectorAll('.biz-edit').forEach(autogrow); }
+  growAll();
+
+  document.addEventListener('focusin', function (e) {
+    if (e.target.classList && e.target.classList.contains('biz-edit')) e.target.dataset.orig = e.target.value;
+  });
+  document.addEventListener('input', function (e) {
+    if (e.target.classList && e.target.classList.contains('biz-edit')) autogrow(e.target);
+  });
+  document.addEventListener('focusout', function (e) {
+    var t = e.target;
+    if (!t.classList || !t.classList.contains('biz-edit')) return;
+    if (t.value === (t.dataset.orig || '')) return;          // 変更なしは送らない
+    var tok = tokenEl();
+    var body = new URLSearchParams();
+    body.set('business_summary', t.value);
+    fetch(urlTmpl.replace('/0/', '/' + t.dataset.pk + '/'), {
+      method: 'POST',
+      headers: { 'X-CSRFToken': tok ? tok.value : '', 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body.toString(),
+    }).then(function (r) {
+      if (!r.ok) throw 0;
+      t.dataset.orig = t.value;
+      var flag = t.parentNode.querySelector('.biz-saved');
+      if (flag) { flag.classList.add('show'); setTimeout(function () { flag.classList.remove('show'); }, 1200); }
+    }).catch(function () {
+      t.classList.add('biz-err'); setTimeout(function () { t.classList.remove('biz-err'); }, 1500);
+    });
+  });
 })();
