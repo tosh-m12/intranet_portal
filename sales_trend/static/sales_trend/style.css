@@ -94,3 +94,47 @@
     position: relative;
     height: 220px;
 }
+/* 取引先概要へ飛べるセルは clickable に。 */
+.st-cell.clickable { cursor: pointer; border-radius: 8px; padding: 6px; margin: -6px; transition: background-color .12s; }
+.st-cell.clickable:hover { background: #f3f7fc; }
+.st-cell.clickable .st-cell-title { color: #1f3864; }
+.st-cell.clickable .st-cell-title::after { content: " →"; color: #9aa3b2; }
+
+/* ======== 取引先概要ページ ======== */
+/* ヘッダー: タイトル(左) + 売上推移へ戻る(右下端を見出しの下端に合わせる) */
+.pt-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.pt-head h1 { margin: 0; }
+.pt-head .pt-back { font-size: 13px; color: #5d6b7d; text-decoration: none; white-space: nowrap; padding-bottom: 3px; }
+.pt-head .pt-back:hover { color: #2e5496; }
+
+/* トグル(.st-seg)が使う CSS 変数を partner ページでも定義(未定義だと枠線・選択色が消える)。 */
+.partner-page { max-width: 920px; --navy: #1f3864; --line: #d4d8df; }
+.partner-page .pt-empty { color: #6b7280; }
+
+.partner-page .pt-sec { margin: 0 0 26px; }
+.partner-page .pt-sec > h3 {
+    font-size: 15px; color: #2e5496; margin: 0 0 10px;
+    border-bottom: 2px solid #e5e9f0; padding-bottom: 5px;
+}
+
+/* 定義リスト(項目=グレー枠/値=素テキスト) */
+.partner-page .pt-dl {
+    display: grid; grid-template-columns: 220px 1fr; gap: 1px;
+    background: #e5e9f0; border: 1px solid #e5e9f0; border-radius: 8px; overflow: hidden; margin: 0;
+}
+.partner-page .pt-dl dt { background: #f4f6f9; color: #44506a; padding: 9px 12px; font-size: 14px; }
+.partner-page .pt-dl dd { background: #fff; color: #1c1f24; padding: 9px 12px; font-size: 15px; margin: 0; }
+.partner-page .pt-dl dd.num { text-align: right; font-variant-numeric: tabular-nums; }
+.pt-todo { color: #aab1bd; }
+
+/* テーブル(物流詳細) */
+.partner-page .pt-table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #e5e9f0; border-radius: 8px; overflow: hidden; }
+.partner-page .pt-table th, .partner-page .pt-table td { padding: 8px 11px; border-bottom: 1px solid #eef1f5; text-align: left; font-size: 14px; vertical-align: top; }
+.partner-page .pt-table thead th { background: #1f3864; color: #fff; font-weight: 600; }
+.partner-page .pt-table .th-sub { font-weight: 400; font-size: 11px; opacity: .8; }
+.partner-page .pt-note { font-size: 12px; color: #8a93a2; margin: 8px 0 0; }
+
+/* 売上推移チャート(単位=左上/トグル=右上/棒の上に合計) */
+.partner-page .pt-chartwrap { position: relative; height: 380px; width: 100%; padding-top: 30px; }
+.partner-page .pt-unit { position: absolute; top: 8px; left: 0; font-size: 12px; color: #6b7280; z-index: 1; }
+.partner-page .pt-period { position: absolute; top: 0; right: 0; z-index: 1; }
