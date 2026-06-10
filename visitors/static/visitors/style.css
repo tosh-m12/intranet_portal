@@ -38,7 +38,7 @@ body {
     margin: 0;
     background-color: #f5f5f5;
     min-height: 100vh;
-    font-size: 16px;                 /* contract_manager ベース + 視認性で拡大 */
+    font-size: 17px;                 /* 視認性優先で拡大(Win で小さく見える対策) */
     font-weight: 500;                /* Win の細見え対策で Medium を基準に(Mac もきれいなまま) */
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
@@ -259,7 +259,7 @@ footer {
 .user-admin .table .cg-pw { width: 70px; }
 .user-admin .table .cg-actions { width: 168px; }
 .user-admin .table thead th {
-    background: var(--nx-navy); color: #fff; font-weight: 600; font-size: 13px;
+    background: var(--nx-navy); color: #fff; font-weight: 600; font-size: 15px;
     padding: 11px 12px; text-align: left; white-space: nowrap;
 }
 .user-admin .table tbody td {

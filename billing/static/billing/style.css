@@ -28,13 +28,13 @@
 
 /* table */
 .billing-app table.grid{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.billing-app .grid th,.billing-app .grid td{padding:7px 9px;border-bottom:1px solid #eef1f5;text-align:left;vertical-align:top;font-size:13px}
-.billing-app .grid th{background:var(--navy);color:#fff;font-weight:600;font-size:12px}
+.billing-app .grid th,.billing-app .grid td{padding:8px 10px;border-bottom:1px solid #eef1f5;text-align:left;vertical-align:top;font-size:15px}
+.billing-app .grid th{background:var(--navy);color:#fff;font-weight:600;font-size:14px}
 .billing-app .grid thead th,.billing-app .grid thead th.c,.billing-app .grid thead th.r{text-align:center}
 .billing-app .grid td.c,.billing-app .grid th.c{text-align:center}
 .billing-app .grid td.r,.billing-app .grid th.r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .billing-app .grid tr:hover td{background:#f7f9fc}
-.billing-app .grid tfoot th{background:#f7f9fc;color:#44506a;font-size:13px;padding:7px 9px;text-align:left;border-top:1px solid var(--line)}
+.billing-app .grid tfoot th{background:#f7f9fc;color:#44506a;font-size:15px;padding:8px 10px;text-align:left;border-top:1px solid var(--line)}
 .billing-app .grid tfoot td{background:#f7f9fc;border-top:1px solid var(--line)}
 .billing-app .grid tfoot td.strong{font-weight:700;color:var(--navy)}
 .billing-app .tablewrap{border-radius:8px}
