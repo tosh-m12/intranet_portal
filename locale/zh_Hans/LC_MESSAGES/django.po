@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-10 08:41+0800\n"
+"POT-Creation-Date: 2026-06-10 09:38+0800\n"
 "PO-Revision-Date: 2025-07-23 23:45+0800\n"
 "Last-Translator: TMurayama <example@example.com>\n"
 "Language-Team: Chinese Simplified\n"
@@ -1685,12 +1685,12 @@ msgid "客先訪問・WEB会議"
 msgstr "客户拜访・网络会议"
 
 #: templates/portal/base.html:83
-msgid "温湿度モニター"
-msgstr "温湿度监控"
+msgid "温度湿度管理"
+msgstr "温湿度管理"
 
 #: templates/portal/base.html:85
-msgid "請求書"
-msgstr "账单"
+msgid "請求書管理台帳"
+msgstr "账单管理台账"
 
 #: templates/portal/home.html:4
 msgid "ポータルトップ"
@@ -1875,6 +1875,12 @@ msgstr "您没有编辑此来访预定的权限。"
 #, python-format
 msgid "VisitorデータをCSVから再登録しました（%(count)s件）。"
 msgstr "已从 CSV 重新登记 Visitor 数据（%(count)s 条）。"
+
+#~ msgid "温湿度モニター"
+#~ msgstr "温湿度监控"
+
+#~ msgid "請求書"
+#~ msgstr "账单"
 
 #~ msgid "含む"
 #~ msgstr "包含"
