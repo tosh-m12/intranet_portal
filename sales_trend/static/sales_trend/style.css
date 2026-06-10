@@ -71,9 +71,9 @@
 /* ---- 顧客別: 小グラフを並べる(スモールマルチプル) ---- */
 .st-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-    gap: 16px 14px;
-    padding-top: 22px;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 22px 18px;
+    padding-top: 24px;
 }
 .st-cell-title {
     display: flex;
@@ -92,5 +92,5 @@
 }
 .st-cell-canvas {
     position: relative;
-    height: 150px;
+    height: 220px;
 }
