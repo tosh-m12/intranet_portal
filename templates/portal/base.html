@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}NGLS-CS Portal{% endblock %}</title>
-    {# フォントは contract_manager(契約書管理アプリ)と統一: OS 標準の Hiragino/Yu Gothic 系。Webフォント不要。 #}
-    <link rel="stylesheet" href="{% static 'visitors/style.css' %}">
+    {# フォントは Noto Sans JP を自前ホスト(visitors/style.css の @font-face)。本文は Medium(500)基準で Windows の細見えを抑える。 #}
+    <link rel="stylesheet" href="{% static 'visitors/style.css' %}?v=2">
     <link rel="stylesheet" href="{% static 'cs_tasks/style.css' %}">
     {% block extra_head %}{% endblock %}
 </head>

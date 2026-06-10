@@ -25,6 +25,10 @@
 @font-face{font-family:'Noto Sans JP';font-style:normal;font-weight:700;font-display:swap;
     src:url('fonts/notosansjp-latin-700.woff2') format('woff2');
     unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+/* Medium(500): Windows(DirectWrite)で Regular が細く薄く見えるため、本文の基準ウェイトに使用。
+   JP+Latin を1ファイルに収録(unicode-range 指定なし=全グリフ対象)。 */
+@font-face{font-family:'Noto Sans JP';font-style:normal;font-weight:500;font-display:swap;
+    src:url('fonts/notosansjp-500.woff2') format('woff2');}
 
 /* 既定（日本語）: Noto Sans JP を最優先。未収録グリフは OS フォントへフォールバック。 */
 body {
@@ -35,6 +39,7 @@ body {
     background-color: #f5f5f5;
     min-height: 100vh;
     font-size: 16px;                 /* contract_manager ベース + 視認性で拡大 */
+    font-weight: 500;                /* Win の細見え対策で Medium を基準に(Mac もきれいなまま) */
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
