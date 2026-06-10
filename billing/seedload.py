@@ -33,8 +33,9 @@ def load_seed(MasterParty, InvoiceLine, only_if_empty=True):
     with open(DATA_PATH, encoding='utf-8') as f:
         data = json.load(f)
 
-    masters = [MasterParty(group_name=m['group_name'], company_name=m['company_name'],
-                           assignee=m.get('assignee') or '') for m in data['master']]
+    # 担当者はマスタで持たない(ログイン由来)。業務概要は default '' のまま。
+    masters = [MasterParty(group_name=m['group_name'], company_name=m['company_name'])
+               for m in data['master']]
     MasterParty.objects.bulk_create(masters, ignore_conflicts=True)
 
     lines = []

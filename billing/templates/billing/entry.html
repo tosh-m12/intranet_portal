@@ -23,7 +23,8 @@
       <span class="ro-field" id="ro_serial"{% if not obj.serial %} data-auto="1"{% endif %}>{% if obj.serial %}{{ obj.serial }}{% else %}{% trans "保存時に自動採番" %}{% endif %}</span>
     </label>
     <label>{% trans "担当者" %}
-      <input type="text" name="assignee" id="id_assignee" value="{{ obj.assignee|default:'' }}" autocomplete="off">
+      {# 担当者はログインユーザーから自動。読み取り専用(グレー枠=非編集)。 #}
+      <span class="ro-field" id="ro_assignee">{{ auto_assignee }}</span>
     </label>
     <label class="ac-wrap">{% trans "顧客グループ" %}
       <input type="text" name="customer_gc" id="id_customer_gc" data-ac="group" class="alnum-up"

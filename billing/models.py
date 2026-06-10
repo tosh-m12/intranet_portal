@@ -51,7 +51,9 @@ class MasterParty(models.Model):
     """
     group_name = models.CharField(_('グループ名'), max_length=128)
     company_name = models.CharField(_('会社名'), max_length=255)
-    assignee = models.CharField(_('担当者名'), max_length=64, blank=True)
+    # 担当者はマスタで持たず請求入力時にログインユーザーから自動設定する。
+    # 代わりに取引先の業務概要を保持する。
+    business_summary = models.TextField(_('業務概要'), blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -111,6 +113,12 @@ class InvoiceLine(models.Model):
 
     # 取込元(ledger=既存台帳取込 / manual=画面入力)
     source = models.CharField(max_length=16, default='manual')
+    # 承認(新規の画面入力は未承認で登録され、管理者が承認する。既存・台帳取込は承認済み扱い)
+    is_approved = models.BooleanField(_('承認済'), default=True)
+    approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
+                                    on_delete=models.SET_NULL, related_name='billing_approvals',
+                                    verbose_name=_('承認者'))
+    approved_at = models.DateTimeField(_('承認日時'), null=True, blank=True)
     # 監査・論理削除(ポータル規約)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
                                    on_delete=models.SET_NULL, related_name='billing_lines',

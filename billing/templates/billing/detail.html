@@ -4,9 +4,19 @@
 {% block content %}
 <div class="billing-app">
 <div class="detail-head">
-  <h2 class="sec">{% trans "請求明細" %}{% if obj.is_cancelled %} <span class="badge bad">{% trans "取消済" %}</span>{% endif %}</h2>
+  <h2 class="sec">{% trans "請求明細" %}
+    {% if obj.is_cancelled %} <span class="badge bad">{% trans "取消済" %}</span>
+    {% elif not obj.is_approved %} <span class="badge warn">{% trans "未承認" %}</span>
+    {% else %} <span class="badge ok">{% trans "承認済" %}</span>{% endif %}
+  </h2>
   <div class="head-actions">
     <a class="back" href="{% url 'billing:list' %}">← {% trans "請求一覧へ" %}</a>
+    {% if can_approve %}
+    <form method="post" action="{% url 'billing:approve' obj.pk %}" style="display:inline">
+      {% csrf_token %}
+      <button type="submit" class="btn approve">✓ {% trans "承認" %}</button>
+    </form>
+    {% endif %}
     <a class="btn primary" href="{% url 'billing:edit' obj.pk %}"
        onclick="return confirm('{% trans "編集モードに入ります。内容を変更できる状態になります。よろしいですか？" %}');">{% trans "編集" %}</a>
   </div>
@@ -14,6 +24,8 @@
 
 <dl class="kv">
   <dt>{% trans "連番" %}</dt><dd>{{ obj.serial }}</dd>
+  <dt>{% trans "承認" %}</dt>
+  <dd>{% if obj.is_approved %}{% trans "承認済" %}{% if obj.approved_by %}（{{ obj.approved_by.last_name }}{{ obj.approved_by.first_name }}{% if obj.approved_at %} {{ obj.approved_at|date:'Y-m-d H:i' }}{% endif %}）{% endif %}{% else %}<span class="badge warn">{% trans "未承認" %}</span>{% endif %}</dd>
   <dt>{% trans "担当者" %}</dt><dd>{{ obj.assignee|default:'—' }}</dd>
   <dt>{% trans "顧客グループ" %}</dt><dd>{{ obj.customer_gc|default:'—' }}</dd>
   <dt>{% trans "請求先会社名" %}</dt><dd>{{ obj.bill_to|default:'—' }}</dd>

@@ -5,9 +5,8 @@ from .models import InvoiceLine, MasterParty
 
 @admin.register(MasterParty)
 class MasterPartyAdmin(admin.ModelAdmin):
-    list_display = ('group_name', 'company_name', 'assignee')
-    search_fields = ('group_name', 'company_name', 'assignee')
-    list_filter = ('assignee',)
+    list_display = ('group_name', 'company_name', 'business_summary')
+    search_fields = ('group_name', 'company_name', 'business_summary')
 
 
 @admin.register(InvoiceLine)
