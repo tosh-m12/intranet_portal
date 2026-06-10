@@ -26,4 +26,5 @@ urlpatterns = [
     path("envmon/", include("envmon.urls")),
     path("cs-tasks/", include("cs_tasks.urls")),
     path("billing/", include("billing.urls")),
+    path("sales-trend/", include("sales_trend.urls")),
 ]

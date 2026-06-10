@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'scheduler.apps.SchedulerConfig',
     'cs_tasks.apps.CsTasksConfig',
     'billing.apps.BillingConfig',
+    'sales_trend.apps.SalesTrendConfig',
 ]
 
 MIDDLEWARE = [

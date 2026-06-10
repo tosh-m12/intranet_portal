@@ -1,0 +1,58 @@
+/* 売上推移ダッシュボード。配色・余白はポータル(navy系)に追従。 */
+.sales-trend-app {
+    --navy: #1f3864;
+    --line: #d4d8df;
+    --muted: #6b7280;
+}
+
+/* ---- トグル(セグメント)コントロール ---- */
+.st-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 22px;
+    margin: 4px 0 18px;
+}
+.st-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.st-label {
+    font-size: 13px;
+    color: var(--muted);
+}
+.st-seg {
+    display: inline-flex;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+}
+.st-seg button {
+    border: 0;
+    background: #fff;
+    color: #374151;
+    font-size: 13px;
+    padding: 6px 16px;
+    cursor: pointer;
+    border-left: 1px solid var(--line);
+}
+.st-seg button:first-child {
+    border-left: 0;
+}
+.st-seg button.active {
+    background: var(--navy);
+    color: #fff;
+}
+.st-unit {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+/* ---- グラフ ---- */
+.st-chartwrap {
+    position: relative;
+    height: 460px;
+    width: 100%;
+}
