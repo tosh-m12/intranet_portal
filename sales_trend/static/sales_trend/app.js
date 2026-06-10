@@ -64,23 +64,25 @@
             var ds = c.data.datasets;
             if (!ds.length) return;
             var ctx = c.ctx, y = c.scales.y;
+            // 表示中(visible)の系列だけを対象にする。hidden 判定は isDatasetVisible を使う
+            // (getDatasetMeta().hidden は null になり得て誤計算の原因になる)。
             var topIdx = -1;
-            for (var k = ds.length - 1; k >= 0; k--) { if (!c.getDatasetMeta(k).hidden) { topIdx = k; break; } }
+            for (var k = ds.length - 1; k >= 0; k--) { if (c.isDatasetVisible(k)) { topIdx = k; break; } }
             if (topIdx < 0) return;
             var top = c.getDatasetMeta(topIdx);
             ctx.save();
             ctx.fillStyle = "#1f2937";
-            ctx.font = (state.period === "month" ? "700 10px" : "700 12px") + " sans-serif";
+            ctx.font = (state.period === "month" ? "700 11px" : "700 14px") + " sans-serif";
             ctx.textAlign = "center";
             ctx.textBaseline = "bottom";
+            // 合計は各棒のすぐ上(その棒の天端)に表示する。
             c.data.labels.forEach(function (_, i) {
                 var total = ds.reduce(function (s, d, idx) {
-                    return s + (c.getDatasetMeta(idx).hidden ? 0 : (d.data[i] || 0));
+                    return s + (c.isDatasetVisible(idx) ? (d.data[i] || 0) : 0);
                 }, 0);
                 if (total <= 0 || !top.data[i]) return;
-                var x = top.data[i].x;
                 var py = Math.min(y.getPixelForValue(total), y.bottom) - 3;
-                ctx.fillText(mm(total), x, py);
+                ctx.fillText(mm(total), top.data[i].x, py);
             });
             ctx.restore();
         },
@@ -177,8 +179,8 @@
                     },
                     scales: {
                         x: { grid: { display: false },
-                             ticks: { autoSkip: true, maxTicksLimit: 6, maxRotation: 0, font: { size: 9 } } },
-                        y: { min: 0, ticks: { maxTicksLimit: 4, font: { size: 9 },
+                             ticks: { autoSkip: true, maxTicksLimit: 7, maxRotation: 0, font: { size: 10 } } },
+                        y: { min: 0, ticks: { maxTicksLimit: 5, font: { size: 10 },
                                               callback: function (v) { return (v / 1e6).toLocaleString("ja-JP"); } },
                              grid: { color: "#f0f2f5" } },
                     },
