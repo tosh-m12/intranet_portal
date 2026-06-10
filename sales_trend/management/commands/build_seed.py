@@ -22,6 +22,17 @@ GREY_IDS = {
     'C0184', 'C0185', 'C0187', 'C0190', 'C0197', 'C0207', 'C0222',
 }
 
+# 売上GROUP → 請求台帳(取引先マスタ)の基準グループ名 への寄せ(引き継ぎ §3)。
+# これを当てないと sales_trend と billing で荷主グループ名が食い違い、請求情報が紐付かない。
+GROUP_MAP = {
+    'FARUECIA': 'FAURECIA', 'MNB': 'MINEBEA', '旭化成': 'ASAHIKASEI',
+    '住友精化': 'SUMITOMOSEIKA', 'MZDA': 'MAZDA', 'FRKW': 'FURUKAWA',
+    'HAKT': 'HAKUTO', 'HSZK': 'HOSHIZAKI', '长濑': 'NAGASE', 'NSKW': 'NISHIKAWA',
+    '三丰': 'MITUTOYO', 'SANK': 'SANKIN', '朝日电器': 'ELPA', 'GEM(MDLS)': 'MDLS',
+    'ORIENTAL': 'ORIENTALMO', '丰田': 'TIMC', 'HFDK': 'FDK', 'DENSO': 'TJDENSO',
+    'KRRY': 'KURARAY', 'KIT': 'KYOCERA', 'Max': 'MAX',
+}
+
 DEFAULT_DB = '/Users/toshmurayama/NGLS-DB/sales_db/sales.db'
 OUT_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'data', 'seed.json'
@@ -74,6 +85,7 @@ class Command(BaseCommand):
         for code, category in cat.items():
             klass, osy = classify(category, code, first_year.get(code))
             grp, name = meta.get(code, ('', ''))
+            grp = GROUP_MAP.get(grp, grp)   # 請求台帳の基準グループ名へ寄せる
             customers.append({
                 'code': code, 'group_name': grp or '', 'customer_name': name or '',
                 'klass': klass, 'other_start_year': osy,
