@@ -227,9 +227,17 @@ html[lang^="zh"] body {
 .main-content h1 .ic { display: none; }   /* ページ見出しのアイコンは非表示(テキストのみ) */
 
 /* コンテンツ見出しの階層を全アプリで統一(ページ名h1=20 > 見出しh2=17 > 小見出しh3=15)。
-   既定の特大H2/H3(約24/19px)がページ名より大きくなる逆転を防ぐ。 */
-.main-content h2 { font-size: 17px; font-weight: bold; color: #1a2b3c; }
-.main-content h3 { font-size: 15px; font-weight: bold; color: #1a2b3c; }
+   既定の特大H2/H3(約24/19px)がページ名より大きくなる逆転を防ぐ。
+   余白も統一(既定の大きな上下マージンを排除)し、ページ切替時に見出し/表の縦位置が
+   揃うようにする。 */
+.main-content h2 { font-size: 17px; font-weight: bold; color: #1a2b3c; margin: 20px 0 10px; }
+.main-content h3 { font-size: 15px; font-weight: bold; color: #1a2b3c; margin: 16px 0 8px; }
+
+/* ページ見出し行(.page-header)を全アプリで統一し、切替時にコンテンツ見出し/表の
+   縦位置が揃うようにする。右側ボタンの有無で高さが変わらないよう min-height を固定し、
+   見出しは上揃え・余白0で先頭位置を一定にする。 */
+.main-content .page-header { align-items: flex-start; min-height: 34px; margin: 0 0 12px; }
+.main-content .page-header h2 { margin: 0; }
 
 footer {
     text-align: center;
