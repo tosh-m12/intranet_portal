@@ -4,12 +4,13 @@
 {% block content %}
 <div class="billing-app">
 <div class="detail-head">
-  <h2 class="sec">{% trans "請求明細" %}</h2>
-  <div class="head-actions">
-    {# 承認状態バッジは右側に1つだけ(表内には出さない) #}
+  {# 承認状態バッジはタイトルのすぐ右に1つだけ(表内には出さない) #}
+  <h2 class="sec">{% trans "請求明細" %}
     {% if obj.is_cancelled %}<span class="badge bad">{% trans "取消済" %}</span>
     {% elif not obj.is_approved %}<span class="badge warn">{% trans "未承認" %}</span>
     {% else %}<span class="badge ok"{% if obj.approved_by %} title="{% trans '承認' %}: {{ obj.approved_by.last_name }}{{ obj.approved_by.first_name }}{% if obj.approved_at %} {{ obj.approved_at|date:'Y-m-d H:i' }}{% endif %}"{% endif %}>{% trans "承認済" %}</span>{% endif %}
+  </h2>
+  <div class="head-actions">
     <a class="back" href="{% url 'billing:list' %}">← {% trans "請求一覧へ" %}</a>
     {% if can_approve %}
     <form method="post" action="{% url 'billing:approve' obj.pk %}" style="display:inline">
