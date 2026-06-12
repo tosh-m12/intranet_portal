@@ -78,7 +78,8 @@ class Command(BaseCommand):
         url = BASE + ep + '?' + urllib.parse.urlencode(params)
         for attempt in range(3):
             try:
-                with urllib.request.urlopen(url, timeout=60) as r:
+                from vessel_tracking.datalastic_ssl import api_ssl_context
+                with urllib.request.urlopen(url, timeout=60, context=api_ssl_context()) as r:
                     return json.loads(r.read().decode())
             except urllib.error.HTTPError as e:
                 body = e.read().decode()[:200]
