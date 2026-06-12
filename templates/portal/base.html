@@ -85,7 +85,7 @@
         <a href="{% url 'envmon:index' %}" class="{% if ns == 'envmon' %}active{% endif %}"><svg class="ic"><use href="#ic-thermometer"/></svg><span>{% trans "温度湿度管理" %}</span></a>
         <a href="{% url 'billing:entry' %}" class="{% if ns == 'billing' %}active{% endif %}"><svg class="ic"><use href="#ic-file"/></svg><span>{% trans "請求書管理台帳" %}</span></a>
         <a href="{% url 'sales_trend:index' %}" class="{% if ns == 'sales_trend' %}active{% endif %}"><svg class="ic"><use href="#ic-chart"/></svg><span>{% trans "売上推移" %}</span></a>
-        <a href="{% url 'vessel_tracking:list' %}" class="{% if ns == 'vessel_tracking' %}active{% endif %}"><svg class="ic"><use href="#ic-ship"/></svg><span>{% trans "本船動向管理" %}</span></a>
+        <a href="{% url 'vessel_tracking:list' %}" class="{% if ns == 'vessel_tracking' %}active{% endif %}"><svg class="ic"><use href="#ic-ship"/></svg><span>{% trans "本船動静管理" %}</span></a>
         {% if user.is_superuser or user.is_staff %}
         <a href="{% url 'authsys:user_management' %}" class="{% if un == 'user_management' %}active{% endif %}"><svg class="ic"><use href="#ic-users"/></svg><span>{% trans "ユーザー管理" %}</span></a>
         {% endif %}

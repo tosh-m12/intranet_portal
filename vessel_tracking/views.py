@@ -1,4 +1,4 @@
-"""本船動向管理 ビュー。全ビュー login_required。論理削除(is_cancelled)。"""
+"""本船動静管理 ビュー。全ビュー login_required。論理削除(is_cancelled)。"""
 from io import StringIO
 
 from django.contrib import messages

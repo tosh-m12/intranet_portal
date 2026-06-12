@@ -1,4 +1,4 @@
-/* 本船動向管理(vessel_tracking) 専用スタイル。請求管理(billing)の体裁を踏襲し .vessel-app でスコープ。
+/* 本船動静管理(vessel_tracking) 専用スタイル。請求管理(billing)の体裁を踏襲し .vessel-app でスコープ。
    ナビ・subnav・lang 等はポータル既存CSS(visitors/cs_tasks)をそのまま利用。 */
 .vessel-app{
   --navy:#1f3864; --blue:#2e5496; --line:#d9dee7;
@@ -48,12 +48,19 @@
 .vessel-app .grid .legdates span{display:block;font-variant-numeric:tabular-nums}
 .vessel-app .grid td.legcell .legdates span{color:#33415c}
 /* バッジ: 固定スペース内で左揃え。赤・緑とも同一サイズの固定幅ピル。 */
-.vessel-app .grid .legbadge{flex:0 0 52px;text-align:left}
-.vessel-app .grid .legbadge .badge{display:inline-block;width:46px;box-sizing:border-box;text-align:center;padding:2px 0;margin:0;font-size:11px}
+.vessel-app .grid .legbadge{flex:0 0 64px;text-align:left}
+.vessel-app .grid .legbadge .badge{display:inline-block;width:60px;box-sizing:border-box;text-align:center;padding:2px 4px;margin:0;font-size:12px}
 .vessel-app .grid th.stack-h{vertical-align:middle}
 /* 汎用2段積みセル/ヘッダ(仕出地/仕向地・ECYOpen/ACYOpen 等)。整列は .c/.r で指定。 */
 .vessel-app .grid .stack2 span{display:block;line-height:1.5;white-space:nowrap}
 .vessel-app .grid td.stack2 span{font-variant-numeric:tabular-nums}
+
+/* ライブ監視「遅延予測」バッジ: どの状態でも同一サイズ・中央寄せの固定幅ピル。 */
+.vessel-app .grid .mbadge{display:inline-block;width:60px;box-sizing:border-box;padding:2px 4px;text-align:center;font-size:12px}
+/* 遅延が予想される便の仕出地到達見込: 赤文字・太字。 */
+.vessel-app .grid td.danger,.vessel-app .grid td.danger span{color:var(--bad-t);font-weight:700}
+/* 予想CY Open が本日: 赤文字・太字で注意喚起。 */
+.vessel-app .grid td.legcell .legdates span.today-hl,.vessel-app .grid .stack2 span.today-hl{color:var(--bad-t);font-weight:700}
 
 /* 状況バッジ(色=意味)。受注=灰 / ブッキング確定=青 / 出港済=水色 / 入港済=緑。遅延・取消=赤。 */
 .vessel-app .badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;font-weight:600;white-space:nowrap}
@@ -65,9 +72,8 @@
 .vessel-app .badge.st-cancelled{background:var(--bad-b);color:var(--bad-t)}
 .vessel-app .badge.bad{background:var(--bad-b);color:var(--bad-t)}
 .vessel-app .badge.ok{background:var(--ok-b);color:var(--ok-t)}
-/* 出発前のライブ予測遅延: グレー背景・赤文字「+X予想」 */
+/* 出発前のライブ予測遅延: グレー背景・赤文字「+X予想」(サイズは他バッジと共通) */
 .vessel-app .badge.predict{background:#eceff3;color:var(--bad-t)}
-.vessel-app .grid .legbadge .badge.predict{width:auto;min-width:46px;padding:1px 4px;font-size:10px}
 
 /* filters (ライブ絞り込み) */
 .vessel-app .filters{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:14px;

@@ -1,10 +1,10 @@
 {% extends "vessel_tracking/base.html" %}
 {% load humanize i18n %}
-{% block title %}{% trans "出荷一覧" %} — {% trans "本船動向管理" %}{% endblock %}
+{% block title %}{% trans "ブッキング一覧" %} — {% trans "本船動静管理" %}{% endblock %}
 {% block content %}
 <div class="vessel-app">
 <div class="detail-head">
-  <h2 class="sec">{% trans "出荷一覧" %}</h2>
+  <h2 class="sec">{% trans "ブッキング一覧" %}</h2>
 </div>
 
 {# 検索機能は一旦非表示。代わりに簡易入力フォームを設置。 #}
@@ -66,53 +66,45 @@
 <table class="grid">
   <thead>
     <tr>
+      <th class="r">{% trans "出発まであと" %}</th>
       <th>{% trans "荷主" %}</th>
       <th class="c stack2"><span>{% trans "仕出地" %}</span><span>{% trans "仕向地" %}</span></th>
-      <th class="c">{% trans "区分" %}</th>
       <th class="r">{% trans "容積㎥" %}</th>
+      <th class="c">{% trans "区分" %}</th>
       <th class="r">{% trans "本数" %}</th>
       <th>{% trans "本船名" %}</th>
       <th class="r">{% trans "航海No" %}</th>
       <th class="r stack2"><span>ECYOpen</span><span>ACYOpen</span></th>
-      <th class="stack-h"><div class="leg"><div class="legdates"><span>{% trans "発地ETA" %}</span><span>{% trans "発地ATA" %}</span></div><div class="legbadge"></div></div></th>
-      <th class="stack-h"><div class="leg"><div class="legdates"><span>{% trans "発地ETD" %}</span><span>{% trans "発地ATD" %}</span></div><div class="legbadge"></div></div></th>
-      <th class="stack-h"><div class="leg"><div class="legdates"><span>{% trans "着地ETA" %}</span><span>{% trans "着地ATA" %}</span></div><div class="legbadge"></div></div></th>
+      <th class="r stack2"><span>{% trans "発地ETD" %}</span><span>{% trans "発地ATD" %}</span></th>
+      <th class="c">{% trans "発地側遅延状況" %}</th>
+      <th class="r stack2"><span>{% trans "着地ETA" %}</span><span>{% trans "着地ATA" %}</span></th>
+      <th class="c">{% trans "着地側状況" %}</th>
       <th>{% trans "担当者" %}</th>
     </tr>
   </thead>
   <tbody>
     {% for r in rows %}
     <tr class="rowlink{% if r.is_delayed %} delayed{% endif %}" data-href="{% url 'vessel_tracking:detail' r.pk %}">
+      {% if r.atd %}<td class="c nowrap muted">{% trans "出発済" %}</td>
+      {% elif r.days_until_etd == None %}<td class="c nowrap">—</td>
+      {% elif r.days_until_etd < 0 %}<td class="c nowrap danger">{% trans "遅延確定" %}</td>
+      {% else %}<td class="c nowrap">{{ r.days_until_etd }}{% trans "日" %}</td>{% endif %}
       <td class="nowrap">{{ r.customer }}</td>
       <td class="c stack2"><span>{{ r.origin }}</span><span>{{ r.dest }}</span></td>
-      <td class="c">{{ r.container_type }}</td>
       <td class="r">{{ r.out_m3|default_if_none:'' }}</td>
+      <td class="c">{{ r.container_type }}</td>
       <td class="r">{{ r.container_count|default_if_none:'' }}</td>
       <td>{{ r.vessel }}</td>
       <td class="r">{{ r.voyage }}</td>
-      <td class="r stack2"><span>{{ r.cy_open|date:'y/n/j'|default:'—' }}</span><span>{{ r.cy_open_act|date:'y/n/j'|default:'—' }}</span></td>
-      <td class="legcell">
-        <div class="leg">
-          <div class="legdates"><span>{{ r.origin_eta|date:'y/n/j'|default:'—' }}</span><span>{{ r.shanghai_ata|date:'y/n/j'|default:'—' }}</span></div>
-          <div class="legbadge">{% if r.live_departure_delay_days %}<span class="badge predict">+{{ r.live_departure_delay_days }}{% trans "予想" %}</span>{% endif %}</div>
-        </div>
-      </td>
-      <td class="legcell">
-        <div class="leg">
-          <div class="legdates"><span>{{ r.etd|date:'y/n/j'|default:'—' }}</span><span>{{ r.atd|date:'y/n/j'|default:'—' }}</span></div>
-          <div class="legbadge">{% if r.departure_delay_days > 0 %}<span class="badge bad">+{{ r.departure_delay_days }}</span>{% elif r.atd %}<span class="badge ok">{% trans "出航済" %}</span>{% endif %}</div>
-        </div>
-      </td>
-      <td class="legcell">
-        <div class="leg">
-          <div class="legdates"><span>{{ r.eta|date:'y/n/j'|default:'—' }}</span><span>{{ r.ata|date:'y/n/j'|default:'—' }}</span></div>
-          <div class="legbadge">{% if r.arrival_delay_days > 0 %}<span class="badge bad">+{{ r.arrival_delay_days }}</span>{% elif r.ata %}<span class="badge ok">{% trans "入港済" %}</span>{% endif %}</div>
-        </div>
-      </td>
+      <td class="r stack2"><span{% if r.cy_open_is_today %} class="today-hl"{% endif %}>{{ r.cy_open|date:'y/n/j'|default:'—' }}</span><span>{{ r.cy_open_act|date:'y/n/j'|default:'—' }}</span></td>
+      <td class="r stack2"><span>{{ r.etd|date:'y/n/j'|default:'—' }}</span><span>{{ r.atd|date:'y/n/j'|default:'—' }}</span></td>
+      <td class="c nowrap">{% if r.atd %}{% if r.departure_delay_days > 0 %}<span class="badge mbadge bad">+{{ r.departure_delay_days }}</span>{% elif r.departure_delay_days == 0 %}<span class="badge mbadge ok">{% trans "定刻" %}</span>{% elif r.departure_delay_days < 0 %}<span class="badge mbadge ok">{{ r.departure_delay_days }}</span>{% endif %}{% elif r.live_departure_delay_days %}<span class="badge mbadge predict">+{{ r.live_departure_delay_days }}{% trans "予想" %}</span>{% elif r.shanghai_eta_live_cst_date %}<span class="badge mbadge ok">{% trans "定刻" %}</span>{% else %}<span class="muted">{% trans "船社情報待ち" %}</span>{% endif %}</td>
+      <td class="r stack2"><span>{{ r.eta|date:'y/n/j'|default:'—' }}</span><span>{{ r.ata|date:'y/n/j'|default:'—' }}</span></td>
+      <td class="c nowrap">{% if r.arrival_delay_days > 0 %}<span class="badge mbadge bad">+{{ r.arrival_delay_days }}</span>{% elif r.arrival_delay_days == 0 %}<span class="badge mbadge ok">{% trans "定刻" %}</span>{% elif r.arrival_delay_days < 0 %}<span class="badge mbadge ok">{{ r.arrival_delay_days }}</span>{% endif %}</td>
       <td>{{ r.assignee }}</td>
     </tr>
     {% empty %}
-    <tr><td colspan="12" class="c muted">{% trans "データがありません。" %} <a href="{% url 'vessel_tracking:entry' %}">{% trans "新規入力" %}</a></td></tr>
+    <tr><td colspan="14" class="c muted">{% trans "データがありません。" %} <a href="{% url 'vessel_tracking:entry' %}">{% trans "新規入力" %}</a></td></tr>
     {% endfor %}
   </tbody>
 </table>

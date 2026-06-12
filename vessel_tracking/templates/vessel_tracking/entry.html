@@ -1,12 +1,12 @@
 {% extends "vessel_tracking/base.html" %}
 {% load i18n %}
-{% block title %}{% trans "新規入力" %} — {% trans "本船動向管理" %}{% endblock %}
+{% block title %}{% trans "新規入力" %} — {% trans "本船動静管理" %}{% endblock %}
 {% block content %}
 <div class="vessel-app">
 <div class="detail-head">
   <h2 class="sec">{% if obj.pk %}{% trans "出荷を編集" %} <span class="muted">{{ obj.order_no }} / {{ obj.inv_no }}</span>{% else %}{% trans "新規入力" %}{% endif %}</h2>
   {% if obj.pk %}<a class="back" href="{% url 'vessel_tracking:detail' obj.pk %}">← {% trans "詳細へ戻る" %}</a>
-  {% else %}<a class="back" href="{% url 'vessel_tracking:list' %}">← {% trans "出荷一覧へ" %}</a>{% endif %}
+  {% else %}<a class="back" href="{% url 'vessel_tracking:list' %}">← {% trans "ブッキング一覧へ" %}</a>{% endif %}
 </div>
 
 <form method="post" id="entryForm"
