@@ -17,7 +17,7 @@
 
 <h3 class="sec">{% trans "識別・取引先" %}</h3>
 <dl class="kv">
-  <dt>{% trans "荷主" %}</dt><dd>{{ obj.customer.name }}（{{ obj.customer.code }}）</dd>
+  <dt>{% trans "荷主" %}</dt><dd>{{ obj.customer|default:'—' }}</dd>
   <dt>{% trans "注文No" %}</dt><dd>{{ obj.order_no|default:'—' }}</dd>
   <dt>{% trans "受注日" %}</dt><dd>{{ obj.order_received|date:'Y-m-d'|default:'—' }}</dd>
   <dt>{% trans "インボイスNo" %}</dt><dd>{{ obj.inv_no|default:'—' }}</dd>

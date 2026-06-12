@@ -3,5 +3,4 @@
   {# 新規入力タブは一旦非表示(簡易入力フォームを使用) #}
   <a href="{% url 'vessel_tracking:list' %}" class="{% if active_tab == 'list' %}active{% endif %}">{% trans "出荷一覧" %}</a>
   <a href="{% url 'vessel_tracking:monitor' %}" class="{% if active_tab == 'monitor' %}active{% endif %}">{% trans "ライブ監視" %}</a>
-  <a href="{% url 'vessel_tracking:customers' %}" class="{% if active_tab == 'customers' %}active{% endif %}">{% trans "荷主マスタ" %}</a>
 </div>

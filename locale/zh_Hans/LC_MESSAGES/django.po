@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-12 12:07+0800\n"
+"POT-Creation-Date: 2026-06-12 12:43+0800\n"
 "PO-Revision-Date: 2025-07-23 23:45+0800\n"
 "Last-Translator: TMurayama <example@example.com>\n"
 "Language-Team: Chinese Simplified\n"
@@ -303,9 +303,9 @@ msgstr "入账月"
 #: billing/models.py:84 billing/templates/billing/detail.html:28
 #: billing/templates/billing/entry.html:25
 #: billing/templates/billing/list.html:12
-#: billing/templates/billing/list.html:41 vessel_tracking/models.py:97
+#: billing/templates/billing/list.html:41 vessel_tracking/models.py:74
 #: vessel_tracking/templates/vessel_tracking/detail.html:26
-#: vessel_tracking/templates/vessel_tracking/entry.html:25
+#: vessel_tracking/templates/vessel_tracking/entry.html:23
 #: vessel_tracking/templates/vessel_tracking/list.html:55
 #: vessel_tracking/templates/vessel_tracking/list.html:80
 msgid "担当者"
@@ -349,7 +349,7 @@ msgstr "审批时间"
 
 #: billing/models.py:125 meetings/templates/meetings/add.html:40
 #: meetings/templates/meetings/history.html:36
-#: meetings/templates/meetings/index.html:36 vessel_tracking/models.py:104
+#: meetings/templates/meetings/index.html:36 vessel_tracking/models.py:81
 #: visitors/templates/visitors/add.html:39
 #: visitors/templates/visitors/history.html:36
 #: visitors/templates/visitors/index.html:35
@@ -357,8 +357,8 @@ msgid "入力者"
 msgstr "填写人"
 
 #: billing/models.py:126 meetings/templates/meetings/history.html:37
-#: meetings/templates/meetings/index.html:37 vessel_tracking/models.py:105
-#: vessel_tracking/models.py:124 visitors/templates/visitors/history.html:37
+#: meetings/templates/meetings/index.html:37 vessel_tracking/models.py:82
+#: vessel_tracking/models.py:101 visitors/templates/visitors/history.html:37
 #: visitors/templates/visitors/index.html:36
 msgid "取消"
 msgstr "取消"
@@ -515,18 +515,18 @@ msgstr "选填（例: USD）"
 #: billing/templates/billing/master_list.html:37
 #: meetings/templates/meetings/add.html:110 templates/envmon/locations.html:45
 #: templates/envmon/settings.html:78
-#: vessel_tracking/templates/vessel_tracking/entry.html:114
+#: vessel_tracking/templates/vessel_tracking/entry.html:113
 #: visitors/templates/visitors/add.html:99
 msgid "保存"
 msgstr "保存"
 
 #: billing/templates/billing/entry.html:126
-#: vessel_tracking/templates/vessel_tracking/entry.html:115
+#: vessel_tracking/templates/vessel_tracking/entry.html:114
 msgid "保存して次を入力"
 msgstr "保存并录入下一条"
 
 #: billing/templates/billing/entry.html:127
-#: vessel_tracking/templates/vessel_tracking/entry.html:116
+#: vessel_tracking/templates/vessel_tracking/entry.html:115
 msgid "新規"
 msgstr "新建"
 
@@ -553,13 +553,11 @@ msgstr "全部"
 
 #: billing/templates/billing/list.html:27
 #: billing/templates/billing/master_list.html:13
-#: vessel_tracking/templates/vessel_tracking/customer_list.html:12
 msgid "検索"
 msgstr "搜索"
 
 #: billing/templates/billing/list.html:30
 #: billing/templates/billing/master_list.html:16
-#: vessel_tracking/templates/vessel_tracking/customer_list.html:15
 msgid "クリア"
 msgstr "清除"
 
@@ -568,7 +566,6 @@ msgstr "清除"
 #: cs_tasks/templates/cs_tasks/weekly_report.html:77
 #: cs_tasks/templates/cs_tasks/weekly_report.html:78
 #: cs_tasks/templates/cs_tasks/weekly_report.html:79
-#: vessel_tracking/templates/vessel_tracking/customer_list.html:19
 #: vessel_tracking/templates/vessel_tracking/list.html:64
 msgid "件"
 msgstr "件"
@@ -592,14 +589,11 @@ msgid "取引先マスタ 新規登録"
 msgstr "客户主数据 新建登记"
 
 #: billing/templates/billing/master_form.html:8
-#: vessel_tracking/templates/vessel_tracking/customer_form.html:8
 msgid "マスタ一覧へ"
 msgstr "返回主数据一览"
 
 #: billing/templates/billing/master_form.html:14
 #: billing/templates/billing/master_form.html:19
-#: vessel_tracking/templates/vessel_tracking/customer_form.html:14
-#: vessel_tracking/templates/vessel_tracking/customer_form.html:18
 #: vessel_tracking/templates/vessel_tracking/entry.html:18
 #: vessel_tracking/templates/vessel_tracking/list.html:13
 msgid "必須"
@@ -615,7 +609,6 @@ msgstr "交易·业务概要(可选)"
 
 #: billing/templates/billing/master_form.html:26
 #: cs_tasks/templates/cs_tasks/new.html:28
-#: vessel_tracking/templates/vessel_tracking/customer_form.html:22
 #: vessel_tracking/templates/vessel_tracking/list.html:58
 msgid "登録"
 msgstr "登记"
@@ -624,13 +617,11 @@ msgstr "登记"
 #: cs_tasks/templates/cs_tasks/admin_send_now.html:10
 #: cs_tasks/templates/cs_tasks/edit.html:27
 #: cs_tasks/templates/cs_tasks/new.html:27
-#: vessel_tracking/templates/vessel_tracking/customer_form.html:23
 msgid "キャンセル"
 msgstr "取消"
 
 #: billing/templates/billing/master_list.html:9
 #: meetings/templates/meetings/_subnav.html:18
-#: vessel_tracking/templates/vessel_tracking/customer_list.html:8
 #: visitors/templates/visitors/_subnav.html:15
 msgid "新規登録"
 msgstr "新建登记"
@@ -644,7 +635,6 @@ msgid "業務概要を入力"
 msgstr "输入业务概要"
 
 #: billing/templates/billing/master_list.html:41
-#: vessel_tracking/templates/vessel_tracking/customer_list.html:35
 msgid "該当なし"
 msgstr "无匹配"
 
@@ -796,18 +786,14 @@ msgstr "显示名称"
 
 #: cs_tasks/templates/cs_tasks/mailing_list.html:27
 #: templates/envmon/all_devices.html:42
-#: vessel_tracking/templates/vessel_tracking/customer_list.html:25
 msgid "状態"
 msgstr "状态"
 
 #: cs_tasks/templates/cs_tasks/mailing_list.html:34
-#: vessel_tracking/models.py:31
-#: vessel_tracking/templates/vessel_tracking/customer_list.html:32
 msgid "有効"
 msgstr "有效"
 
 #: cs_tasks/templates/cs_tasks/mailing_list.html:34
-#: vessel_tracking/templates/vessel_tracking/customer_list.html:32
 msgid "無効"
 msgstr "无效"
 
@@ -1754,8 +1740,6 @@ msgstr "来客预定"
 
 #: templates/portal/base.html:88
 #: vessel_tracking/templates/vessel_tracking/base.html:10
-#: vessel_tracking/templates/vessel_tracking/customer_form.html:3
-#: vessel_tracking/templates/vessel_tracking/customer_list.html:3
 #: vessel_tracking/templates/vessel_tracking/detail.html:3
 #: vessel_tracking/templates/vessel_tracking/entry.html:3
 #: vessel_tracking/templates/vessel_tracking/list.html:3
@@ -1850,26 +1834,7 @@ msgstr "用于各负责人填写・查看・汇总日报的系统链接（建设
 msgid "※ 準備中"
 msgstr "※ 准备中"
 
-#: vessel_tracking/models.py:29
-#: vessel_tracking/templates/vessel_tracking/customer_form.html:14
-#: vessel_tracking/templates/vessel_tracking/customer_list.html:23
-msgid "荷主コード"
-msgstr "货主代码"
-
-#: vessel_tracking/models.py:30
-#: vessel_tracking/templates/vessel_tracking/customer_form.html:18
-#: vessel_tracking/templates/vessel_tracking/customer_list.html:24
-msgid "荷主名"
-msgstr "货主名称"
-
-#: vessel_tracking/models.py:38 vessel_tracking/models.py:39
-#: vessel_tracking/templates/vessel_tracking/_subnav.html:6
-#: vessel_tracking/templates/vessel_tracking/customer_list.html:3
-#: vessel_tracking/templates/vessel_tracking/customer_list.html:7
-msgid "荷主マスタ"
-msgstr "货主主数据"
-
-#: vessel_tracking/models.py:49
+#: vessel_tracking/models.py:26
 #: vessel_tracking/templates/vessel_tracking/detail.html:20
 #: vessel_tracking/templates/vessel_tracking/entry.html:18
 #: vessel_tracking/templates/vessel_tracking/list.html:13
@@ -1878,235 +1843,235 @@ msgstr "货主主数据"
 msgid "荷主"
 msgstr "货主"
 
-#: vessel_tracking/models.py:52
+#: vessel_tracking/models.py:29
 #: vessel_tracking/templates/vessel_tracking/detail.html:21
-#: vessel_tracking/templates/vessel_tracking/entry.html:29
+#: vessel_tracking/templates/vessel_tracking/entry.html:27
 msgid "注文No"
 msgstr "订单号"
 
-#: vessel_tracking/models.py:53
+#: vessel_tracking/models.py:30
 #: vessel_tracking/templates/vessel_tracking/detail.html:22
-#: vessel_tracking/templates/vessel_tracking/entry.html:32
+#: vessel_tracking/templates/vessel_tracking/entry.html:30
 msgid "受注日"
 msgstr "接单日"
 
-#: vessel_tracking/models.py:54
+#: vessel_tracking/models.py:31
 #: vessel_tracking/templates/vessel_tracking/detail.html:23
-#: vessel_tracking/templates/vessel_tracking/entry.html:35
+#: vessel_tracking/templates/vessel_tracking/entry.html:33
 msgid "インボイスNo"
 msgstr "发票号"
 
-#: vessel_tracking/models.py:55
+#: vessel_tracking/models.py:32
 #: vessel_tracking/templates/vessel_tracking/detail.html:24
-#: vessel_tracking/templates/vessel_tracking/entry.html:38
+#: vessel_tracking/templates/vessel_tracking/entry.html:36
 #: vessel_tracking/templates/vessel_tracking/list.html:17
 #: vessel_tracking/templates/vessel_tracking/list.html:70
 #: vessel_tracking/templates/vessel_tracking/monitor.html:26
 msgid "仕出地"
 msgstr "起运地"
 
-#: vessel_tracking/models.py:56
+#: vessel_tracking/models.py:33
 #: vessel_tracking/templates/vessel_tracking/detail.html:25
-#: vessel_tracking/templates/vessel_tracking/entry.html:42
+#: vessel_tracking/templates/vessel_tracking/entry.html:40
 #: vessel_tracking/templates/vessel_tracking/list.html:21
 #: vessel_tracking/templates/vessel_tracking/list.html:70
 #: vessel_tracking/templates/vessel_tracking/monitor.html:26
 msgid "仕向地"
 msgstr "目的地"
 
-#: vessel_tracking/models.py:59
+#: vessel_tracking/models.py:36
 #: vessel_tracking/templates/vessel_tracking/detail.html:32
-#: vessel_tracking/templates/vessel_tracking/entry.html:56
+#: vessel_tracking/templates/vessel_tracking/entry.html:55
 msgid "カートン数"
 msgstr "纸箱数"
 
-#: vessel_tracking/models.py:60
+#: vessel_tracking/models.py:37
 #: vessel_tracking/templates/vessel_tracking/detail.html:33
-#: vessel_tracking/templates/vessel_tracking/entry.html:59
+#: vessel_tracking/templates/vessel_tracking/entry.html:58
 msgid "容積(M³)"
 msgstr "体积(M³)"
 
-#: vessel_tracking/models.py:61
+#: vessel_tracking/models.py:38
 #: vessel_tracking/templates/vessel_tracking/detail.html:34
-#: vessel_tracking/templates/vessel_tracking/entry.html:62
+#: vessel_tracking/templates/vessel_tracking/entry.html:61
 msgid "数量"
 msgstr "数量"
 
-#: vessel_tracking/models.py:62
+#: vessel_tracking/models.py:39
 #: vessel_tracking/templates/vessel_tracking/detail.html:31
-#: vessel_tracking/templates/vessel_tracking/entry.html:51
+#: vessel_tracking/templates/vessel_tracking/entry.html:50
 msgid "輸送区分"
 msgstr "运输类别"
 
-#: vessel_tracking/models.py:63
+#: vessel_tracking/models.py:40
 #: vessel_tracking/templates/vessel_tracking/list.html:35
 msgid "コンテナ本数"
 msgstr "集装箱数"
 
-#: vessel_tracking/models.py:66
+#: vessel_tracking/models.py:43
 #: vessel_tracking/templates/vessel_tracking/detail.html:39
-#: vessel_tracking/templates/vessel_tracking/entry.html:70
+#: vessel_tracking/templates/vessel_tracking/entry.html:69
 #: vessel_tracking/templates/vessel_tracking/list.html:38
 #: vessel_tracking/templates/vessel_tracking/list.html:74
 #: vessel_tracking/templates/vessel_tracking/monitor.html:27
 msgid "本船名"
 msgstr "船名"
 
-#: vessel_tracking/models.py:67
+#: vessel_tracking/models.py:44
 #: vessel_tracking/templates/vessel_tracking/detail.html:40
-#: vessel_tracking/templates/vessel_tracking/entry.html:73
+#: vessel_tracking/templates/vessel_tracking/entry.html:72
 #: vessel_tracking/templates/vessel_tracking/list.html:42
 #: vessel_tracking/templates/vessel_tracking/list.html:75
 #: vessel_tracking/templates/vessel_tracking/monitor.html:28
 msgid "航海No"
 msgstr "航次号"
 
-#: vessel_tracking/models.py:68
+#: vessel_tracking/models.py:45
 #: vessel_tracking/templates/vessel_tracking/detail.html:41
-#: vessel_tracking/templates/vessel_tracking/entry.html:79
+#: vessel_tracking/templates/vessel_tracking/entry.html:78
 msgid "出港予定 ETD"
 msgstr "预计离港 ETD"
 
-#: vessel_tracking/models.py:69
+#: vessel_tracking/models.py:46
 #: vessel_tracking/templates/vessel_tracking/detail.html:42
-#: vessel_tracking/templates/vessel_tracking/entry.html:82
+#: vessel_tracking/templates/vessel_tracking/entry.html:81
 msgid "CY搬入"
 msgstr "CY进场"
 
-#: vessel_tracking/models.py:70
+#: vessel_tracking/models.py:47
 msgid "ECYオープン"
 msgstr "ECY开放"
 
-#: vessel_tracking/models.py:71
+#: vessel_tracking/models.py:48
 msgid "ACYオープン"
 msgstr "ACY开放"
 
-#: vessel_tracking/models.py:72
+#: vessel_tracking/models.py:49
 #: vessel_tracking/templates/vessel_tracking/detail.html:45
-#: vessel_tracking/templates/vessel_tracking/entry.html:91
+#: vessel_tracking/templates/vessel_tracking/entry.html:90
 msgid "バンニング"
 msgstr "装箱"
 
-#: vessel_tracking/models.py:73
+#: vessel_tracking/models.py:50
 #: vessel_tracking/templates/vessel_tracking/detail.html:46
-#: vessel_tracking/templates/vessel_tracking/entry.html:94
+#: vessel_tracking/templates/vessel_tracking/entry.html:93
 msgid "入港予定 ETA"
 msgstr "预计到港 ETA"
 
-#: vessel_tracking/models.py:76
+#: vessel_tracking/models.py:53
 #: vessel_tracking/templates/vessel_tracking/detail.html:58
-#: vessel_tracking/templates/vessel_tracking/entry.html:101
+#: vessel_tracking/templates/vessel_tracking/entry.html:100
 msgid "出港実績 ATD"
 msgstr "实际离港 ATD"
 
-#: vessel_tracking/models.py:77
+#: vessel_tracking/models.py:54
 #: vessel_tracking/templates/vessel_tracking/detail.html:63
-#: vessel_tracking/templates/vessel_tracking/entry.html:104
+#: vessel_tracking/templates/vessel_tracking/entry.html:103
 msgid "入港実績 ATA"
 msgstr "实际到港 ATA"
 
-#: vessel_tracking/models.py:81
+#: vessel_tracking/models.py:58
 #: vessel_tracking/templates/vessel_tracking/detail.html:51
-#: vessel_tracking/templates/vessel_tracking/entry.html:76
+#: vessel_tracking/templates/vessel_tracking/entry.html:75
 msgid "上海入港予定"
 msgstr "上海到港(预计)"
 
-#: vessel_tracking/models.py:82
+#: vessel_tracking/models.py:59
 #: vessel_tracking/templates/vessel_tracking/detail.html:52
 msgid "上海入港"
 msgstr "上海到港"
 
-#: vessel_tracking/models.py:84
+#: vessel_tracking/models.py:61
 #: vessel_tracking/templates/vessel_tracking/detail.html:82
-#: vessel_tracking/templates/vessel_tracking/entry.html:109
+#: vessel_tracking/templates/vessel_tracking/entry.html:108
 msgid "備考"
 msgstr "备注"
 
-#: vessel_tracking/models.py:113 vessel_tracking/models.py:114
+#: vessel_tracking/models.py:90 vessel_tracking/models.py:91
 msgid "出荷トレーシング"
 msgstr "出货跟踪"
 
-#: vessel_tracking/models.py:126 vessel_tracking/models.py:255
+#: vessel_tracking/models.py:103 vessel_tracking/models.py:232
 #: vessel_tracking/templates/vessel_tracking/list.html:109
 msgid "入港済"
 msgstr "已到港"
 
-#: vessel_tracking/models.py:128
+#: vessel_tracking/models.py:105
 msgid "出港済"
 msgstr "已离港"
 
-#: vessel_tracking/models.py:131
+#: vessel_tracking/models.py:108
 msgid "ブッキング確定"
 msgstr "订舱确定"
 
-#: vessel_tracking/models.py:132
+#: vessel_tracking/models.py:109
 msgid "受注"
 msgstr "接单"
 
-#: vessel_tracking/models.py:193
+#: vessel_tracking/models.py:170
 #, python-format
 msgid "出港+%(d)d日"
 msgstr "离港+%(d)d天"
 
-#: vessel_tracking/models.py:195
+#: vessel_tracking/models.py:172
 #, python-format
 msgid "入港+%(d)d日"
 msgstr "到港+%(d)d天"
 
-#: vessel_tracking/models.py:248
+#: vessel_tracking/models.py:225
 msgid "日本へ航行中"
 msgstr "驶往日本中"
 
-#: vessel_tracking/models.py:250
+#: vessel_tracking/models.py:227
 #, python-format
 msgid "遅延予測 +%(d)d日"
 msgstr "预测延误 +%(d)d天"
 
-#: vessel_tracking/models.py:251
+#: vessel_tracking/models.py:228
 msgid "順調"
 msgstr "正常"
 
-#: vessel_tracking/models.py:253
+#: vessel_tracking/models.py:230
 msgid "上海へ航行中"
 msgstr "驶往上海中"
 
-#: vessel_tracking/models.py:257
+#: vessel_tracking/models.py:234
 msgid "別レグ"
 msgstr "其他航段"
 
-#: vessel_tracking/models.py:258 vessel_tracking/models.py:288
+#: vessel_tracking/models.py:235 vessel_tracking/models.py:265
 #: vessel_tracking/templates/vessel_tracking/monitor.html:11
 msgid "未取得"
 msgstr "未获取"
 
-#: vessel_tracking/models.py:273
+#: vessel_tracking/models.py:250
 #, python-format
 msgid "出発済 +%(d)d日"
 msgstr "已出发 +%(d)d天"
 
-#: vessel_tracking/models.py:273
+#: vessel_tracking/models.py:250
 msgid "出発済(予定通り)"
 msgstr "已出发(准时)"
 
-#: vessel_tracking/models.py:275
+#: vessel_tracking/models.py:252
 msgid "出発済"
 msgstr "已出发"
 
-#: vessel_tracking/models.py:279
+#: vessel_tracking/models.py:256
 #, python-format
 msgid "出発遅延 +%(d)d日(ETD経過・未出港)"
 msgstr "出发延误 +%(d)d天(已过ETD·未离港)"
 
-#: vessel_tracking/models.py:285
+#: vessel_tracking/models.py:262
 #, python-format
 msgid "出発遅延予測 +%(d)d日"
 msgstr "预测出发延误 +%(d)d天"
 
-#: vessel_tracking/models.py:285
+#: vessel_tracking/models.py:262
 msgid "出発予定通り"
 msgstr "出发准时"
 
-#: vessel_tracking/models.py:287
+#: vessel_tracking/models.py:264
 msgid "監視中"
 msgstr "监视中"
 
@@ -2121,26 +2086,6 @@ msgstr "出货列表"
 msgid "ライブ監視"
 msgstr "实时监视"
 
-#: vessel_tracking/templates/vessel_tracking/customer_form.html:3
-msgid "荷主 新規登録"
-msgstr "货主 新建登记"
-
-#: vessel_tracking/templates/vessel_tracking/customer_form.html:7
-msgid "荷主マスタ 新規登録"
-msgstr "货主主数据 新建登记"
-
-#: vessel_tracking/templates/vessel_tracking/customer_form.html:16
-msgid "例: ASAHI"
-msgstr "例: ASAHI"
-
-#: vessel_tracking/templates/vessel_tracking/customer_form.html:19
-msgid "正式社名(例: 朝日電器)"
-msgstr "正式公司名(例: 朝日电器)"
-
-#: vessel_tracking/templates/vessel_tracking/customer_list.html:13
-msgid "コード・荷主名"
-msgstr "代码·货主名"
-
 #: vessel_tracking/templates/vessel_tracking/detail.html:3
 #: vessel_tracking/templates/vessel_tracking/detail.html:7
 msgid "出荷詳細"
@@ -2152,7 +2097,7 @@ msgid "出荷一覧へ"
 msgstr "返回出货列表"
 
 #: vessel_tracking/templates/vessel_tracking/detail.html:29
-#: vessel_tracking/templates/vessel_tracking/entry.html:49
+#: vessel_tracking/templates/vessel_tracking/entry.html:48
 msgid "貨物量"
 msgstr "货量"
 
@@ -2161,12 +2106,12 @@ msgid "本船・スケジュール"
 msgstr "船舶·船期"
 
 #: vessel_tracking/templates/vessel_tracking/detail.html:43
-#: vessel_tracking/templates/vessel_tracking/entry.html:85
+#: vessel_tracking/templates/vessel_tracking/entry.html:84
 msgid "ECYオープン(予定)"
 msgstr "ECY开放(预计)"
 
 #: vessel_tracking/templates/vessel_tracking/detail.html:44
-#: vessel_tracking/templates/vessel_tracking/entry.html:88
+#: vessel_tracking/templates/vessel_tracking/entry.html:87
 msgid "ACYオープン(実績)"
 msgstr "ACY开放(实际)"
 
@@ -2206,12 +2151,10 @@ msgid "地図で開く"
 msgstr "在地图打开"
 
 #: vessel_tracking/templates/vessel_tracking/detail.html:74
-#| msgid "速度kn"
 msgid "速度"
 msgstr "航速"
 
 #: vessel_tracking/templates/vessel_tracking/detail.html:75
-#| msgid "進行中"
 msgid "進行先"
 msgstr "前往地"
 
@@ -2228,53 +2171,51 @@ msgid "出荷を編集"
 msgstr "编辑出货"
 
 #: vessel_tracking/templates/vessel_tracking/entry.html:21
-msgid "選択…"
-msgstr "选择…"
+#: vessel_tracking/templates/vessel_tracking/list.html:15
+#| msgid "取引先マスタ"
+msgid "取引先マスタから"
+msgstr "从客户主数据"
 
-#: vessel_tracking/templates/vessel_tracking/entry.html:40
+#: vessel_tracking/templates/vessel_tracking/entry.html:38
 msgid "例: SHANGHAI"
 msgstr "例: SHANGHAI"
 
-#: vessel_tracking/templates/vessel_tracking/entry.html:44
+#: vessel_tracking/templates/vessel_tracking/entry.html:42
 #: vessel_tracking/templates/vessel_tracking/list.html:23
 msgid "例: TOKYO"
 msgstr "例: TOKYO"
 
-#: vessel_tracking/templates/vessel_tracking/entry.html:54
+#: vessel_tracking/templates/vessel_tracking/entry.html:53
 msgid "例: 20F / LCL"
 msgstr "例: 20F / LCL"
 
-#: vessel_tracking/templates/vessel_tracking/entry.html:68
+#: vessel_tracking/templates/vessel_tracking/entry.html:67
 msgid "本船・スケジュール（ブッキング確定時）"
 msgstr "船舶·船期(订舱确定时)"
 
-#: vessel_tracking/templates/vessel_tracking/entry.html:71
+#: vessel_tracking/templates/vessel_tracking/entry.html:70
 msgid "例: SITC YUANHE"
 msgstr "例: SITC YUANHE"
 
-#: vessel_tracking/templates/vessel_tracking/entry.html:74
+#: vessel_tracking/templates/vessel_tracking/entry.html:73
 msgid "例: 2605N"
 msgstr "例: 2605N"
 
-#: vessel_tracking/templates/vessel_tracking/entry.html:99
+#: vessel_tracking/templates/vessel_tracking/entry.html:98
 msgid "実績（出港後・船会社へ確認して入力）"
 msgstr "实绩(离港后·向船公司确认后录入)"
 
-#: vessel_tracking/templates/vessel_tracking/entry.html:111
+#: vessel_tracking/templates/vessel_tracking/entry.html:110
 msgid "遅延理由・船会社からの連絡事項など（任意）"
 msgstr "延误原因·船公司联络事项等(可选)"
 
-#: vessel_tracking/templates/vessel_tracking/entry.html:122
+#: vessel_tracking/templates/vessel_tracking/entry.html:121
 msgid "この出荷トレーシングを取消します。よろしいですか？"
 msgstr "将取消此出货跟踪。确定吗？"
 
-#: vessel_tracking/templates/vessel_tracking/entry.html:124
+#: vessel_tracking/templates/vessel_tracking/entry.html:123
 msgid "この出荷を取消"
 msgstr "取消此出货"
-
-#: vessel_tracking/templates/vessel_tracking/list.html:15
-msgid "荷主マスタから"
-msgstr "从货主主数据"
 
 #: vessel_tracking/templates/vessel_tracking/list.html:32
 msgid "容積m³"
@@ -2463,6 +2404,36 @@ msgstr "您没有编辑此来访预定的权限。"
 #, python-format
 msgid "VisitorデータをCSVから再登録しました（%(count)s件）。"
 msgstr "已从 CSV 重新登记 Visitor 数据（%(count)s 条）。"
+
+#~ msgid "荷主コード"
+#~ msgstr "货主代码"
+
+#~ msgid "荷主名"
+#~ msgstr "货主名称"
+
+#~ msgid "荷主マスタ"
+#~ msgstr "货主主数据"
+
+#~ msgid "荷主 新規登録"
+#~ msgstr "货主 新建登记"
+
+#~ msgid "荷主マスタ 新規登録"
+#~ msgstr "货主主数据 新建登记"
+
+#~ msgid "例: ASAHI"
+#~ msgstr "例: ASAHI"
+
+#~ msgid "正式社名(例: 朝日電器)"
+#~ msgstr "正式公司名(例: 朝日电器)"
+
+#~ msgid "コード・荷主名"
+#~ msgstr "代码·货主名"
+
+#~ msgid "選択…"
+#~ msgstr "选择…"
+
+#~ msgid "荷主マスタから"
+#~ msgstr "从货主主数据"
 
 #~ msgid "担当者名"
 #~ msgstr "负责人姓名"

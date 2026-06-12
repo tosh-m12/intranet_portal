@@ -2,12 +2,11 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from .models import CONTAINER_TYPES, Customer, Shipment
+from .models import CONTAINER_TYPES, Shipment
 
 # 画面フォームで扱うフィールド分類。assignee はログインユーザーから自動設定する。
 TEXT_FIELDS = ['order_no', 'inv_no', 'origin', 'dest', 'container_type',
@@ -30,6 +29,13 @@ def display_name(user):
     """担当者として記録する表示名。氏名(姓+名) 優先、無ければメール。"""
     name = f'{user.last_name or ""}{user.first_name or ""}'.strip()
     return name or (user.email or '')
+
+
+def _shipper_choices():
+    """荷主の入力候補 = billing(請求書管理台帳)取引先マスタの group_name(重複排除)。"""
+    from billing.models import MasterParty
+    return list(MasterParty.objects.values_list('group_name', flat=True)
+                .distinct().order_by('group_name'))
 
 
 def _date(v):
@@ -56,7 +62,7 @@ def _i(v):
 # ---------------------------------------------------------------- 一覧
 @login_required
 def shipment_list(request):
-    qs = Shipment.objects.filter(is_cancelled=False).select_related('customer')
+    qs = Shipment.objects.filter(is_cancelled=False)
     customer = (request.GET.get('customer') or '').strip()
     dest = (request.GET.get('dest') or '').strip()
     status = (request.GET.get('status') or '').strip()
@@ -64,7 +70,7 @@ def shipment_list(request):
     q = (request.GET.get('q') or '').strip()
 
     if customer:
-        qs = qs.filter(customer_id=customer)
+        qs = qs.filter(customer__icontains=customer)
     if dest:
         qs = qs.filter(dest__iexact=dest)
     if q:
@@ -82,7 +88,7 @@ def shipment_list(request):
         'active_tab': 'list',
         'rows': rows,
         'count': len(rows),
-        'customers': Customer.objects.filter(is_active=True),
+        'shippers': _shipper_choices(),
         'dests': [d for d in Shipment.objects.filter(is_cancelled=False)
                   .values_list('dest', flat=True).distinct().order_by('dest') if d],
         'status_choices': STATUS_CHOICES,
@@ -100,12 +106,10 @@ def shipment_list(request):
 @require_POST
 def quick_create(request):
     name = (request.POST.get('customer') or '').strip()
-    cust = (Customer.objects.filter(Q(name__iexact=name) | Q(code__iexact=name)).first()
-            if name else None)
-    if not cust:
-        messages.error(request, '荷主は荷主マスタから選択してください。')
+    if not name:
+        messages.error(request, '荷主は必須です。')
         return redirect('vessel_tracking:list')
-    s = Shipment(customer=cust, source='manual', created_by=request.user,
+    s = Shipment(customer=name, source='manual', created_by=request.user,
                  assignee=display_name(request.user))
     s.origin = (request.POST.get('origin') or '').strip()
     s.dest = (request.POST.get('dest') or '').strip()
@@ -120,22 +124,18 @@ def quick_create(request):
     s.etd = _date(request.POST.get('etd'))
     s.eta = _date(request.POST.get('eta'))
     s.save()
-    messages.success(request, f'出荷を登録しました（{cust.name} / {s.dest}）。')
+    messages.success(request, f'出荷を登録しました（{s.customer} / {s.dest}）。')
     return redirect('vessel_tracking:list')
 
 
 # ---------------------------------------------------------------- ライブ監視
 @login_required
 def monitor(request):
-    """就航中の本船ライブ動向(vessel_pro スナップショット)を一覧し、遅延予測を警告する。
-
-    対象 = 取消でない・本船名あり・着地未確定(ata 未入力)の便。
-    ライブ値は track_vessels コマンドが更新する。
-    """
+    """就航中の本船ライブ動向(vessel_pro スナップショット)を一覧し、遅延予測を警告する。"""
     import datetime as _dt
     # 発地出発の遅延予測が主目的 → まだ出港していない便を監視対象にする。
     qs = (Shipment.objects.filter(is_cancelled=False, atd__isnull=True)
-          .exclude(vessel='').select_related('customer'))
+          .exclude(vessel=''))
     rows = list(qs)
     order = {'bad': 0, 'info': 1, 'ok': 2, 'muted': 3, 'none': 4}
     rows.sort(key=lambda s: (order.get(s.live_departure_predict[0], 9), s.etd or _dt.date.max))
@@ -153,7 +153,7 @@ def monitor(request):
 # ---------------------------------------------------------------- 詳細(読み取り専用)
 @login_required
 def detail(request, pk):
-    obj = get_object_or_404(Shipment.objects.select_related('customer'), pk=pk)
+    obj = get_object_or_404(Shipment, pk=pk)
     return render(request, 'vessel_tracking/detail.html',
                   {'active_tab': 'list', 'obj': obj})
 
@@ -166,9 +166,7 @@ def entry(request, pk=None):
 
     if request.method == 'POST':
         obj = obj or Shipment()
-        # 荷主は荷主マスタからのみ選択可(自由入力不可)。未選択・不正値は弾く。
-        cust_id = (request.POST.get('customer') or '').strip()
-        cust = Customer.objects.filter(pk=cust_id).first() if cust_id else None
+        name = (request.POST.get('customer') or '').strip()
         for fld in TEXT_FIELDS:
             setattr(obj, fld, (request.POST.get(fld) or '').strip())
         for fld in DATE_FIELDS:
@@ -179,11 +177,11 @@ def entry(request, pk=None):
             setattr(obj, fld, _f(request.POST.get(fld)))
         obj.remarks = (request.POST.get('remarks') or '').strip()
 
-        if not cust:
-            messages.error(request, '荷主は荷主マスタから選択してください。')
+        if not name:
+            messages.error(request, '荷主は必須です。')
             return render(request, 'vessel_tracking/entry.html',
                           _entry_ctx(obj, is_new, request))
-        obj.customer = cust
+        obj.customer = name
 
         if is_new:
             obj.created_by = request.user
@@ -201,7 +199,7 @@ def _entry_ctx(obj, is_new, request):
     return {
         'active_tab': 'entry',
         'obj': obj,
-        'customers': Customer.objects.filter(is_active=True),
+        'shippers': _shipper_choices(),
         'container_types': CONTAINER_TYPES,
         'dests': [d for d in Shipment.objects.values_list('dest', flat=True)
                   .distinct().order_by('dest') if d],
@@ -218,52 +216,3 @@ def cancel(request, pk):
     obj.save(update_fields=['is_cancelled', 'cancelled_at', 'updated_at'])
     messages.success(request, '出荷トレーシングを取消しました。')
     return redirect('vessel_tracking:list')
-
-
-# ---------------------------------------------------------------- 荷主マスタ
-@login_required
-def customer_list(request):
-    q = (request.GET.get('q') or '').strip()
-    qs = Customer.objects.all()
-    if q:
-        qs = qs.filter(Q(code__icontains=q) | Q(name__icontains=q))
-    return render(request, 'vessel_tracking/customer_list.html',
-                  {'active_tab': 'customers', 'rows': qs, 'count': qs.count(),
-                   'total': Customer.objects.count(), 'q': q})
-
-
-@login_required
-def customer_add(request):
-    prefill_code = (request.GET.get('code') or '').strip()
-    prefill_name = (request.GET.get('name') or '').strip()
-    if request.method == 'POST':
-        code = (request.POST.get('code') or '').strip().upper()
-        name = (request.POST.get('name') or '').strip()
-        if not code or not name:
-            messages.error(request, '荷主コードと荷主名は必須です。')
-        elif Customer.objects.filter(code=code).exists():
-            messages.error(request, f'荷主コード「{code}」は既に登録済みです。')
-        else:
-            Customer.objects.create(code=code, name=name)
-            messages.success(request, f'荷主「{code} / {name}」を登録しました。')
-            nxt = request.POST.get('next')
-            return redirect(nxt) if nxt else redirect('vessel_tracking:customers')
-        prefill_code, prefill_name = code, name
-
-    return render(request, 'vessel_tracking/customer_form.html', {
-        'active_tab': 'customers',
-        'prefill_code': prefill_code,
-        'prefill_name': prefill_name,
-        'next': request.GET.get('next', ''),
-    })
-
-
-# ---------------------------------------------------------------- JSON API
-@login_required
-def api_customers(request):
-    q = (request.GET.get('q') or '').strip()
-    qs = Customer.objects.filter(is_active=True)
-    if q:
-        qs = qs.filter(Q(code__icontains=q) | Q(name__icontains=q))
-    items = [{'value': c.pk, 'label': c.name, 'group': c.code} for c in qs[:20]]
-    return JsonResponse({'items': items})
