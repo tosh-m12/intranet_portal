@@ -1,6 +1,9 @@
 """本船動向管理 ビュー。全ビュー login_required。論理削除(is_cancelled)。"""
+from io import StringIO
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.management import call_command
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -148,6 +151,22 @@ def monitor(request):
         'last_updated': last,
     }
     return render(request, 'vessel_tracking/monitor.html', ctx)
+
+
+@login_required
+@require_POST
+def monitor_refresh(request):
+    """ライブ監視を手動で1回実行(track_vessels)。本番での動作確認・即時更新用。"""
+    out = StringIO()
+    try:
+        call_command('track_vessels', stdout=out, stderr=out)
+    except Exception as e:   # noqa: BLE001
+        messages.error(request, f'ライブ更新に失敗しました: {e}')
+        return redirect('vessel_tracking:monitor')
+    lines = [ln for ln in out.getvalue().splitlines() if ln.strip()]
+    summary = lines[-1].strip() if lines else ''
+    messages.success(request, f'ライブ更新を実行しました。{summary}')
+    return redirect('vessel_tracking:monitor')
 
 
 # ---------------------------------------------------------------- 詳細(読み取り専用)
