@@ -66,6 +66,18 @@
   </dd>
 </dl>
 
+{% if obj.live_updated_at %}
+<h3 class="sec">{% trans "ライブ動向（AIS）" %}</h3>
+<dl class="kv">
+  <dt>{% trans "現在地" %}</dt>
+  <dd>{% if obj.live_map_url %}<a href="{{ obj.live_map_url }}" target="_blank" rel="noopener">📍 {% trans "地図で開く" %}</a> <span class="muted">({{ obj.live_pos_str }})</span>{% else %}—{% endif %}</dd>
+  <dt>{% trans "速度" %}</dt><dd>{{ obj.live_speed|default_if_none:'—' }} kn</dd>
+  <dt>{% trans "進行先" %}</dt><dd>{{ obj.live_dest_name|default:'—' }}{% if obj.live_dest_unlocode %}（{{ obj.live_dest_unlocode }}）{% endif %}</dd>
+  <dt>{% trans "申告ETA(JST)" %}</dt><dd>{{ obj.live_eta_jst_str|default:'—' }}</dd>
+  <dt>{% trans "取得時刻" %}</dt><dd class="muted">{{ obj.live_updated_jst_str|default:'—' }}</dd>
+</dl>
+{% endif %}
+
 {% if obj.remarks %}
 <h3 class="sec">{% trans "備考" %}</h3>
 <div class="remarks-box">{{ obj.remarks|linebreaksbr }}</div>

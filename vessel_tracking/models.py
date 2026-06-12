@@ -9,6 +9,7 @@
 将来: 本船動向 API 連携・客先メール通知(ブッキング確定/遅延/出航)を追加予定(現時点は未実装)。
 """
 import datetime
+from urllib.parse import quote
 
 from django.conf import settings
 from django.db import models
@@ -285,6 +286,45 @@ class Shipment(models.Model):
         if self.live_updated_at:
             return ('muted', _('監視中'))
         return ('none', _('未取得'))
+
+    @property
+    def live_map_url(self):
+        """現在地を中国で使える地図(高德AMap)で開くURL。WGS-84 を自動変換(coordinate=wgs84)。"""
+        if self.live_lat is None or self.live_lon is None:
+            return ''
+        name = quote(f'{self.vessel} {self.voyage}'.strip() or '本船')
+        return ('https://uri.amap.com/marker?position=%s,%s&name=%s&coordinate=wgs84&callnative=0'
+                % (self.live_lon, self.live_lat, name))
+
+    @property
+    def live_pos_str(self):
+        if self.live_lat is None or self.live_lon is None:
+            return ''
+        return f'{self.live_lat:.2f}, {self.live_lon:.2f}'
+
+    @property
+    def origin_eta(self):
+        """発地(上海)到着予定。未出港はライブ監視の上海行きETAを優先、無ければ手入力値。"""
+        if not self.atd and (self.live_dest_unlocode or '').upper() == 'CNSHG' and self.live_eta:
+            return self._to_jst(self.live_eta).date()
+        return self.shanghai_eta
+
+    @property
+    def live_departure_delay_days(self):
+        """未出港便の出発遅延(予想)日数。出港済み/予測なしは None。
+
+        ライブの上海到着見込み(=出発見込み)が予定ETDより後、または予定ETDを既に過ぎている場合に
+        その日数を返す(両者の大きい方)。
+        """
+        if self.atd or not self.etd:
+            return None
+        days = 0
+        if (self.live_updated_at and (self.live_dest_unlocode or '').upper() == 'CNSHG'
+                and self.live_eta):
+            days = max(days, (self._to_jst(self.live_eta).date() - self.etd).days)
+        if self.etd < datetime.date.today():
+            days = max(days, (datetime.date.today() - self.etd).days)
+        return days if days > 0 else None
 
     @property
     def shanghai_eta_live_jst_str(self):

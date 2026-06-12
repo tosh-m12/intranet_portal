@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-12 11:43+0800\n"
+"POT-Creation-Date: 2026-06-12 12:07+0800\n"
 "PO-Revision-Date: 2025-07-23 23:45+0800\n"
 "Last-Translator: TMurayama <example@example.com>\n"
 "Language-Team: Chinese Simplified\n"
@@ -303,11 +303,11 @@ msgstr "入账月"
 #: billing/models.py:84 billing/templates/billing/detail.html:28
 #: billing/templates/billing/entry.html:25
 #: billing/templates/billing/list.html:12
-#: billing/templates/billing/list.html:41 vessel_tracking/models.py:96
+#: billing/templates/billing/list.html:41 vessel_tracking/models.py:97
 #: vessel_tracking/templates/vessel_tracking/detail.html:26
 #: vessel_tracking/templates/vessel_tracking/entry.html:25
 #: vessel_tracking/templates/vessel_tracking/list.html:55
-#: vessel_tracking/templates/vessel_tracking/list.html:81
+#: vessel_tracking/templates/vessel_tracking/list.html:80
 msgid "担当者"
 msgstr "负责人"
 
@@ -349,7 +349,7 @@ msgstr "审批时间"
 
 #: billing/models.py:125 meetings/templates/meetings/add.html:40
 #: meetings/templates/meetings/history.html:36
-#: meetings/templates/meetings/index.html:36 vessel_tracking/models.py:103
+#: meetings/templates/meetings/index.html:36 vessel_tracking/models.py:104
 #: visitors/templates/visitors/add.html:39
 #: visitors/templates/visitors/history.html:36
 #: visitors/templates/visitors/index.html:35
@@ -357,8 +357,8 @@ msgid "入力者"
 msgstr "填写人"
 
 #: billing/models.py:126 meetings/templates/meetings/history.html:37
-#: meetings/templates/meetings/index.html:37 vessel_tracking/models.py:104
-#: vessel_tracking/models.py:123 visitors/templates/visitors/history.html:37
+#: meetings/templates/meetings/index.html:37 vessel_tracking/models.py:105
+#: vessel_tracking/models.py:124 visitors/templates/visitors/history.html:37
 #: visitors/templates/visitors/index.html:36
 msgid "取消"
 msgstr "取消"
@@ -542,7 +542,7 @@ msgstr "取消此明细"
 #: billing/templates/billing/list.html:58
 #: vessel_tracking/templates/vessel_tracking/entry.html:3
 #: vessel_tracking/templates/vessel_tracking/entry.html:7
-#: vessel_tracking/templates/vessel_tracking/list.html:112
+#: vessel_tracking/templates/vessel_tracking/list.html:115
 msgid "新規入力"
 msgstr "新建录入"
 
@@ -579,7 +579,7 @@ msgid "表示は最大500件"
 msgstr "最多显示500条"
 
 #: billing/templates/billing/list.html:58
-#: vessel_tracking/templates/vessel_tracking/list.html:112
+#: vessel_tracking/templates/vessel_tracking/list.html:115
 msgid "データがありません。"
 msgstr "暂无数据。"
 
@@ -636,7 +636,6 @@ msgid "新規登録"
 msgstr "新建登记"
 
 #: billing/templates/billing/master_list.html:14
-#| msgid "グループ・会社名・担当者"
 msgid "グループ・会社名・業務概要"
 msgstr "集团·公司名·业务概要"
 
@@ -772,7 +771,7 @@ msgid "課題を編集"
 msgstr "编辑课题"
 
 #: cs_tasks/templates/cs_tasks/edit.html:28
-#: vessel_tracking/templates/vessel_tracking/monitor.html:33
+#: vessel_tracking/templates/vessel_tracking/monitor.html:34
 msgid "更新"
 msgstr "更新"
 
@@ -802,7 +801,7 @@ msgid "状態"
 msgstr "状态"
 
 #: cs_tasks/templates/cs_tasks/mailing_list.html:34
-#: vessel_tracking/models.py:30
+#: vessel_tracking/models.py:31
 #: vessel_tracking/templates/vessel_tracking/customer_list.html:32
 msgid "有効"
 msgstr "有效"
@@ -1851,26 +1850,26 @@ msgstr "用于各负责人填写・查看・汇总日报的系统链接（建设
 msgid "※ 準備中"
 msgstr "※ 准备中"
 
-#: vessel_tracking/models.py:28
+#: vessel_tracking/models.py:29
 #: vessel_tracking/templates/vessel_tracking/customer_form.html:14
 #: vessel_tracking/templates/vessel_tracking/customer_list.html:23
 msgid "荷主コード"
 msgstr "货主代码"
 
-#: vessel_tracking/models.py:29
+#: vessel_tracking/models.py:30
 #: vessel_tracking/templates/vessel_tracking/customer_form.html:18
 #: vessel_tracking/templates/vessel_tracking/customer_list.html:24
 msgid "荷主名"
 msgstr "货主名称"
 
-#: vessel_tracking/models.py:37 vessel_tracking/models.py:38
+#: vessel_tracking/models.py:38 vessel_tracking/models.py:39
 #: vessel_tracking/templates/vessel_tracking/_subnav.html:6
 #: vessel_tracking/templates/vessel_tracking/customer_list.html:3
 #: vessel_tracking/templates/vessel_tracking/customer_list.html:7
 msgid "荷主マスタ"
 msgstr "货主主数据"
 
-#: vessel_tracking/models.py:48
+#: vessel_tracking/models.py:49
 #: vessel_tracking/templates/vessel_tracking/detail.html:20
 #: vessel_tracking/templates/vessel_tracking/entry.html:18
 #: vessel_tracking/templates/vessel_tracking/list.html:13
@@ -1879,35 +1878,34 @@ msgstr "货主主数据"
 msgid "荷主"
 msgstr "货主"
 
-#: vessel_tracking/models.py:51
+#: vessel_tracking/models.py:52
 #: vessel_tracking/templates/vessel_tracking/detail.html:21
 #: vessel_tracking/templates/vessel_tracking/entry.html:29
 msgid "注文No"
 msgstr "订单号"
 
-#: vessel_tracking/models.py:52
+#: vessel_tracking/models.py:53
 #: vessel_tracking/templates/vessel_tracking/detail.html:22
 #: vessel_tracking/templates/vessel_tracking/entry.html:32
 msgid "受注日"
 msgstr "接单日"
 
-#: vessel_tracking/models.py:53
+#: vessel_tracking/models.py:54
 #: vessel_tracking/templates/vessel_tracking/detail.html:23
 #: vessel_tracking/templates/vessel_tracking/entry.html:35
 msgid "インボイスNo"
 msgstr "发票号"
 
-#: vessel_tracking/models.py:54
+#: vessel_tracking/models.py:55
 #: vessel_tracking/templates/vessel_tracking/detail.html:24
 #: vessel_tracking/templates/vessel_tracking/entry.html:38
 #: vessel_tracking/templates/vessel_tracking/list.html:17
 #: vessel_tracking/templates/vessel_tracking/list.html:70
 #: vessel_tracking/templates/vessel_tracking/monitor.html:26
-#| msgid "仕向地"
 msgid "仕出地"
 msgstr "起运地"
 
-#: vessel_tracking/models.py:55
+#: vessel_tracking/models.py:56
 #: vessel_tracking/templates/vessel_tracking/detail.html:25
 #: vessel_tracking/templates/vessel_tracking/entry.html:42
 #: vessel_tracking/templates/vessel_tracking/list.html:21
@@ -1916,36 +1914,36 @@ msgstr "起运地"
 msgid "仕向地"
 msgstr "目的地"
 
-#: vessel_tracking/models.py:58
+#: vessel_tracking/models.py:59
 #: vessel_tracking/templates/vessel_tracking/detail.html:32
 #: vessel_tracking/templates/vessel_tracking/entry.html:56
 msgid "カートン数"
 msgstr "纸箱数"
 
-#: vessel_tracking/models.py:59
+#: vessel_tracking/models.py:60
 #: vessel_tracking/templates/vessel_tracking/detail.html:33
 #: vessel_tracking/templates/vessel_tracking/entry.html:59
 msgid "容積(M³)"
 msgstr "体积(M³)"
 
-#: vessel_tracking/models.py:60
+#: vessel_tracking/models.py:61
 #: vessel_tracking/templates/vessel_tracking/detail.html:34
 #: vessel_tracking/templates/vessel_tracking/entry.html:62
 msgid "数量"
 msgstr "数量"
 
-#: vessel_tracking/models.py:61
+#: vessel_tracking/models.py:62
 #: vessel_tracking/templates/vessel_tracking/detail.html:31
 #: vessel_tracking/templates/vessel_tracking/entry.html:51
 msgid "輸送区分"
 msgstr "运输类别"
 
-#: vessel_tracking/models.py:62
+#: vessel_tracking/models.py:63
 #: vessel_tracking/templates/vessel_tracking/list.html:35
 msgid "コンテナ本数"
 msgstr "集装箱数"
 
-#: vessel_tracking/models.py:65
+#: vessel_tracking/models.py:66
 #: vessel_tracking/templates/vessel_tracking/detail.html:39
 #: vessel_tracking/templates/vessel_tracking/entry.html:70
 #: vessel_tracking/templates/vessel_tracking/list.html:38
@@ -1954,7 +1952,7 @@ msgstr "集装箱数"
 msgid "本船名"
 msgstr "船名"
 
-#: vessel_tracking/models.py:66
+#: vessel_tracking/models.py:67
 #: vessel_tracking/templates/vessel_tracking/detail.html:40
 #: vessel_tracking/templates/vessel_tracking/entry.html:73
 #: vessel_tracking/templates/vessel_tracking/list.html:42
@@ -1963,154 +1961,152 @@ msgstr "船名"
 msgid "航海No"
 msgstr "航次号"
 
-#: vessel_tracking/models.py:67
+#: vessel_tracking/models.py:68
 #: vessel_tracking/templates/vessel_tracking/detail.html:41
 #: vessel_tracking/templates/vessel_tracking/entry.html:79
 msgid "出港予定 ETD"
 msgstr "预计离港 ETD"
 
-#: vessel_tracking/models.py:68
+#: vessel_tracking/models.py:69
 #: vessel_tracking/templates/vessel_tracking/detail.html:42
 #: vessel_tracking/templates/vessel_tracking/entry.html:82
 msgid "CY搬入"
 msgstr "CY进场"
 
-#: vessel_tracking/models.py:69
+#: vessel_tracking/models.py:70
 msgid "ECYオープン"
 msgstr "ECY开放"
 
-#: vessel_tracking/models.py:70
+#: vessel_tracking/models.py:71
 msgid "ACYオープン"
 msgstr "ACY开放"
 
-#: vessel_tracking/models.py:71
+#: vessel_tracking/models.py:72
 #: vessel_tracking/templates/vessel_tracking/detail.html:45
 #: vessel_tracking/templates/vessel_tracking/entry.html:91
 msgid "バンニング"
 msgstr "装箱"
 
-#: vessel_tracking/models.py:72
+#: vessel_tracking/models.py:73
 #: vessel_tracking/templates/vessel_tracking/detail.html:46
 #: vessel_tracking/templates/vessel_tracking/entry.html:94
 msgid "入港予定 ETA"
 msgstr "预计到港 ETA"
 
-#: vessel_tracking/models.py:75
+#: vessel_tracking/models.py:76
 #: vessel_tracking/templates/vessel_tracking/detail.html:58
 #: vessel_tracking/templates/vessel_tracking/entry.html:101
 msgid "出港実績 ATD"
 msgstr "实际离港 ATD"
 
-#: vessel_tracking/models.py:76
+#: vessel_tracking/models.py:77
 #: vessel_tracking/templates/vessel_tracking/detail.html:63
 #: vessel_tracking/templates/vessel_tracking/entry.html:104
 msgid "入港実績 ATA"
 msgstr "实际到港 ATA"
 
-#: vessel_tracking/models.py:80
+#: vessel_tracking/models.py:81
 #: vessel_tracking/templates/vessel_tracking/detail.html:51
 #: vessel_tracking/templates/vessel_tracking/entry.html:76
-#: vessel_tracking/templates/vessel_tracking/list.html:77
 msgid "上海入港予定"
 msgstr "上海到港(预计)"
 
-#: vessel_tracking/models.py:81
+#: vessel_tracking/models.py:82
 #: vessel_tracking/templates/vessel_tracking/detail.html:52
-#: vessel_tracking/templates/vessel_tracking/list.html:78
 msgid "上海入港"
 msgstr "上海到港"
 
-#: vessel_tracking/models.py:83
-#: vessel_tracking/templates/vessel_tracking/detail.html:70
+#: vessel_tracking/models.py:84
+#: vessel_tracking/templates/vessel_tracking/detail.html:82
 #: vessel_tracking/templates/vessel_tracking/entry.html:109
 msgid "備考"
 msgstr "备注"
 
-#: vessel_tracking/models.py:112 vessel_tracking/models.py:113
+#: vessel_tracking/models.py:113 vessel_tracking/models.py:114
 msgid "出荷トレーシング"
 msgstr "出货跟踪"
 
-#: vessel_tracking/models.py:125 vessel_tracking/models.py:254
-#: vessel_tracking/templates/vessel_tracking/list.html:106
+#: vessel_tracking/models.py:126 vessel_tracking/models.py:255
+#: vessel_tracking/templates/vessel_tracking/list.html:109
 msgid "入港済"
 msgstr "已到港"
 
-#: vessel_tracking/models.py:127
+#: vessel_tracking/models.py:128
 msgid "出港済"
 msgstr "已离港"
 
-#: vessel_tracking/models.py:130
+#: vessel_tracking/models.py:131
 msgid "ブッキング確定"
 msgstr "订舱确定"
 
-#: vessel_tracking/models.py:131
+#: vessel_tracking/models.py:132
 msgid "受注"
 msgstr "接单"
 
-#: vessel_tracking/models.py:192
+#: vessel_tracking/models.py:193
 #, python-format
 msgid "出港+%(d)d日"
 msgstr "离港+%(d)d天"
 
-#: vessel_tracking/models.py:194
+#: vessel_tracking/models.py:195
 #, python-format
 msgid "入港+%(d)d日"
 msgstr "到港+%(d)d天"
 
-#: vessel_tracking/models.py:247
+#: vessel_tracking/models.py:248
 msgid "日本へ航行中"
 msgstr "驶往日本中"
 
-#: vessel_tracking/models.py:249
+#: vessel_tracking/models.py:250
 #, python-format
 msgid "遅延予測 +%(d)d日"
 msgstr "预测延误 +%(d)d天"
 
-#: vessel_tracking/models.py:250
+#: vessel_tracking/models.py:251
 msgid "順調"
 msgstr "正常"
 
-#: vessel_tracking/models.py:252
+#: vessel_tracking/models.py:253
 msgid "上海へ航行中"
 msgstr "驶往上海中"
 
-#: vessel_tracking/models.py:256
+#: vessel_tracking/models.py:257
 msgid "別レグ"
 msgstr "其他航段"
 
-#: vessel_tracking/models.py:257 vessel_tracking/models.py:287
+#: vessel_tracking/models.py:258 vessel_tracking/models.py:288
 #: vessel_tracking/templates/vessel_tracking/monitor.html:11
 msgid "未取得"
 msgstr "未获取"
 
-#: vessel_tracking/models.py:272
+#: vessel_tracking/models.py:273
 #, python-format
 msgid "出発済 +%(d)d日"
 msgstr "已出发 +%(d)d天"
 
-#: vessel_tracking/models.py:272
+#: vessel_tracking/models.py:273
 msgid "出発済(予定通り)"
 msgstr "已出发(准时)"
 
-#: vessel_tracking/models.py:274
+#: vessel_tracking/models.py:275
 msgid "出発済"
 msgstr "已出发"
 
-#: vessel_tracking/models.py:278
+#: vessel_tracking/models.py:279
 #, python-format
 msgid "出発遅延 +%(d)d日(ETD経過・未出港)"
 msgstr "出发延误 +%(d)d天(已过ETD·未离港)"
 
-#: vessel_tracking/models.py:284
+#: vessel_tracking/models.py:285
 #, python-format
 msgid "出発遅延予測 +%(d)d日"
 msgstr "预测出发延误 +%(d)d天"
 
-#: vessel_tracking/models.py:284
+#: vessel_tracking/models.py:285
 msgid "出発予定通り"
 msgstr "出发准时"
 
-#: vessel_tracking/models.py:286
+#: vessel_tracking/models.py:287
 msgid "監視中"
 msgstr "监视中"
 
@@ -2126,12 +2122,10 @@ msgid "ライブ監視"
 msgstr "实时监视"
 
 #: vessel_tracking/templates/vessel_tracking/customer_form.html:3
-#| msgid "新規登録"
 msgid "荷主 新規登録"
 msgstr "货主 新建登记"
 
 #: vessel_tracking/templates/vessel_tracking/customer_form.html:7
-#| msgid "取引先マスタ 新規登録"
 msgid "荷主マスタ 新規登録"
 msgstr "货主主数据 新建登记"
 
@@ -2198,6 +2192,37 @@ msgstr "天"
 msgid "予定通り"
 msgstr "准时"
 
+#: vessel_tracking/templates/vessel_tracking/detail.html:70
+msgid "ライブ動向（AIS）"
+msgstr "实时动态(AIS)"
+
+#: vessel_tracking/templates/vessel_tracking/detail.html:72
+#: vessel_tracking/templates/vessel_tracking/monitor.html:31
+msgid "現在地"
+msgstr "当前位置"
+
+#: vessel_tracking/templates/vessel_tracking/detail.html:73
+msgid "地図で開く"
+msgstr "在地图打开"
+
+#: vessel_tracking/templates/vessel_tracking/detail.html:74
+#| msgid "速度kn"
+msgid "速度"
+msgstr "航速"
+
+#: vessel_tracking/templates/vessel_tracking/detail.html:75
+#| msgid "進行中"
+msgid "進行先"
+msgstr "前往地"
+
+#: vessel_tracking/templates/vessel_tracking/detail.html:76
+msgid "申告ETA(JST)"
+msgstr "申报ETA(JST)"
+
+#: vessel_tracking/templates/vessel_tracking/detail.html:77
+msgid "取得時刻"
+msgstr "获取时间"
+
 #: vessel_tracking/templates/vessel_tracking/entry.html:7
 msgid "出荷を編集"
 msgstr "编辑出货"
@@ -2240,7 +2265,6 @@ msgid "遅延理由・船会社からの連絡事項など（任意）"
 msgstr "延误原因·船公司联络事项等(可选)"
 
 #: vessel_tracking/templates/vessel_tracking/entry.html:122
-#| msgid "この請求明細を取消します。よろしいですか？"
 msgid "この出荷トレーシングを取消します。よろしいですか？"
 msgstr "将取消此出货跟踪。确定吗？"
 
@@ -2261,12 +2285,12 @@ msgid "予想CY Open"
 msgstr "预计CY Open"
 
 #: vessel_tracking/templates/vessel_tracking/list.html:49
-#: vessel_tracking/templates/vessel_tracking/list.html:79
+#: vessel_tracking/templates/vessel_tracking/list.html:78
 msgid "発地ETD"
 msgstr "起运地ETD"
 
 #: vessel_tracking/templates/vessel_tracking/list.html:52
-#: vessel_tracking/templates/vessel_tracking/list.html:80
+#: vessel_tracking/templates/vessel_tracking/list.html:79
 msgid "着地ETA"
 msgstr "目的地ETA"
 
@@ -2278,15 +2302,27 @@ msgstr "体积㎥"
 msgid "本数"
 msgstr "箱数"
 
-#: vessel_tracking/templates/vessel_tracking/list.html:79
+#: vessel_tracking/templates/vessel_tracking/list.html:77
+msgid "発地ETA"
+msgstr "起运地ETA"
+
+#: vessel_tracking/templates/vessel_tracking/list.html:77
+msgid "発地ATA"
+msgstr "起运地ATA"
+
+#: vessel_tracking/templates/vessel_tracking/list.html:78
 msgid "発地ATD"
 msgstr "起运地ATD"
 
-#: vessel_tracking/templates/vessel_tracking/list.html:80
+#: vessel_tracking/templates/vessel_tracking/list.html:79
 msgid "着地ATA"
 msgstr "目的地ATA"
 
-#: vessel_tracking/templates/vessel_tracking/list.html:100
+#: vessel_tracking/templates/vessel_tracking/list.html:97
+msgid "予想"
+msgstr "预测"
+
+#: vessel_tracking/templates/vessel_tracking/list.html:103
 msgid "出航済"
 msgstr "已起航"
 
@@ -2325,19 +2361,23 @@ msgstr "起运地ETD(预计)"
 msgid "ライブ仕向"
 msgstr "实时目的地"
 
-#: vessel_tracking/templates/vessel_tracking/monitor.html:31
+#: vessel_tracking/templates/vessel_tracking/monitor.html:32
 msgid "上海到着見込(JST)"
 msgstr "上海到达预计(JST)"
 
-#: vessel_tracking/templates/vessel_tracking/monitor.html:32
+#: vessel_tracking/templates/vessel_tracking/monitor.html:33
 msgid "速度kn"
 msgstr "航速kn"
 
-#: vessel_tracking/templates/vessel_tracking/monitor.html:34
+#: vessel_tracking/templates/vessel_tracking/monitor.html:35
 msgid "出発アラート"
 msgstr "出发警报"
 
-#: vessel_tracking/templates/vessel_tracking/monitor.html:56
+#: vessel_tracking/templates/vessel_tracking/monitor.html:47
+msgid "地図"
+msgstr "地图"
+
+#: vessel_tracking/templates/vessel_tracking/monitor.html:58
 msgid "監視対象の便がありません（本船割当済・未出港の便が対象）。"
 msgstr "没有监视对象的航次(对象为已分配船舶·未离港的航次)。"
 

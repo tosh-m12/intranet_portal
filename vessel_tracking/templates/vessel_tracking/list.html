@@ -74,8 +74,7 @@
       <th>{% trans "本船名" %}</th>
       <th class="r">{% trans "航海No" %}</th>
       <th class="r stack2"><span>ECYOpen</span><span>ACYOpen</span></th>
-      <th class="r">{% trans "上海入港予定" %}</th>
-      <th class="r">{% trans "上海入港" %}</th>
+      <th class="stack-h"><div class="leg"><div class="legdates"><span>{% trans "発地ETA" %}</span><span>{% trans "発地ATA" %}</span></div><div class="legbadge"></div></div></th>
       <th class="stack-h"><div class="leg"><div class="legdates"><span>{% trans "発地ETD" %}</span><span>{% trans "発地ATD" %}</span></div><div class="legbadge"></div></div></th>
       <th class="stack-h"><div class="leg"><div class="legdates"><span>{% trans "着地ETA" %}</span><span>{% trans "着地ATA" %}</span></div><div class="legbadge"></div></div></th>
       <th>{% trans "担当者" %}</th>
@@ -92,8 +91,12 @@
       <td>{{ r.vessel }}</td>
       <td class="r">{{ r.voyage }}</td>
       <td class="r stack2"><span>{{ r.cy_open|date:'y/n/j'|default:'—' }}</span><span>{{ r.cy_open_act|date:'y/n/j'|default:'—' }}</span></td>
-      <td class="r">{{ r.shanghai_eta|date:'y/n/j'|default:'' }}</td>
-      <td class="r">{{ r.shanghai_ata|date:'y/n/j'|default:'' }}{% if r.shanghai_delay_days > 0 %} <span class="badge bad">+{{ r.shanghai_delay_days }}</span>{% endif %}</td>
+      <td class="legcell">
+        <div class="leg">
+          <div class="legdates"><span>{{ r.origin_eta|date:'y/n/j'|default:'—' }}</span><span>{{ r.shanghai_ata|date:'y/n/j'|default:'—' }}</span></div>
+          <div class="legbadge">{% if r.live_departure_delay_days %}<span class="badge predict">+{{ r.live_departure_delay_days }}{% trans "予想" %}</span>{% endif %}</div>
+        </div>
+      </td>
       <td class="legcell">
         <div class="leg">
           <div class="legdates"><span>{{ r.etd|date:'y/n/j'|default:'—' }}</span><span>{{ r.atd|date:'y/n/j'|default:'—' }}</span></div>
@@ -109,7 +112,7 @@
       <td>{{ r.assignee }}</td>
     </tr>
     {% empty %}
-    <tr><td colspan="13" class="c muted">{% trans "データがありません。" %} <a href="{% url 'vessel_tracking:entry' %}">{% trans "新規入力" %}</a></td></tr>
+    <tr><td colspan="12" class="c muted">{% trans "データがありません。" %} <a href="{% url 'vessel_tracking:entry' %}">{% trans "新規入力" %}</a></td></tr>
     {% endfor %}
   </tbody>
 </table>

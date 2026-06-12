@@ -37,6 +37,9 @@ def load_seed(Customer, Shipment, only_if_empty=True):
             code=c['code'], defaults={'name': c.get('name', '')})
         cust_objs[c['code']] = obj
 
+    # 履歴モデル(migration実行時)に存在するフィールドだけ渡す。
+    # これにより、フィールド追加前の migration から呼ばれてもクラッシュしない。
+    valid = {f.name for f in Shipment._meta.get_fields()}
     default_code = data.get('shipments_customer')
     rows = []
     for r in data.get('shipments', []):
@@ -48,6 +51,7 @@ def load_seed(Customer, Shipment, only_if_empty=True):
             kw[k] = r.get(k)
         for k in _DATE_FIELDS:
             kw[k] = _date(r.get(k))
+        kw = {k: v for k, v in kw.items() if k in valid}
         rows.append(Shipment(**kw))
     Shipment.objects.bulk_create(rows)
     return (len(cust_objs), len(rows))
