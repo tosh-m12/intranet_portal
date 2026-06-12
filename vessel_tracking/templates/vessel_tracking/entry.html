@@ -16,11 +16,9 @@
   <h3 class="sec">{% trans "識別・取引先" %}</h3>
   <div class="form-grid">
     <label class="req-label">{% trans "荷主" %} <span class="req">{% trans "必須" %}</span>
-      {# 荷主は荷主マスタからのみ選択(自由入力不可)。未登録の荷主は先にマスタ登録する。 #}
-      <select name="customer" required>
-        <option value="">{% trans "選択…" %}</option>
-        {% for c in customers %}<option value="{{ c.pk }}" {% if obj.customer_id == c.pk %}selected{% endif %}>{{ c.name }}（{{ c.code }}）</option>{% endfor %}
-      </select>
+      {# 荷主の候補は billing(請求書管理台帳)の取引先マスタを参照。 #}
+      <input type="text" name="customer" list="dl-shippers" value="{{ obj.customer|default:'' }}"
+             autocomplete="off" required placeholder="{% trans '取引先マスタから' %}">
     </label>
     <label>{% trans "担当者" %}
       {# 担当者はログインユーザーから自動。読み取り専用(グレー枠=非編集)。 #}
@@ -45,6 +43,7 @@
     </label>
   </div>
   <datalist id="dl-dests">{% for d in dests %}<option value="{{ d }}">{% endfor %}</datalist>
+  <datalist id="dl-shippers">{% for g in shippers %}<option value="{{ g }}">{% endfor %}</datalist>
 
   <h3 class="sec">{% trans "貨物量" %}</h3>
   <div class="form-grid">

@@ -12,7 +12,7 @@
   {% csrf_token %}
   <label><span class="qf-head">{% trans "荷主" %} <span class="req">（{% trans "必須" %}）</span></span>
     <input type="text" name="customer" list="dl-customers" autocomplete="off"
-           placeholder="{% trans '荷主マスタから' %}" required>
+           placeholder="{% trans '取引先マスタから' %}" required>
   </label>
   <label>{% trans "仕出地" %}
     <input type="text" name="origin" class="alpha-up" value="SHANGHAI" autocomplete="off"
@@ -57,7 +57,7 @@
   </label>
   <button type="submit" class="btn primary">＋ {% trans "登録" %}</button>
 </form>
-<datalist id="dl-customers">{% for c in customers %}<option value="{{ c.name }}">{{ c.code }}</option>{% endfor %}</datalist>
+<datalist id="dl-customers">{% for g in shippers %}<option value="{{ g }}">{% endfor %}</datalist>
 <datalist id="dl-dests">{% for d in dests %}<option value="{{ d }}">{% endfor %}</datalist>
 
 <div id="listResult">
@@ -83,7 +83,7 @@
   <tbody>
     {% for r in rows %}
     <tr class="rowlink{% if r.is_delayed %} delayed{% endif %}" data-href="{% url 'vessel_tracking:detail' r.pk %}">
-      <td class="nowrap">{{ r.customer.name }}</td>
+      <td class="nowrap">{{ r.customer }}</td>
       <td class="c stack2"><span>{{ r.origin }}</span><span>{{ r.dest }}</span></td>
       <td class="c">{{ r.container_type }}</td>
       <td class="r">{{ r.out_m3|default_if_none:'' }}</td>

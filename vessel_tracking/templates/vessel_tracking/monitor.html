@@ -38,7 +38,7 @@
   <tbody>
     {% for r in rows %}
     <tr class="rowlink" data-href="{% url 'vessel_tracking:detail' r.pk %}">
-      <td class="nowrap">{{ r.customer.name }}</td>
+      <td class="nowrap">{{ r.customer }}</td>
       <td class="c stack2"><span>{{ r.origin }}</span><span>{{ r.dest }}</span></td>
       <td class="nowrap">{{ r.vessel }}</td>
       <td class="r">{{ r.voyage }}</td>

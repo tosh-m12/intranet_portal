@@ -1,6 +1,5 @@
 """本船動向管理 データモデル。
 
-- Customer … 荷主マスタ(社名)。出荷トレーシングの「正」。将来の客先通知に備えた基準。
 - Shipment … 出荷1件(=トレーシング表の1行)。受注→ブッキング確定→出港(ATD)→
               入港(ATA) のライフサイクルを担当者が手入力で追跡する。
               1注文(order_no)が仕向地別(大阪/東京)に複数の Shipment へ分かれる。
@@ -19,34 +18,12 @@ from django.utils.translation import gettext_lazy as _
 CONTAINER_TYPES = ['LCL', '20F', '40F', '40HQ', '45HQ']
 
 
-class Customer(models.Model):
-    """荷主マスタ。出荷トレーシングの対象荷主(取引先)。
-
-    code は半角英数大文字の短縮コード(例: ASAHI)。name は正式社名(例: 朝日電器)。
-    出荷入力時の荷主はこのマスタからのみ選択でき、自由入力はできない。
-    将来の客先通知で連絡先(子テーブル)をぶら下げる起点になる。
-    """
-    code = models.CharField(_('荷主コード'), max_length=16, unique=True)
-    name = models.CharField(_('荷主名'), max_length=255)
-    is_active = models.BooleanField(_('有効'), default=True)
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ['code']
-        verbose_name = _('荷主マスタ')
-        verbose_name_plural = _('荷主マスタ')
-
-    def __str__(self):
-        return f'{self.code} / {self.name}'
-
-
 class Shipment(models.Model):
     """出荷1件分のトレーシング。1レコード=トレーシング表の1行。"""
 
-    customer = models.ForeignKey(Customer, on_delete=models.PROTECT,
-                                 related_name='shipments', verbose_name=_('荷主'))
+    # 荷主は billing(請求書管理台帳)の取引先マスタ group_name を参照(入力候補)。
+    # vessel 側に独自マスタは持たず、選択した名称をテキストで保持する。
+    customer = models.CharField(_('荷主'), max_length=128, blank=True)
 
     # ---- 受注時に判明する情報 ----
     order_no = models.CharField(_('注文No'), max_length=32, blank=True)
