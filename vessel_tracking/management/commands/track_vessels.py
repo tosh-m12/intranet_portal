@@ -116,13 +116,21 @@ class Command(BaseCommand):
         if opt['pk']:
             qs = qs.filter(pk=opt['pk'])
         rows = list(qs)
+
+        # 接続・認証の事前チェック(失敗理由を明確化。握りつぶして「更新0」になるのを防ぐ)。
+        if rows:
+            try:
+                self._api('vessel_find', name='CONSILIA')
+            except CommandError as e:
+                raise CommandError(
+                    f'AIS接続/認証に失敗しました(APIキーまたはネットワークを確認): {e}')
         # 本船名でグルーピング(同一本船は1回の問い合わせで複数便に反映)
         by_vessel = {}
         for s in rows:
             by_vessel.setdefault(s.vessel, []).append(s)
 
         self.stdout.write(f'追跡対象: {len(rows)} 便 / {len(by_vessel)} 隻(本船名あり・着地未確定)')
-        credits = updated = autorec = 0
+        credits = updated = autorec = skipped = 0
         now = timezone.now()
 
         for vessel, ships in by_vessel.items():
@@ -132,6 +140,7 @@ class Command(BaseCommand):
             uuid = self._resolve_uuid(vessel)
             credits += 1   # vessel_find(初回のみ実課金。概算)
             if not uuid:
+                skipped += 1
                 self.stdout.write(f'  SKIP {vessel} — 船名解決不可')
                 continue
             d = self._api('vessel_pro', uuid=uuid).get('data') or {}
@@ -196,5 +205,5 @@ class Command(BaseCommand):
 
         self.stdout.write('')
         self.stdout.write(self.style.SUCCESS(
-            f'更新 {updated} 便 / 自動記入 {autorec} 便 / {len(by_vessel)} 隻照会 '
-            f'/ 消費クレジット約 {credits}'))
+            f'更新 {updated} 便 / 自動記入 {autorec} 便 / 船名解決不可 {skipped} 隻 '
+            f'/ {len(by_vessel)} 隻照会 / 消費クレジット約 {credits}'))
