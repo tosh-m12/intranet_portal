@@ -1,5 +1,6 @@
 # scheduler/apps.py
 from django.apps import AppConfig
+import os
 import threading
 import time as time_module
 from django.utils import timezone
@@ -21,6 +22,7 @@ def scheduler_loop():
     last_run_date_envmon = None
     first_loop = True
     last_run_cache = None  # キャッシュ用
+    last_run_track = None  # 本船ライブ監視用
 
     while True:
         now = timezone.localtime(timezone.now())
@@ -98,6 +100,25 @@ def scheduler_loop():
 
         except Exception as e:
             print(f"[SCHEDULER] error in scheduler_loop: {e}")
+
+        # ===== 本船ライブ監視(任意・環境変数で有効化) =====
+        # VESSEL_TRACK_INTERVAL_SEC を秒で設定すると、その間隔で track_vessels を実行し、
+        # AIS実績から ATD・上海入港・ATA を自動記入する。未設定(0)なら無効=誤課金防止。
+        try:
+            vt_interval = int(os.environ.get("VESSEL_TRACK_INTERVAL_SEC", "0") or "0")
+            if vt_interval > 0 and (
+                last_run_track is None
+                or (now - last_run_track).total_seconds() >= vt_interval
+            ):
+                print(f"[VESSEL_TRACK] running track_vessels at {now}")
+                try:
+                    call_command("track_vessels")
+                except Exception as e:
+                    print(f"[VESSEL_TRACK] error while calling track_vessels: {e}")
+                finally:
+                    last_run_track = now
+        except Exception as e:
+            print(f"[VESSEL_TRACK] error: {e}")
 
         time_module.sleep(60)
 

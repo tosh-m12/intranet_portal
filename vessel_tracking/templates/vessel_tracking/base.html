@@ -1,0 +1,21 @@
+{% extends "portal/base.html" %}
+{% load static i18n %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'vessel_tracking/style.css' %}?v=12">
+<script defer src="{% static 'vessel_tracking/app.js' %}?v=5"></script>
+{% endblock %}
+
+{% block app_name %}
+<h1><svg class="ic"><use href="#ic-ship"/></svg> {% trans "本船動向管理" %}</h1>
+{% endblock %}
+
+{% block subnav %}
+  {% include "vessel_tracking/_subnav.html" with active_tab=active_tab %}
+  {# 保存等のメッセージはこのページ内で表示・消費する(他ページに漏らさない)。 #}
+  {% if messages %}
+  <div class="vessel-msgs">
+    {% for m in messages %}<div class="vessel-msg {{ m.tags }}">{{ m }}</div>{% endfor %}
+  </div>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,119 @@
+{% extends "vessel_tracking/base.html" %}
+{% load humanize i18n %}
+{% block title %}{% trans "出荷一覧" %} — {% trans "本船動向管理" %}{% endblock %}
+{% block content %}
+<div class="vessel-app">
+<div class="detail-head">
+  <h2 class="sec">{% trans "出荷一覧" %}</h2>
+</div>
+
+{# 検索機能は一旦非表示。代わりに簡易入力フォームを設置。 #}
+<form class="quick-form" id="quickForm" method="post" action="{% url 'vessel_tracking:quick_create' %}">
+  {% csrf_token %}
+  <label><span class="qf-head">{% trans "荷主" %} <span class="req">（{% trans "必須" %}）</span></span>
+    <input type="text" name="customer" list="dl-customers" autocomplete="off"
+           placeholder="{% trans '荷主マスタから' %}" required>
+  </label>
+  <label>{% trans "仕出地" %}
+    <input type="text" name="origin" class="alpha-up" value="SHANGHAI" autocomplete="off"
+           inputmode="text" autocapitalize="characters" spellcheck="false">
+  </label>
+  <label>{% trans "仕向地" %}
+    <input type="text" name="dest" class="alpha-up" list="dl-dests" autocomplete="off"
+           inputmode="text" autocapitalize="characters" spellcheck="false" placeholder="{% trans '例: TOKYO' %}">
+  </label>
+  <label>{% trans "区分" %}
+    <select name="container_type" id="qk_ctype">
+      <option value="20F">20F</option>
+      <option value="40F">40F</option>
+      <option value="LCL">LCL</option>
+    </select>
+  </label>
+  <label>{% trans "容積m³" %}
+    <input type="text" inputmode="decimal" class="decimal num" name="out_m3" autocomplete="off">
+  </label>
+  <label>{% trans "コンテナ本数" %}
+    <input type="text" inputmode="numeric" class="digits num" name="container_count" id="qk_ccount" autocomplete="off">
+  </label>
+  <label>{% trans "本船名" %}
+    <input type="text" name="vessel" class="vessel-up" inputmode="text"
+           autocapitalize="characters" spellcheck="false" autocomplete="off">
+  </label>
+  <label>{% trans "航海No" %}
+    <input type="text" name="voyage" class="alnum-up" inputmode="text"
+           autocapitalize="characters" spellcheck="false" autocomplete="off">
+  </label>
+  <label>{% trans "予想CY Open" %}
+    <input type="date" name="cy_open">
+  </label>
+  <label>{% trans "発地ETD" %}
+    <input type="date" name="etd">
+  </label>
+  <label>{% trans "着地ETA" %}
+    <input type="date" name="eta">
+  </label>
+  <label>{% trans "担当者" %}
+    <span class="ro-field">{{ auto_assignee }}</span>
+  </label>
+  <button type="submit" class="btn primary">＋ {% trans "登録" %}</button>
+</form>
+<datalist id="dl-customers">{% for c in customers %}<option value="{{ c.name }}">{{ c.code }}</option>{% endfor %}</datalist>
+<datalist id="dl-dests">{% for d in dests %}<option value="{{ d }}">{% endfor %}</datalist>
+
+<div id="listResult">
+<div class="count">{{ count }} {% trans "件" %}（{% trans "表示は最大500件" %}）</div>
+<div class="tablewrap">
+<table class="grid">
+  <thead>
+    <tr>
+      <th>{% trans "荷主" %}</th>
+      <th class="c stack2"><span>{% trans "仕出地" %}</span><span>{% trans "仕向地" %}</span></th>
+      <th class="c">{% trans "区分" %}</th>
+      <th class="r">{% trans "容積㎥" %}</th>
+      <th class="r">{% trans "本数" %}</th>
+      <th>{% trans "本船名" %}</th>
+      <th class="r">{% trans "航海No" %}</th>
+      <th class="r stack2"><span>ECYOpen</span><span>ACYOpen</span></th>
+      <th class="r">{% trans "上海入港予定" %}</th>
+      <th class="r">{% trans "上海入港" %}</th>
+      <th class="stack-h"><div class="leg"><div class="legdates"><span>{% trans "発地ETD" %}</span><span>{% trans "発地ATD" %}</span></div><div class="legbadge"></div></div></th>
+      <th class="stack-h"><div class="leg"><div class="legdates"><span>{% trans "着地ETA" %}</span><span>{% trans "着地ATA" %}</span></div><div class="legbadge"></div></div></th>
+      <th>{% trans "担当者" %}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in rows %}
+    <tr class="rowlink{% if r.is_delayed %} delayed{% endif %}" data-href="{% url 'vessel_tracking:detail' r.pk %}">
+      <td class="nowrap">{{ r.customer.name }}</td>
+      <td class="c stack2"><span>{{ r.origin }}</span><span>{{ r.dest }}</span></td>
+      <td class="c">{{ r.container_type }}</td>
+      <td class="r">{{ r.out_m3|default_if_none:'' }}</td>
+      <td class="r">{{ r.container_count|default_if_none:'' }}</td>
+      <td>{{ r.vessel }}</td>
+      <td class="r">{{ r.voyage }}</td>
+      <td class="r stack2"><span>{{ r.cy_open|date:'y/n/j'|default:'—' }}</span><span>{{ r.cy_open_act|date:'y/n/j'|default:'—' }}</span></td>
+      <td class="r">{{ r.shanghai_eta|date:'y/n/j'|default:'' }}</td>
+      <td class="r">{{ r.shanghai_ata|date:'y/n/j'|default:'' }}{% if r.shanghai_delay_days > 0 %} <span class="badge bad">+{{ r.shanghai_delay_days }}</span>{% endif %}</td>
+      <td class="legcell">
+        <div class="leg">
+          <div class="legdates"><span>{{ r.etd|date:'y/n/j'|default:'—' }}</span><span>{{ r.atd|date:'y/n/j'|default:'—' }}</span></div>
+          <div class="legbadge">{% if r.departure_delay_days > 0 %}<span class="badge bad">+{{ r.departure_delay_days }}</span>{% elif r.atd %}<span class="badge ok">{% trans "出航済" %}</span>{% endif %}</div>
+        </div>
+      </td>
+      <td class="legcell">
+        <div class="leg">
+          <div class="legdates"><span>{{ r.eta|date:'y/n/j'|default:'—' }}</span><span>{{ r.ata|date:'y/n/j'|default:'—' }}</span></div>
+          <div class="legbadge">{% if r.arrival_delay_days > 0 %}<span class="badge bad">+{{ r.arrival_delay_days }}</span>{% elif r.ata %}<span class="badge ok">{% trans "入港済" %}</span>{% endif %}</div>
+        </div>
+      </td>
+      <td>{{ r.assignee }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="13" class="c muted">{% trans "データがありません。" %} <a href="{% url 'vessel_tracking:entry' %}">{% trans "新規入力" %}</a></td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+</div>
+</div>
+{% endblock %}

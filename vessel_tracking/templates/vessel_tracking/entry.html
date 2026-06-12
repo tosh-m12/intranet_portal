@@ -1,0 +1,128 @@
+{% extends "vessel_tracking/base.html" %}
+{% load i18n %}
+{% block title %}{% trans "新規入力" %} — {% trans "本船動向管理" %}{% endblock %}
+{% block content %}
+<div class="vessel-app">
+<div class="detail-head">
+  <h2 class="sec">{% if obj.pk %}{% trans "出荷を編集" %} <span class="muted">{{ obj.order_no }} / {{ obj.inv_no }}</span>{% else %}{% trans "新規入力" %}{% endif %}</h2>
+  {% if obj.pk %}<a class="back" href="{% url 'vessel_tracking:detail' obj.pk %}">← {% trans "詳細へ戻る" %}</a>
+  {% else %}<a class="back" href="{% url 'vessel_tracking:list' %}">← {% trans "出荷一覧へ" %}</a>{% endif %}
+</div>
+
+<form method="post" id="entryForm"
+      action="{% if obj.pk %}{% url 'vessel_tracking:edit' obj.pk %}{% else %}{% url 'vessel_tracking:entry' %}{% endif %}">
+  {% csrf_token %}
+
+  <h3 class="sec">{% trans "識別・取引先" %}</h3>
+  <div class="form-grid">
+    <label class="req-label">{% trans "荷主" %} <span class="req">{% trans "必須" %}</span>
+      {# 荷主は荷主マスタからのみ選択(自由入力不可)。未登録の荷主は先にマスタ登録する。 #}
+      <select name="customer" required>
+        <option value="">{% trans "選択…" %}</option>
+        {% for c in customers %}<option value="{{ c.pk }}" {% if obj.customer_id == c.pk %}selected{% endif %}>{{ c.name }}（{{ c.code }}）</option>{% endfor %}
+      </select>
+    </label>
+    <label>{% trans "担当者" %}
+      {# 担当者はログインユーザーから自動。読み取り専用(グレー枠=非編集)。 #}
+      <span class="ro-field" id="ro_assignee">{{ auto_assignee }}</span>
+    </label>
+    <label>{% trans "注文No" %}
+      <input type="text" name="order_no" value="{{ obj.order_no|default:'' }}" autocomplete="off">
+    </label>
+    <label>{% trans "受注日" %}
+      <input type="date" name="order_received" value="{% if obj.order_received %}{{ obj.order_received|date:'Y-m-d' }}{% endif %}">
+    </label>
+    <label>{% trans "インボイスNo" %}
+      <input type="text" name="inv_no" value="{{ obj.inv_no|default:'' }}" autocomplete="off">
+    </label>
+    <label>{% trans "仕出地" %}
+      <input type="text" name="origin" class="alnum-up" value="{{ obj.origin|default:'SHANGHAI' }}"
+             autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="{% trans '例: SHANGHAI' %}">
+    </label>
+    <label>{% trans "仕向地" %}
+      <input type="text" name="dest" class="alnum-up" list="dl-dests" value="{{ obj.dest|default:'' }}"
+             autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="{% trans '例: TOKYO' %}">
+    </label>
+  </div>
+  <datalist id="dl-dests">{% for d in dests %}<option value="{{ d }}">{% endfor %}</datalist>
+
+  <h3 class="sec">{% trans "貨物量" %}</h3>
+  <div class="form-grid">
+    <label>{% trans "輸送区分" %}
+      <input type="text" name="container_type" class="alnum-up" list="dl-containers" maxlength="16"
+             value="{{ obj.container_type|default:'' }}" autocomplete="off" autocapitalize="characters"
+             spellcheck="false" placeholder="{% trans '例: 20F / LCL' %}">
+    </label>
+    <label>{% trans "カートン数" %}
+      <input type="text" inputmode="numeric" class="digits num" name="out_ctn" value="{{ obj.out_ctn|default_if_none:'' }}" autocomplete="off">
+    </label>
+    <label>{% trans "容積(M³)" %}
+      <input type="text" inputmode="decimal" class="num" name="out_m3" value="{{ obj.out_m3|default_if_none:'' }}" autocomplete="off">
+    </label>
+    <label>{% trans "数量" %}
+      <input type="text" inputmode="numeric" class="digits num" name="out_qty" value="{{ obj.out_qty|default_if_none:'' }}" autocomplete="off">
+    </label>
+  </div>
+  <datalist id="dl-containers">{% for t in container_types %}<option value="{{ t }}">{% endfor %}</datalist>
+
+  <h3 class="sec">{% trans "本船・スケジュール（ブッキング確定時）" %}</h3>
+  <div class="form-grid">
+    <label>{% trans "本船名" %}
+      <input type="text" name="vessel" value="{{ obj.vessel|default:'' }}" autocomplete="off" placeholder="{% trans '例: SITC YUANHE' %}">
+    </label>
+    <label>{% trans "航海No" %}
+      <input type="text" name="voyage" value="{{ obj.voyage|default:'' }}" autocomplete="off" placeholder="{% trans '例: 2605N' %}">
+    </label>
+    <label>{% trans "上海入港予定" %}
+      <input type="date" name="shanghai_eta" value="{% if obj.shanghai_eta %}{{ obj.shanghai_eta|date:'Y-m-d' }}{% endif %}">
+    </label>
+    <label>{% trans "出港予定 ETD" %}
+      <input type="date" name="etd" value="{% if obj.etd %}{{ obj.etd|date:'Y-m-d' }}{% endif %}">
+    </label>
+    <label>{% trans "CY搬入" %}
+      <input type="date" name="cy_cut" value="{% if obj.cy_cut %}{{ obj.cy_cut|date:'Y-m-d' }}{% endif %}">
+    </label>
+    <label>{% trans "ECYオープン(予定)" %}
+      <input type="date" name="cy_open" value="{% if obj.cy_open %}{{ obj.cy_open|date:'Y-m-d' }}{% endif %}">
+    </label>
+    <label>{% trans "ACYオープン(実績)" %}
+      <input type="date" name="cy_open_act" value="{% if obj.cy_open_act %}{{ obj.cy_open_act|date:'Y-m-d' }}{% endif %}">
+    </label>
+    <label>{% trans "バンニング" %}
+      <input type="date" name="vanning" value="{% if obj.vanning %}{{ obj.vanning|date:'Y-m-d' }}{% endif %}">
+    </label>
+    <label>{% trans "入港予定 ETA" %}
+      <input type="date" name="eta" value="{% if obj.eta %}{{ obj.eta|date:'Y-m-d' }}{% endif %}">
+    </label>
+  </div>
+
+  <h3 class="sec">{% trans "実績（出港後・船会社へ確認して入力）" %}</h3>
+  <div class="form-grid">
+    <label>{% trans "出港実績 ATD" %}
+      <input type="date" name="atd" value="{% if obj.atd %}{{ obj.atd|date:'Y-m-d' }}{% endif %}">
+    </label>
+    <label>{% trans "入港実績 ATA" %}
+      <input type="date" name="ata" value="{% if obj.ata %}{{ obj.ata|date:'Y-m-d' }}{% endif %}">
+    </label>
+  </div>
+
+  <h3 class="sec">{% trans "備考" %}</h3>
+  <textarea name="remarks" class="remarks-input" rows="3" autocomplete="off"
+            placeholder="{% trans '遅延理由・船会社からの連絡事項など（任意）' %}">{{ obj.remarks|default:'' }}</textarea>
+
+  <div class="form-actions">
+    <button type="submit" class="btn primary" name="save">{% trans "保存" %}</button>
+    <button type="submit" class="btn" name="save_new">{% trans "保存して次を入力" %}</button>
+    {% if obj.pk %}<a class="btn ghost" href="{% url 'vessel_tracking:entry' %}">＋ {% trans "新規" %}</a>{% endif %}
+  </div>
+</form>
+
+{% if obj.pk %}
+<form method="post" action="{% url 'vessel_tracking:cancel' obj.pk %}" class="del-form"
+      onsubmit="return confirm('{% trans "この出荷トレーシングを取消します。よろしいですか？" %}');">
+  {% csrf_token %}
+  <button type="submit" class="btn danger-strong">{% trans "この出荷を取消" %}</button>
+</form>
+{% endif %}
+</div>
+{% endblock %}

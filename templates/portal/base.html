@@ -40,6 +40,7 @@
     <symbol id="ic-save" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></symbol>
     <symbol id="ic-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></symbol>
     <symbol id="ic-eye" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="ic-ship" viewBox="0 0 24 24"><path d="M2 21c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M19.38 20A11.6 11.6 0 0 0 21 14l-9-4-9 4c0 2.9.94 5.34 2.81 7.76"/><path d="M19 13V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6M12 10v4M12 2v3"/></symbol>
   </defs>
 </svg>
 
@@ -84,6 +85,7 @@
         <a href="{% url 'envmon:index' %}" class="{% if ns == 'envmon' %}active{% endif %}"><svg class="ic"><use href="#ic-thermometer"/></svg><span>{% trans "温度湿度管理" %}</span></a>
         <a href="{% url 'billing:entry' %}" class="{% if ns == 'billing' %}active{% endif %}"><svg class="ic"><use href="#ic-file"/></svg><span>{% trans "請求書管理台帳" %}</span></a>
         <a href="{% url 'sales_trend:index' %}" class="{% if ns == 'sales_trend' %}active{% endif %}"><svg class="ic"><use href="#ic-chart"/></svg><span>{% trans "売上推移" %}</span></a>
+        <a href="{% url 'vessel_tracking:list' %}" class="{% if ns == 'vessel_tracking' %}active{% endif %}"><svg class="ic"><use href="#ic-ship"/></svg><span>{% trans "本船動向管理" %}</span></a>
         {% if user.is_superuser or user.is_staff %}
         <a href="{% url 'authsys:user_management' %}" class="{% if un == 'user_management' %}active{% endif %}"><svg class="ic"><use href="#ic-users"/></svg><span>{% trans "ユーザー管理" %}</span></a>
         {% endif %}

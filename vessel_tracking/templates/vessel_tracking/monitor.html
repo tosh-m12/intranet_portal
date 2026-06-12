@@ -1,0 +1,62 @@
+{% extends "vessel_tracking/base.html" %}
+{% load i18n %}
+{% block title %}{% trans "ライブ監視" %} — {% trans "本船動向管理" %}{% endblock %}
+{% block content %}
+<div class="vessel-app">
+<div class="detail-head">
+  <h2 class="sec">{% trans "ライブ監視（発地出発予測）" %}
+    {% if alert_count %}<span class="badge bad">{% trans "出発遅延予測" %} {{ alert_count }}</span>{% endif %}
+  </h2>
+  <div class="muted" style="font-size:12px">
+    {% if last_updated %}{% trans "最終取得" %}: {{ last_updated|date:'Y-m-d H:i' }}{% else %}{% trans "未取得" %}{% endif %}
+  </div>
+</div>
+
+<div class="monitor-note">
+  {% trans "対象=本船割当済・未出港の便。割当本船が上海へ向かう「上海到着見込み(申告ETA)」を出発見込みとみなし、予定ETDと比較して発地の出発遅延を予測します（上海の在港は半日〜1日のため到着≒出発）。" %}
+  {% trans "本船が実際に上海を出港すると、AIS実績からATD・上海入港を自動記入し本便は一覧へ移ります（予定日に依存しないため遅延・ロールでも取りこぼしません）。" %}
+  {% trans "更新は track_vessels（VESSEL_TRACK_INTERVAL_SEC を設定すると定時自動）。" %}
+</div>
+
+<div class="tablewrap">
+<table class="grid">
+  <thead>
+    <tr>
+      <th>{% trans "荷主" %}</th>
+      <th class="c stack2"><span>{% trans "仕出地" %}</span><span>{% trans "仕向地" %}</span></th>
+      <th>{% trans "本船名" %}</th>
+      <th class="r">{% trans "航海No" %}</th>
+      <th class="r">{% trans "発地ETD(予定)" %}</th>
+      <th>{% trans "ライブ仕向" %}</th>
+      <th class="r">{% trans "上海到着見込(JST)" %}</th>
+      <th class="r">{% trans "速度kn" %}</th>
+      <th class="r">{% trans "更新" %}</th>
+      <th>{% trans "出発アラート" %}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in rows %}
+    <tr class="rowlink" data-href="{% url 'vessel_tracking:detail' r.pk %}">
+      <td class="nowrap">{{ r.customer.name }}</td>
+      <td class="c stack2"><span>{{ r.origin }}</span><span>{{ r.dest }}</span></td>
+      <td class="nowrap">{{ r.vessel }}</td>
+      <td class="r">{{ r.voyage }}</td>
+      <td class="r nowrap">{{ r.etd|date:'y/n/j'|default:'—' }}</td>
+      <td class="nowrap">{{ r.live_dest_name|default:'—' }}{% if r.live_dest_unlocode %} <span class="muted">({{ r.live_dest_unlocode }})</span>{% endif %}</td>
+      <td class="r nowrap">{{ r.shanghai_eta_live_jst_str|default:'—' }}</td>
+      <td class="r">{{ r.live_speed|default_if_none:'—' }}</td>
+      <td class="r nowrap muted">{{ r.live_updated_jst_str|default:'—' }}</td>
+      <td class="nowrap">
+        {% with a=r.live_departure_predict %}
+        <span class="badge {% if a.0 == 'bad' %}bad{% elif a.0 == 'ok' %}ok{% elif a.0 == 'info' %}st-booked{% else %}st-received{% endif %}">{{ a.1 }}</span>
+        {% endwith %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="10" class="c muted">{% trans "監視対象の便がありません（本船割当済・未出港の便が対象）。" %}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+</div>
+{% endblock %}
