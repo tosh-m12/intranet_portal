@@ -1,22 +1,13 @@
-"""初期データ投入: 荷主マスタ + 既存トレーシング表(seed.json)。
+"""(旧)初期データ投入。
 
-本番でも `migrate` 実行時に自動投入される。既存データがあればスキップ(冪等)。
+当初はここで seed を投入していたが、後続 migration(0003〜0007)で追加した
+フィールドを含む seed を、フィールド未追加のこの時点で読み込むと migrate が失敗する。
+そのため実投入は全フィールドが揃う 0008_load_seed へ移動し、本 migration は no-op とする。
+(既存環境では本 migration は適用済みのため、内容変更の影響はない)
 """
 from django.db import migrations
 
 
-def load(apps, schema_editor):
-    from vessel_tracking.seedload import load_seed
-    Customer = apps.get_model('vessel_tracking', 'Customer')
-    Shipment = apps.get_model('vessel_tracking', 'Shipment')
-    load_seed(Customer, Shipment, only_if_empty=True)
-
-
-def unload(apps, schema_editor):
-    # ロールバック時は取込分(ledger)のみ削除。手入力分・荷主マスタは保持。
-    apps.get_model('vessel_tracking', 'Shipment').objects.filter(source='ledger').delete()
-
-
 class Migration(migrations.Migration):
     dependencies = [('vessel_tracking', '0001_initial')]
-    operations = [migrations.RunPython(load, unload)]
+    operations = []

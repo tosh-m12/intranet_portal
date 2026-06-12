@@ -65,6 +65,9 @@
 .vessel-app .badge.st-cancelled{background:var(--bad-b);color:var(--bad-t)}
 .vessel-app .badge.bad{background:var(--bad-b);color:var(--bad-t)}
 .vessel-app .badge.ok{background:var(--ok-b);color:var(--ok-t)}
+/* 出発前のライブ予測遅延: グレー背景・赤文字「+X予想」 */
+.vessel-app .badge.predict{background:#eceff3;color:var(--bad-t)}
+.vessel-app .grid .legbadge .badge.predict{width:auto;min-width:46px;padding:1px 4px;font-size:10px}
 
 /* filters (ライブ絞り込み) */
 .vessel-app .filters{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:14px;
