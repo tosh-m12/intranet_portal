@@ -1,0 +1,74 @@
+{% extends "vessel_tracking/base.html" %}
+{% load humanize i18n %}
+{% block title %}{% trans "出荷詳細" %} {{ obj.order_no }} — {% trans "本船動向管理" %}{% endblock %}
+{% block content %}
+<div class="vessel-app">
+<div class="detail-head">
+  <h2 class="sec">{% trans "出荷詳細" %}
+    {% if obj.is_cancelled %}<span class="badge bad">{% trans "取消済" %}</span>
+    {% else %}<span class="badge st-{{ obj.status_key }}">{{ obj.status_label }}</span>{% endif %}
+    {% if obj.delay_label %}<span class="badge bad">{{ obj.delay_label }}</span>{% endif %}
+  </h2>
+  <div class="head-actions">
+    <a class="back" href="{% url 'vessel_tracking:list' %}">← {% trans "出荷一覧へ" %}</a>
+    <a class="btn primary" href="{% url 'vessel_tracking:edit' obj.pk %}">{% trans "編集" %}</a>
+  </div>
+</div>
+
+<h3 class="sec">{% trans "識別・取引先" %}</h3>
+<dl class="kv">
+  <dt>{% trans "荷主" %}</dt><dd>{{ obj.customer.name }}（{{ obj.customer.code }}）</dd>
+  <dt>{% trans "注文No" %}</dt><dd>{{ obj.order_no|default:'—' }}</dd>
+  <dt>{% trans "受注日" %}</dt><dd>{{ obj.order_received|date:'Y-m-d'|default:'—' }}</dd>
+  <dt>{% trans "インボイスNo" %}</dt><dd>{{ obj.inv_no|default:'—' }}</dd>
+  <dt>{% trans "仕出地" %}</dt><dd>{{ obj.origin|default:'—' }}</dd>
+  <dt>{% trans "仕向地" %}</dt><dd>{{ obj.dest|default:'—' }}</dd>
+  <dt>{% trans "担当者" %}</dt><dd>{{ obj.assignee|default:'—' }}</dd>
+</dl>
+
+<h3 class="sec">{% trans "貨物量" %}</h3>
+<dl class="kv">
+  <dt>{% trans "輸送区分" %}</dt><dd>{{ obj.container_type|default:'—' }}</dd>
+  <dt>{% trans "カートン数" %}</dt><dd>{{ obj.out_ctn|default_if_none:'—'|intcomma }}</dd>
+  <dt>{% trans "容積(M³)" %}</dt><dd>{{ obj.out_m3|default_if_none:'—' }}</dd>
+  <dt>{% trans "数量" %}</dt><dd>{{ obj.out_qty|default_if_none:'—'|intcomma }}</dd>
+</dl>
+
+<h3 class="sec">{% trans "本船・スケジュール" %}</h3>
+<dl class="kv">
+  <dt>{% trans "本船名" %}</dt><dd>{{ obj.vessel|default:'—' }}</dd>
+  <dt>{% trans "航海No" %}</dt><dd>{{ obj.voyage|default:'—' }}</dd>
+  <dt>{% trans "出港予定 ETD" %}</dt><dd>{{ obj.etd|date:'Y-m-d'|default:'—' }}</dd>
+  <dt>{% trans "CY搬入" %}</dt><dd>{{ obj.cy_cut|date:'Y-m-d'|default:'—' }}</dd>
+  <dt>{% trans "ECYオープン(予定)" %}</dt><dd>{{ obj.cy_open|date:'Y-m-d'|default:'—' }}</dd>
+  <dt>{% trans "ACYオープン(実績)" %}</dt><dd>{{ obj.cy_open_act|date:'Y-m-d'|default:'—' }}</dd>
+  <dt>{% trans "バンニング" %}</dt><dd>{{ obj.vanning|date:'Y-m-d'|default:'—' }}</dd>
+  <dt>{% trans "入港予定 ETA" %}</dt><dd>{{ obj.eta|date:'Y-m-d'|default:'—' }}</dd>
+</dl>
+
+<h3 class="sec">{% trans "実績（船会社確認）" %}</h3>
+<dl class="kv">
+  <dt>{% trans "上海入港予定" %}</dt><dd>{{ obj.shanghai_eta|date:'Y-m-d'|default:'—' }}</dd>
+  <dt>{% trans "上海入港" %}</dt>
+  <dd>{{ obj.shanghai_ata|date:'Y-m-d'|default:'—' }}
+    {% if obj.shanghai_delay_days > 0 %}<span class="delay-note">{% trans "予定比" %} +{{ obj.shanghai_delay_days }}{% trans "日" %}</span>
+    {% elif obj.shanghai_delay_days == 0 %}<span class="ontime-note">{% trans "予定通り" %}</span>
+    {% elif obj.shanghai_delay_days < 0 %}<span class="ontime-note">{{ obj.shanghai_delay_days }}{% trans "日" %}</span>{% endif %}
+  </dd>
+  <dt>{% trans "出港実績 ATD" %}</dt>
+  <dd>{{ obj.atd|date:'Y-m-d'|default:'—' }}
+    {% if obj.departure_delay_days > 0 %}<span class="delay-note">{% trans "予定比" %} +{{ obj.departure_delay_days }}{% trans "日" %}</span>
+    {% elif obj.departure_delay_days < 0 %}<span class="ontime-note">{{ obj.departure_delay_days }}{% trans "日" %}</span>{% endif %}
+  </dd>
+  <dt>{% trans "入港実績 ATA" %}</dt>
+  <dd>{{ obj.ata|date:'Y-m-d'|default:'—' }}
+    {% if obj.arrival_delay_days > 0 %}<span class="delay-note">{% trans "予定比" %} +{{ obj.arrival_delay_days }}{% trans "日" %}</span>{% endif %}
+  </dd>
+</dl>
+
+{% if obj.remarks %}
+<h3 class="sec">{% trans "備考" %}</h3>
+<div class="remarks-box">{{ obj.remarks|linebreaksbr }}</div>
+{% endif %}
+</div>
+{% endblock %}

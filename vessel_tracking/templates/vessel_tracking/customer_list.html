@@ -1,0 +1,42 @@
+{% extends "vessel_tracking/base.html" %}
+{% load i18n %}
+{% block title %}{% trans "荷主マスタ" %} — {% trans "本船動向管理" %}{% endblock %}
+{% block content %}
+<div class="vessel-app">
+<div class="detail-head">
+  <h2 class="sec">{% trans "荷主マスタ" %}</h2>
+  <a class="btn primary" href="{% url 'vessel_tracking:customer_add' %}">＋ {% trans "新規登録" %}</a>
+</div>
+
+<form class="filters" id="filterForm" method="get" action="{% url 'vessel_tracking:customers' %}">
+  <label>{% trans "検索" %}
+    <input type="text" name="q" class="q-wide" value="{{ q }}" placeholder="{% trans 'コード・荷主名' %}">
+  </label>
+  <a class="btn" id="clearFilters" href="{% url 'vessel_tracking:customers' %}">{% trans "クリア" %}</a>
+</form>
+
+<div id="listResult">
+<div class="count">{{ count }} / {{ total }} {% trans "件" %}</div>
+<div class="tablewrap">
+<table class="grid">
+  <thead><tr>
+    <th>{% trans "荷主コード" %}</th>
+    <th>{% trans "荷主名" %}</th>
+    <th class="c">{% trans "状態" %}</th>
+  </tr></thead>
+  <tbody>
+    {% for r in rows %}
+    <tr>
+      <td class="nowrap">{{ r.code }}</td>
+      <td>{{ r.name }}</td>
+      <td class="c">{% if r.is_active %}<span class="badge st-arrived">{% trans "有効" %}</span>{% else %}<span class="badge st-received">{% trans "無効" %}</span>{% endif %}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="3" class="c muted">{% trans "該当なし" %}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+</div>
+</div>
+{% endblock %}

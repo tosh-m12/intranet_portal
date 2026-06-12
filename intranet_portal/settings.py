@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'cs_tasks.apps.CsTasksConfig',
     'billing.apps.BillingConfig',
     'sales_trend.apps.SalesTrendConfig',
+    'vessel_tracking.apps.VesselTrackingConfig',
 ]
 
 MIDDLEWARE = [

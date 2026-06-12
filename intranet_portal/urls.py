@@ -27,4 +27,5 @@ urlpatterns = [
     path("cs-tasks/", include("cs_tasks.urls")),
     path("billing/", include("billing.urls")),
     path("sales-trend/", include("sales_trend.urls")),
+    path("vessel/", include("vessel_tracking.urls")),
 ]

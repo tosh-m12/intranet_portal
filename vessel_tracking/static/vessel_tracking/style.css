@@ -1,0 +1,148 @@
+/* 本船動向管理(vessel_tracking) 専用スタイル。請求管理(billing)の体裁を踏襲し .vessel-app でスコープ。
+   ナビ・subnav・lang 等はポータル既存CSS(visitors/cs_tasks)をそのまま利用。 */
+.vessel-app{
+  --navy:#1f3864; --blue:#2e5496; --line:#d9dee7;
+  --bad-b:#f8d7da; --bad-t:#c00000; --muted-b:#eceff3; --muted-t:#7f7f7f;
+  --warn-b:#fff2cc; --warn-t:#bf8f00; --ok-b:#e2efda; --ok-t:#548235; --info-b:#dde7f6;
+  color:#222;
+}
+.vessel-app input,.vessel-app select,.vessel-app textarea,.vessel-app .ro-field,.vessel-app .btn{box-sizing:border-box}
+.vessel-app h2.sec{font-size:17px;color:var(--navy);margin:0}
+.vessel-app h3.sec{font-size:15px;color:var(--blue);margin:20px 0 10px;border-bottom:2px solid var(--blue);padding-bottom:4px}
+.vessel-app .muted{color:#8a93a0}
+.vessel-app a{color:var(--blue);text-decoration:none}
+.vessel-app a:hover{text-decoration:underline}
+.vessel-app .detail-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin:4px 0 14px}
+.vessel-app .head-actions{display:flex;align-items:center;gap:14px}
+.vessel-app .back{font-size:13px}
+.vessel-app .nowrap{white-space:nowrap}
+
+/* buttons */
+.vessel-app .btn{display:inline-block;background:#fff;color:var(--navy);border:1px solid var(--line);
+  padding:0 16px;height:33px;line-height:31px;border-radius:6px;cursor:pointer;font-size:13px;font-family:inherit;text-decoration:none}
+.vessel-app .btn:hover{background:#f2f5fa;text-decoration:none}
+.vessel-app .btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.vessel-app .btn.primary:hover{background:#264a85}
+.vessel-app .btn.ghost{background:#fff;color:var(--blue)}
+.vessel-app .btn.danger-strong{background:#000;color:#ff4d4f;border:2px solid #ff4d4f;font-weight:700}
+.vessel-app .btn.danger-strong:hover{background:#1a0000;color:#ff6b6e}
+
+/* table */
+.vessel-app table.grid{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+/* データ表はセル内折り返し禁止。入りきらない時は tablewrap が横スクロール。 */
+.vessel-app .grid th,.vessel-app .grid td{padding:8px 10px;border-bottom:1px solid #eef1f5;text-align:left;vertical-align:middle;font-size:14px;white-space:nowrap}
+.vessel-app .grid th{background:var(--navy);color:#fff;font-weight:600;font-size:13px;text-align:center}
+.vessel-app .grid td.c,.vessel-app .grid th.c{text-align:center}
+.vessel-app .grid td.r,.vessel-app .grid th.r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.vessel-app .grid tr:hover td{background:#f7f9fc}
+.vessel-app .tablewrap{border-radius:8px;overflow-x:auto}
+.vessel-app tr.rowlink{cursor:pointer}
+.vessel-app tr.rowlink:hover td{background:#eef4fc}
+
+/* 予定/実績の2段セル + バッジ。日付2段(上=予定/下=実績)の右に、
+   バッジ専用スペースを確保して縦中央配置(下段に潜り込ませない)。 */
+.vessel-app .grid td.legcell{white-space:nowrap}
+.vessel-app .grid .leg{display:flex;align-items:center;justify-content:flex-start;gap:6px}
+/* 日付: 固定幅・右揃え(ヘッダ/各行で同幅 → 真上に揃う)。 */
+.vessel-app .grid .legdates{flex:0 0 60px;text-align:right;line-height:1.5}
+.vessel-app .grid .legdates span{display:block;font-variant-numeric:tabular-nums}
+.vessel-app .grid td.legcell .legdates span{color:#33415c}
+/* バッジ: 固定スペース内で左揃え。赤・緑とも同一サイズの固定幅ピル。 */
+.vessel-app .grid .legbadge{flex:0 0 52px;text-align:left}
+.vessel-app .grid .legbadge .badge{display:inline-block;width:46px;box-sizing:border-box;text-align:center;padding:2px 0;margin:0;font-size:11px}
+.vessel-app .grid th.stack-h{vertical-align:middle}
+/* 汎用2段積みセル/ヘッダ(仕出地/仕向地・ECYOpen/ACYOpen 等)。整列は .c/.r で指定。 */
+.vessel-app .grid .stack2 span{display:block;line-height:1.5;white-space:nowrap}
+.vessel-app .grid td.stack2 span{font-variant-numeric:tabular-nums}
+
+/* 状況バッジ(色=意味)。受注=灰 / ブッキング確定=青 / 出港済=水色 / 入港済=緑。遅延・取消=赤。 */
+.vessel-app .badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;font-weight:600;white-space:nowrap}
+.vessel-app .badge + .badge{margin-left:4px}
+.vessel-app .badge.st-received{background:var(--muted-b);color:var(--muted-t)}
+.vessel-app .badge.st-booked{background:var(--info-b);color:var(--navy)}
+.vessel-app .badge.st-departed{background:#d9ecf5;color:#1f6f8b}
+.vessel-app .badge.st-arrived{background:var(--ok-b);color:var(--ok-t)}
+.vessel-app .badge.st-cancelled{background:var(--bad-b);color:var(--bad-t)}
+.vessel-app .badge.bad{background:var(--bad-b);color:var(--bad-t)}
+.vessel-app .badge.ok{background:var(--ok-b);color:var(--ok-t)}
+
+/* filters (ライブ絞り込み) */
+.vessel-app .filters{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:14px;
+  display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.vessel-app .filters label{display:flex;flex-direction:column;font-size:11px;color:#6b7480;gap:3px}
+.vessel-app .filters input,.vessel-app .filters select{padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-size:13px;min-width:120px;height:33px}
+.vessel-app .filters input.q-wide{min-width:280px}
+.vessel-app .filters label.chk-filter{flex-direction:row;align-items:center;gap:6px;height:33px;font-size:13px;color:#44506a}
+.vessel-app .filters label.chk-filter input{min-width:0;width:17px;height:17px;cursor:pointer}
+.vessel-app .filters .btn{align-self:flex-end}
+.vessel-app .count{color:#6b7480;font-size:13px;margin-bottom:8px}
+
+/* 簡易入力フォーム(出荷一覧上部。検索の代わり) */
+.vessel-app .quick-form{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;
+  margin-bottom:14px;display:flex;gap:8px 10px;flex-wrap:wrap;align-items:flex-end}
+.vessel-app .quick-form label{display:flex;flex-direction:column;font-size:11px;color:#6b7480;gap:3px;font-weight:600}
+.vessel-app .quick-form input,.vessel-app .quick-form select{padding:6px 8px;border:1px solid #c7ccd4;border-radius:6px;
+  font-size:13px;height:33px;min-width:84px;box-sizing:border-box;font-family:inherit;background:#fff}
+.vessel-app .quick-form input:focus,.vessel-app .quick-form select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(46,84,150,.15)}
+.vessel-app .quick-form input.alnum-up{text-transform:uppercase}
+.vessel-app .quick-form input.num{text-align:right;font-variant-numeric:tabular-nums;min-width:74px}
+.vessel-app .quick-form input:disabled{background:#eceff3;color:#9aa3af}
+.vessel-app .quick-form .ro-field{height:33px;min-width:84px;font-size:13px}
+.vessel-app .quick-form .req{color:var(--bad-t);font-size:10px;font-weight:700}
+.vessel-app .quick-form .btn{align-self:flex-end}
+
+/* 入力フォーム(白枠=入力可／グレー枠=読み取り専用。サイズ統一) */
+.vessel-app .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px 12px;
+  background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px}
+.vessel-app .form-grid label{display:flex;flex-direction:column;font-size:11px;color:#6b7480;gap:4px;font-weight:600}
+.vessel-app .form-grid input,.vessel-app .form-grid select{width:100%;box-sizing:border-box;padding:7px 9px;border:1px solid #c7ccd4;border-radius:6px;font-size:14px;font-family:inherit;background:#fff;height:35px}
+.vessel-app .form-grid input:focus,.vessel-app .form-grid select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(46,84,150,.15)}
+.vessel-app .form-grid label.wide{grid-column:span 2}
+.vessel-app .form-grid input.alnum-up{text-transform:uppercase}
+.vessel-app .form-grid input.num{text-align:right;font-variant-numeric:tabular-nums}
+.vessel-app .req{color:var(--bad-t);font-size:11px;font-weight:700}
+/* 読み取り専用: 入力欄と同形状・同サイズ＋グレー背景 */
+.vessel-app .ro-field{display:flex;align-items:center;padding:7px 9px;border:1px solid #c7ccd4;border-radius:6px;
+  background:#eceff3;color:#33415c;font-size:14px;height:35px}
+
+.vessel-app .remarks-input{width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #c7ccd4;border-radius:8px;
+  font-size:14px;font-family:inherit;resize:vertical}
+.vessel-app .remarks-input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(46,84,150,.15)}
+.vessel-app .remarks-box{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 14px;font-size:14px;color:#33415c;white-space:pre-wrap}
+
+/* actions */
+.vessel-app .form-actions{display:flex;gap:10px;margin:18px 0 6px;flex-wrap:wrap}
+.vessel-app .del-form{margin-top:22px;padding-top:14px;border-top:1px dashed var(--line)}
+
+/* 詳細表示 kv */
+.vessel-app .kv{display:grid;grid-template-columns:auto 1fr;gap:0;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:0 0 4px}
+.vessel-app .kv dt{background:#f3f6fa;color:#44506a;font-weight:600;font-size:13px;padding:8px 14px;border-bottom:1px solid #eef1f5;white-space:nowrap}
+.vessel-app .kv dd{margin:0;padding:8px 14px;border-bottom:1px solid #eef1f5;font-size:14px}
+.vessel-app .kv dt:last-of-type,.vessel-app .kv dd:last-child{border-bottom:none}
+.vessel-app .delay-note{display:inline-block;margin-left:8px;color:var(--bad-t);font-weight:600;font-size:12px}
+.vessel-app .ontime-note{display:inline-block;margin-left:8px;color:var(--ok-t);font-size:12px}
+
+/* master add form */
+.vessel-app .card-form{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px;max-width:520px;display:flex;flex-direction:column;gap:12px}
+.vessel-app .card-form label{display:flex;flex-direction:column;font-size:12px;color:#566;gap:5px;font-weight:600}
+.vessel-app .card-form input{padding:8px 10px;border:1px solid #c7ccd4;border-radius:6px;font-size:14px;font-family:inherit}
+.vessel-app .card-form input.alnum-up{text-transform:uppercase}
+.vessel-app .card-form input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(46,84,150,.15)}
+
+/* ライブ監視: 説明バナー */
+.vessel-app .monitor-note{background:#eef2f8;border:1px solid var(--line);border-radius:8px;
+  padding:8px 12px;font-size:12px;color:#566;margin:0 0 12px}
+
+/* 入力制限の吹き出し警告(body 直下に出すため非スコープ) */
+.vt-hint{position:fixed;z-index:9999;background:#c00000;color:#fff;font-size:11px;font-weight:600;
+  padding:2px 8px;border-radius:5px;white-space:nowrap;pointer-events:none;opacity:0;
+  transform:translateY(3px);transition:opacity .12s,transform .12s;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.vt-hint::after{content:'';position:absolute;left:11px;bottom:-4px;width:0;height:0;
+  border-left:4px solid transparent;border-right:4px solid transparent;border-top:4px solid #c00000}
+.vt-hint.show{opacity:1;transform:translateY(0)}
+
+/* 保存等のメッセージ(subnav 直下。.vessel-app の外に出るため非スコープ) */
+.vessel-msgs{margin:10px 0 0}
+.vessel-msg{padding:9px 13px;border-radius:8px;font-size:14px;margin-bottom:6px}
+.vessel-msg.success{background:#e2efda;color:#548235}
+.vessel-msg.error,.vessel-msg.warning{background:#f8d7da;color:#c00000}
