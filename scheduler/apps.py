@@ -16,6 +16,24 @@ class SchedulerConfig(AppConfig):
         start_scheduler_loop()
 
 
+def _has_datalastic_key():
+    """DATALASTIC_API_KEY が環境変数または .env に設定されているか(track_vessels と同基準)。"""
+    if os.environ.get("DATALASTIC_API_KEY"):
+        return True
+    try:
+        from django.conf import settings
+        env_path = os.path.join(settings.BASE_DIR, ".env")
+        if os.path.exists(env_path):
+            with open(env_path, encoding="utf-8") as f:
+                for line in f:
+                    s = line.strip()
+                    if s.startswith("DATALASTIC_API_KEY=") and s.split("=", 1)[1].strip():
+                        return True
+    except Exception:
+        pass
+    return False
+
+
 def scheduler_loop():
     print("### envmon scheduler loop start")
 
@@ -101,11 +119,16 @@ def scheduler_loop():
         except Exception as e:
             print(f"[SCHEDULER] error in scheduler_loop: {e}")
 
-        # ===== 本船ライブ監視(任意・環境変数で有効化) =====
-        # VESSEL_TRACK_INTERVAL_SEC を秒で設定すると、その間隔で track_vessels を実行し、
-        # AIS実績から ATD・上海入港・ATA を自動記入する。未設定(0)なら無効=誤課金防止。
+        # ===== 本船ライブ監視 =====
+        # DATALASTIC_API_KEY があれば既定間隔(3時間)で自動実行し、AIS実績から
+        # ATD・上海入港・ATA を自動記入＋発地出発遅延を予測する(本番はキー設定だけで機能)。
+        # VESSEL_TRACK_INTERVAL_SEC で間隔変更、0 を明示すると無効化(開発機の誤課金防止)。
         try:
-            vt_interval = int(os.environ.get("VESSEL_TRACK_INTERVAL_SEC", "0") or "0")
+            raw = (os.environ.get("VESSEL_TRACK_INTERVAL_SEC", "") or "").strip()
+            if raw == "":
+                vt_interval = 10800 if _has_datalastic_key() else 0   # 既定3時間
+            else:
+                vt_interval = int(raw or "0")
             if vt_interval > 0 and (
                 last_run_track is None
                 or (now - last_run_track).total_seconds() >= vt_interval
