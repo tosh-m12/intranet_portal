@@ -1,6 +1,6 @@
 {% extends "vessel_tracking/base.html" %}
 {% load humanize i18n %}
-{% block title %}{% trans "出荷詳細" %} {{ obj.order_no }} — {% trans "本船動向管理" %}{% endblock %}
+{% block title %}{% trans "出荷詳細" %} {{ obj.order_no }} — {% trans "本船動静管理" %}{% endblock %}
 {% block content %}
 <div class="vessel-app">
 <div class="detail-head">
@@ -10,7 +10,7 @@
     {% if obj.delay_label %}<span class="badge bad">{{ obj.delay_label }}</span>{% endif %}
   </h2>
   <div class="head-actions">
-    <a class="back" href="{% url 'vessel_tracking:list' %}">← {% trans "出荷一覧へ" %}</a>
+    <a class="back" href="{% url 'vessel_tracking:list' %}">← {% trans "ブッキング一覧へ" %}</a>
     <a class="btn primary" href="{% url 'vessel_tracking:edit' obj.pk %}">{% trans "編集" %}</a>
   </div>
 </div>

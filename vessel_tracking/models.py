@@ -1,11 +1,11 @@
-"""本船動向管理 データモデル。
+"""本船動静管理 データモデル。
 
 - Shipment … 出荷1件(=トレーシング表の1行)。受注→ブッキング確定→出港(ATD)→
               入港(ATA) のライフサイクルを担当者が手入力で追跡する。
               1注文(order_no)が仕向地別(大阪/東京)に複数の Shipment へ分かれる。
 
 ポータル規約: authsys.User を FK 参照(入力者=監査)、物理削除せず is_cancelled で論理削除。
-将来: 本船動向 API 連携・客先メール通知(ブッキング確定/遅延/出航)を追加予定(現時点は未実装)。
+将来: 本船動静 API 連携・客先メール通知(ブッキング確定/遅延/出航)を追加予定(現時点は未実装)。
 """
 import datetime
 from urllib.parse import quote
@@ -60,7 +60,7 @@ class Shipment(models.Model):
 
     remarks = models.TextField(_('備考'), blank=True)
 
-    # ---- ライブ本船動向(vessel_pro スナップショット。track_vessels コマンドが更新) ----
+    # ---- ライブ本船動静(vessel_pro スナップショット。track_vessels コマンドが更新) ----
     live_lat = models.FloatField(null=True, blank=True)
     live_lon = models.FloatField(null=True, blank=True)
     live_speed = models.FloatField(null=True, blank=True)        # ノット
@@ -143,7 +143,7 @@ class Shipment(models.Model):
         """出港済・未入港で ETA を過ぎている(=入港予定超過。要確認)。
 
         実績(ATA)を記録する運用が定着して初めて意味を持つ指標。現状は遅延判定には
-        使わず(過去取込分は ATA 未記録のため)、将来の本船動向監視で利用する。
+        使わず(過去取込分は ATA 未記録のため)、将来の本船動静監視で利用する。
         """
         if self.atd and not self.ata and self.eta:
             return self.eta < datetime.date.today()
@@ -183,6 +183,22 @@ class Shipment(models.Model):
     @staticmethod
     def _to_jst(dt):
         return dt.astimezone(datetime.timezone(datetime.timedelta(hours=9))) if dt else None
+
+    @staticmethod
+    def _to_cst(dt):
+        return dt.astimezone(datetime.timezone(datetime.timedelta(hours=8))) if dt else None
+
+    @property
+    def cy_open_is_today(self):
+        """予想CY Open が本日と同日か。"""
+        return self.cy_open == datetime.date.today()
+
+    @property
+    def days_until_etd(self):
+        """仕出地出発予定(ETD)までの残日数。ETDなしは None(過ぎていれば負)。"""
+        if not self.etd:
+            return None
+        return (self.etd - datetime.date.today()).days
 
     @property
     def live_eta_jst_str(self):
@@ -244,25 +260,37 @@ class Shipment(models.Model):
           (上海の在港は半日〜1日のため、到着≒出発)
         - それ以外(本船が別レグ等) → 監視中。
         """
-        # 出港済 → 実績の出発遅延
+        # 出港済(monitor には出ないが、コマンド出力用に残す)
         if self.atd and self.etd:
-            d = (self.atd - self.etd).days
-            return ('bad', _('出発済 +%(d)d日') % {'d': d}) if d > 0 else ('ok', _('出発済(予定通り)'))
+            return self._delay_badge((self.atd - self.etd).days)
         if self.atd:
-            return ('ok', _('出発済'))
-        # 未出港で予定ETDを過ぎている → 既に遅延発生(確定。ライブ値が無くても警告)
-        if self.etd and self.etd < datetime.date.today():
-            d = (datetime.date.today() - self.etd).days
-            return ('bad', _('出発遅延 +%(d)d日(ETD経過・未出港)') % {'d': d})
-        # 未出港・ETD前 → 割当本船の上海到着見込みで予測
+            return ('ok', _('定刻'))
+        if not self.etd:
+            return ('muted', _('監視中')) if self.live_updated_at else ('none', _('未取得'))
+        # 未出港: 仕出地到着見込み(ライブ上海ETA)があれば 出発見込み=到着+1日 として遅延を予測
+        delay = None
         if (self.live_updated_at and (self.live_dest_unlocode or '').upper() == 'CNSHG'
-                and self.live_eta and self.etd):
-            arr = self._to_jst(self.live_eta).date()
-            d = (arr - self.etd).days
-            return ('bad', _('出発遅延予測 +%(d)d日') % {'d': d}) if d > 0 else ('ok', _('出発予定通り'))
+                and self.live_eta):
+            arr = self._to_cst(self.live_eta).date()
+            delay = (arr - self.etd).days + 1
+        # 予定ETDを既に過ぎている → 確定遅延(到着未取得でも警告)
+        if self.etd < datetime.date.today():
+            elapsed = (datetime.date.today() - self.etd).days
+            delay = elapsed if delay is None else max(delay, elapsed)
+        if delay is not None:
+            return self._delay_badge(delay)
         if self.live_updated_at:
             return ('muted', _('監視中'))
         return ('none', _('未取得'))
+
+    @staticmethod
+    def _delay_badge(d):
+        """遅延日数 → (level, label)。正=赤「+X日」、0=緑「定刻」、負=緑「-X」。"""
+        if d > 0:
+            return ('bad', _('+%(d)d日') % {'d': d})
+        if d == 0:
+            return ('ok', _('定刻'))
+        return ('ok', '%d' % d)
 
     @property
     def live_map_url(self):
@@ -290,15 +318,16 @@ class Shipment(models.Model):
     def live_departure_delay_days(self):
         """未出港便の出発遅延(予想)日数。出港済み/予測なしは None。
 
-        ライブの上海到着見込み(=出発見込み)が予定ETDより後、または予定ETDを既に過ぎている場合に
-        その日数を返す(両者の大きい方)。
+        仕出地到着見込み(ライブ上海ETA)+1日 を出発見込みとし、予定ETDとの差。
+        予定ETDを既に過ぎている場合は経過日数も加味し、大きい方を返す。
+        (ライブ監視「遅延予測」バッジと同じ値)
         """
         if self.atd or not self.etd:
             return None
         days = 0
         if (self.live_updated_at and (self.live_dest_unlocode or '').upper() == 'CNSHG'
                 and self.live_eta):
-            days = max(days, (self._to_jst(self.live_eta).date() - self.etd).days)
+            days = max(days, (self._to_cst(self.live_eta).date() - self.etd).days + 1)
         if self.etd < datetime.date.today():
             days = max(days, (datetime.date.today() - self.etd).days)
         return days if days > 0 else None
@@ -308,6 +337,28 @@ class Shipment(models.Model):
         """ライブ仕向が上海の時の到着見込み(=出発見込み)。それ以外は空。"""
         if (self.live_dest_unlocode or '').upper() == 'CNSHG':
             return self.live_eta_jst_str
+        return ''
+
+    @property
+    def shanghai_eta_live_cst_str(self):
+        """仕出地到達見込み(上海現地時間 UTC+8)。ライブ仕向が上海の時のみ。"""
+        if (self.live_dest_unlocode or '').upper() == 'CNSHG':
+            d = self._to_cst(self.live_eta)
+            return d.strftime('%m/%d %H:%M') if d else ''
+        return ''
+
+    @property
+    def shanghai_eta_live_cst_date(self):
+        if (self.live_dest_unlocode or '').upper() == 'CNSHG':
+            d = self._to_cst(self.live_eta)
+            return f'{d.year % 100:02d}/{d.month}/{d.day}' if d else ''
+        return ''
+
+    @property
+    def shanghai_eta_live_cst_time(self):
+        if (self.live_dest_unlocode or '').upper() == 'CNSHG':
+            d = self._to_cst(self.live_eta)
+            return d.strftime('%H:%M') if d else ''
         return ''
 
     def save(self, *args, **kwargs):

@@ -1744,7 +1744,7 @@ msgstr "来客预定"
 #: vessel_tracking/templates/vessel_tracking/entry.html:3
 #: vessel_tracking/templates/vessel_tracking/list.html:3
 #: vessel_tracking/templates/vessel_tracking/monitor.html:3
-msgid "本船動向管理"
+msgid "本船動静管理"
 msgstr "船舶动态管理"
 
 #: templates/portal/home.html:4
@@ -2027,6 +2027,11 @@ msgstr "驶往日本中"
 msgid "遅延予測 +%(d)d日"
 msgstr "预测延误 +%(d)d天"
 
+#: vessel_tracking/models.py:261
+#, python-format
+msgid "+%(d)d日"
+msgstr "+%(d)d天"
+
 #: vessel_tracking/models.py:228
 msgid "順調"
 msgstr "正常"
@@ -2080,6 +2085,16 @@ msgstr "监视中"
 #: vessel_tracking/templates/vessel_tracking/list.html:7
 msgid "出荷一覧"
 msgstr "出货列表"
+
+#: vessel_tracking/templates/vessel_tracking/list.html:3
+#: vessel_tracking/templates/vessel_tracking/list.html:7
+msgid "ブッキング一覧"
+msgstr "订舱列表"
+
+#: vessel_tracking/templates/vessel_tracking/detail.html:13
+#: vessel_tracking/templates/vessel_tracking/entry.html:9
+msgid "ブッキング一覧へ"
+msgstr "返回订舱列表"
 
 #: vessel_tracking/templates/vessel_tracking/_subnav.html:5
 #: vessel_tracking/templates/vessel_tracking/monitor.html:3
@@ -2312,6 +2327,58 @@ msgstr "实时目的地"
 #: vessel_tracking/templates/vessel_tracking/monitor.html:39
 msgid "上海到着見込(JST)"
 msgstr "上海到达预计(JST)"
+
+#: vessel_tracking/templates/vessel_tracking/monitor.html:36
+msgid "現在の行き先"
+msgstr "当前目的地"
+
+#: vessel_tracking/templates/vessel_tracking/monitor.html:39
+msgid "仕出地到達見込(JST)"
+msgstr "起运地到达预计(JST)"
+
+#: vessel_tracking/templates/vessel_tracking/monitor.html:39
+msgid "仕出地到達見込"
+msgstr "起运地到达预计"
+
+#: vessel_tracking/templates/vessel_tracking/monitor.html:55
+msgid "船社情報待ち"
+msgstr "等待船公司信息"
+
+#: vessel_tracking/templates/vessel_tracking/monitor.html:32
+msgid "出発まであと"
+msgstr "距开船"
+
+#: vessel_tracking/templates/vessel_tracking/monitor.html:50
+msgid "遅延確定"
+msgstr "确定延误"
+
+#: vessel_tracking/templates/vessel_tracking/monitor.html:40
+msgid "仕出地出発予定"
+msgstr "起运地预计开船"
+
+#: vessel_tracking/templates/vessel_tracking/monitor.html:41
+msgid "遅延予測"
+msgstr "延误预测"
+
+#: vessel_tracking/templates/vessel_tracking/monitor.html:42
+msgid "最終更新日時"
+msgstr "最后更新时间"
+
+#: vessel_tracking/templates/vessel_tracking/monitor.html:7
+msgid "出発前一覧"
+msgstr "开船前一览"
+
+#: vessel_tracking/models.py:262
+msgid "定刻"
+msgstr "准点"
+
+#: vessel_tracking/templates/vessel_tracking/list.html:79
+msgid "発地側遅延状況"
+msgstr "起运地延误状况"
+
+#: vessel_tracking/templates/vessel_tracking/list.html:81
+msgid "着地側状況"
+msgstr "目的地状况"
 
 #: vessel_tracking/templates/vessel_tracking/monitor.html:40
 msgid "速度kn"
