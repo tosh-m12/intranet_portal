@@ -69,9 +69,9 @@
       <th class="r">{% trans "出発まであと" %}</th>
       <th>{% trans "荷主" %}</th>
       <th class="c stack2"><span>{% trans "仕出地" %}</span><span>{% trans "仕向地" %}</span></th>
-      <th class="r">{% trans "容積㎥" %}</th>
       <th class="c">{% trans "区分" %}</th>
       <th class="r">{% trans "本数" %}</th>
+      <th class="r">{% trans "容積㎥" %}</th>
       <th>{% trans "本船名" %}</th>
       <th class="r">{% trans "航海No" %}</th>
       <th class="r stack2"><span>ECYOpen</span><span>ACYOpen</span></th>
@@ -91,9 +91,9 @@
       {% else %}<td class="c nowrap">{{ r.days_until_etd }}{% trans "日" %}</td>{% endif %}
       <td class="nowrap">{{ r.customer }}</td>
       <td class="c stack2"><span>{{ r.origin }}</span><span>{{ r.dest }}</span></td>
-      <td class="r">{{ r.out_m3|default_if_none:'' }}</td>
       <td class="c">{{ r.container_type }}</td>
       <td class="r">{{ r.container_count|default_if_none:'' }}</td>
+      <td class="r">{{ r.out_m3|default_if_none:'' }}</td>
       <td>{{ r.vessel }}</td>
       <td class="r">{{ r.voyage }}</td>
       <td class="r stack2"><span{% if r.cy_open_is_today %} class="today-hl"{% endif %}>{{ r.cy_open|date:'y/n/j'|default:'—' }}</span><span>{{ r.cy_open_act|date:'y/n/j'|default:'—' }}</span></td>
