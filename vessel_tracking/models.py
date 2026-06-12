@@ -267,12 +267,12 @@ class Shipment(models.Model):
             return ('ok', _('定刻'))
         if not self.etd:
             return ('muted', _('監視中')) if self.live_updated_at else ('none', _('未取得'))
-        # 未出港: 仕出地到着見込み(ライブ上海ETA)があれば 出発見込み=到着+1日 として遅延を予測
+        # 未出港: 本便の積込寄港とみなせる仕出地到着見込みがあれば 出発見込み=到着+1日 として遅延を予測
+        # (予定より大幅に早い到着=前航海の寄港は live_origin_arrival_cst が除外する)
         delay = None
-        if (self.live_updated_at and (self.live_dest_unlocode or '').upper() == 'CNSHG'
-                and self.live_eta):
-            arr = self._to_cst(self.live_eta).date()
-            delay = (arr - self.etd).days + 1
+        arr = self.live_origin_arrival_cst
+        if arr:
+            delay = (arr.date() - self.etd).days + 1
         # 予定ETDを既に過ぎている → 確定遅延(到着未取得でも警告)
         if self.etd < datetime.date.today():
             elapsed = (datetime.date.today() - self.etd).days
@@ -325,12 +325,31 @@ class Shipment(models.Model):
         if self.atd or not self.etd:
             return None
         days = 0
-        if (self.live_updated_at and (self.live_dest_unlocode or '').upper() == 'CNSHG'
-                and self.live_eta):
-            days = max(days, (self._to_cst(self.live_eta).date() - self.etd).days + 1)
+        arr = self.live_origin_arrival_cst
+        if arr:
+            days = max(days, (arr.date() - self.etd).days + 1)
         if self.etd < datetime.date.today():
             days = max(days, (datetime.date.today() - self.etd).days)
         return days if days > 0 else None
+
+    # 本便の積込寄港として妥当な上海到着とみなす許容幅(日)。
+    # 予定ETDより これ以上早い 上海到着見込みは前航海(別ローテーション)の寄港とみなし除外する。
+    # (上海⇄日本のフィーダーは周回するため、予定より大幅に早い到着は今回の積込ではない)
+    ORIGIN_ARRIVAL_LEAD_DAYS = 3
+
+    @property
+    def live_origin_arrival_cst(self):
+        """本便の積込寄港とみなせる「仕出地(上海)到着見込み」(上海現地時間 datetime)。
+
+        ライブ仕向=上海 かつ live_eta があり、予定ETDに対して早すぎない(ETD−3日以降)場合のみ返す。
+        予定より大幅に早い到着は前航海の寄港のため None(=本便の予測には使わない)。
+        """
+        if (self.live_dest_unlocode or '').upper() != 'CNSHG' or not self.live_eta:
+            return None
+        arr = self._to_cst(self.live_eta)
+        if self.etd and arr.date() < self.etd - datetime.timedelta(days=self.ORIGIN_ARRIVAL_LEAD_DAYS):
+            return None
+        return arr
 
     @property
     def shanghai_eta_live_jst_str(self):
@@ -341,25 +360,19 @@ class Shipment(models.Model):
 
     @property
     def shanghai_eta_live_cst_str(self):
-        """仕出地到達見込み(上海現地時間 UTC+8)。ライブ仕向が上海の時のみ。"""
-        if (self.live_dest_unlocode or '').upper() == 'CNSHG':
-            d = self._to_cst(self.live_eta)
-            return d.strftime('%m/%d %H:%M') if d else ''
-        return ''
+        """仕出地到達見込み(上海現地時間 UTC+8)。本便の積込寄港とみなせる時のみ。"""
+        d = self.live_origin_arrival_cst
+        return d.strftime('%m/%d %H:%M') if d else ''
 
     @property
     def shanghai_eta_live_cst_date(self):
-        if (self.live_dest_unlocode or '').upper() == 'CNSHG':
-            d = self._to_cst(self.live_eta)
-            return f'{d.year % 100:02d}/{d.month}/{d.day}' if d else ''
-        return ''
+        d = self.live_origin_arrival_cst
+        return f'{d.year % 100:02d}/{d.month}/{d.day}' if d else ''
 
     @property
     def shanghai_eta_live_cst_time(self):
-        if (self.live_dest_unlocode or '').upper() == 'CNSHG':
-            d = self._to_cst(self.live_eta)
-            return d.strftime('%H:%M') if d else ''
-        return ''
+        d = self.live_origin_arrival_cst
+        return d.strftime('%H:%M') if d else ''
 
     def save(self, *args, **kwargs):
         self.origin = (self.origin or '').strip().upper()
