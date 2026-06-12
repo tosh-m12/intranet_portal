@@ -8,6 +8,7 @@ urlpatterns = [
     path('', views.shipment_list, name='index'),
     path('list/', views.shipment_list, name='list'),
     path('monitor/', views.monitor, name='monitor'),
+    path('monitor/refresh/', views.monitor_refresh, name='monitor_refresh'),
     path('quick/', views.quick_create, name='quick_create'),
     path('detail/<int:pk>/', views.detail, name='detail'),
     path('entry/', views.entry, name='entry'),

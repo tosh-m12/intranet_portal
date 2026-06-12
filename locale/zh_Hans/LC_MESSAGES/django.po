@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-12 12:43+0800\n"
+"POT-Creation-Date: 2026-06-12 13:49+0800\n"
 "PO-Revision-Date: 2025-07-23 23:45+0800\n"
 "Last-Translator: TMurayama <example@example.com>\n"
 "Language-Team: Chinese Simplified\n"
@@ -761,7 +761,7 @@ msgid "課題を編集"
 msgstr "编辑课题"
 
 #: cs_tasks/templates/cs_tasks/edit.html:28
-#: vessel_tracking/templates/vessel_tracking/monitor.html:34
+#: vessel_tracking/templates/vessel_tracking/monitor.html:41
 msgid "更新"
 msgstr "更新"
 
@@ -1839,7 +1839,7 @@ msgstr "※ 准备中"
 #: vessel_tracking/templates/vessel_tracking/entry.html:18
 #: vessel_tracking/templates/vessel_tracking/list.html:13
 #: vessel_tracking/templates/vessel_tracking/list.html:69
-#: vessel_tracking/templates/vessel_tracking/monitor.html:25
+#: vessel_tracking/templates/vessel_tracking/monitor.html:32
 msgid "荷主"
 msgstr "货主"
 
@@ -1866,7 +1866,7 @@ msgstr "发票号"
 #: vessel_tracking/templates/vessel_tracking/entry.html:36
 #: vessel_tracking/templates/vessel_tracking/list.html:17
 #: vessel_tracking/templates/vessel_tracking/list.html:70
-#: vessel_tracking/templates/vessel_tracking/monitor.html:26
+#: vessel_tracking/templates/vessel_tracking/monitor.html:33
 msgid "仕出地"
 msgstr "起运地"
 
@@ -1875,7 +1875,7 @@ msgstr "起运地"
 #: vessel_tracking/templates/vessel_tracking/entry.html:40
 #: vessel_tracking/templates/vessel_tracking/list.html:21
 #: vessel_tracking/templates/vessel_tracking/list.html:70
-#: vessel_tracking/templates/vessel_tracking/monitor.html:26
+#: vessel_tracking/templates/vessel_tracking/monitor.html:33
 msgid "仕向地"
 msgstr "目的地"
 
@@ -1913,7 +1913,7 @@ msgstr "集装箱数"
 #: vessel_tracking/templates/vessel_tracking/entry.html:69
 #: vessel_tracking/templates/vessel_tracking/list.html:38
 #: vessel_tracking/templates/vessel_tracking/list.html:74
-#: vessel_tracking/templates/vessel_tracking/monitor.html:27
+#: vessel_tracking/templates/vessel_tracking/monitor.html:34
 msgid "本船名"
 msgstr "船名"
 
@@ -1922,7 +1922,7 @@ msgstr "船名"
 #: vessel_tracking/templates/vessel_tracking/entry.html:72
 #: vessel_tracking/templates/vessel_tracking/list.html:42
 #: vessel_tracking/templates/vessel_tracking/list.html:75
-#: vessel_tracking/templates/vessel_tracking/monitor.html:28
+#: vessel_tracking/templates/vessel_tracking/monitor.html:35
 msgid "航海No"
 msgstr "航次号"
 
@@ -2040,7 +2040,7 @@ msgid "別レグ"
 msgstr "其他航段"
 
 #: vessel_tracking/models.py:235 vessel_tracking/models.py:265
-#: vessel_tracking/templates/vessel_tracking/monitor.html:11
+#: vessel_tracking/templates/vessel_tracking/monitor.html:12
 msgid "未取得"
 msgstr "未获取"
 
@@ -2142,7 +2142,7 @@ msgid "ライブ動向（AIS）"
 msgstr "实时动态(AIS)"
 
 #: vessel_tracking/templates/vessel_tracking/detail.html:72
-#: vessel_tracking/templates/vessel_tracking/monitor.html:31
+#: vessel_tracking/templates/vessel_tracking/monitor.html:38
 msgid "現在地"
 msgstr "当前位置"
 
@@ -2172,7 +2172,6 @@ msgstr "编辑出货"
 
 #: vessel_tracking/templates/vessel_tracking/entry.html:21
 #: vessel_tracking/templates/vessel_tracking/list.html:15
-#| msgid "取引先マスタ"
 msgid "取引先マスタから"
 msgstr "从客户主数据"
 
@@ -2275,50 +2274,58 @@ msgstr "实时监视(起运地出发预测)"
 msgid "出発遅延予測"
 msgstr "出发延误预测"
 
-#: vessel_tracking/templates/vessel_tracking/monitor.html:11
+#: vessel_tracking/templates/vessel_tracking/monitor.html:12
 msgid "最終取得"
 msgstr "最后获取"
 
-#: vessel_tracking/templates/vessel_tracking/monitor.html:16
+#: vessel_tracking/templates/vessel_tracking/monitor.html:15
+msgid "更新中…"
+msgstr "更新中…"
+
+#: vessel_tracking/templates/vessel_tracking/monitor.html:17
+msgid "今すぐ更新"
+msgstr "立即更新"
+
+#: vessel_tracking/templates/vessel_tracking/monitor.html:23
 msgid ""
 "対象=本船割当済・未出港の便。割当本船が上海へ向かう「上海到着見込み(申告ETA)」を出発見込みとみなし、予定ETDと比較して発地の出発遅延を予測します（上海の在港は半日〜1日のため到着≒出発）。"
 msgstr ""
 "对象=已分配船舶·未离港的航次。将所分配船舶驶往上海的「上海到达预计(申报ETA)」视为出发预计，与预计ETD比较以预测起运地的出发延误(上海在港约半天〜1天，故到达≈出发)。"
 
-#: vessel_tracking/templates/vessel_tracking/monitor.html:17
+#: vessel_tracking/templates/vessel_tracking/monitor.html:24
 msgid ""
 "本船が実際に上海を出港すると、AIS実績からATD・上海入港を自動記入し本便は一覧へ移ります（予定日に依存しないため遅延・ロールでも取りこぼしません）。"
 msgstr "当船舶实际离开上海后，根据AIS实绩自动填写ATD·上海到港，该航次移至列表(不依赖预计日期，故延误·甩柜也不会遗漏)。"
 
-#: vessel_tracking/templates/vessel_tracking/monitor.html:18
+#: vessel_tracking/templates/vessel_tracking/monitor.html:25
 msgid "更新は track_vessels（VESSEL_TRACK_INTERVAL_SEC を設定すると定時自動）。"
 msgstr "更新通过 track_vessels(设置 VESSEL_TRACK_INTERVAL_SEC 后定时自动)。"
 
-#: vessel_tracking/templates/vessel_tracking/monitor.html:29
+#: vessel_tracking/templates/vessel_tracking/monitor.html:36
 msgid "発地ETD(予定)"
 msgstr "起运地ETD(预计)"
 
-#: vessel_tracking/templates/vessel_tracking/monitor.html:30
+#: vessel_tracking/templates/vessel_tracking/monitor.html:37
 msgid "ライブ仕向"
 msgstr "实时目的地"
 
-#: vessel_tracking/templates/vessel_tracking/monitor.html:32
+#: vessel_tracking/templates/vessel_tracking/monitor.html:39
 msgid "上海到着見込(JST)"
 msgstr "上海到达预计(JST)"
 
-#: vessel_tracking/templates/vessel_tracking/monitor.html:33
+#: vessel_tracking/templates/vessel_tracking/monitor.html:40
 msgid "速度kn"
 msgstr "航速kn"
 
-#: vessel_tracking/templates/vessel_tracking/monitor.html:35
+#: vessel_tracking/templates/vessel_tracking/monitor.html:42
 msgid "出発アラート"
 msgstr "出发警报"
 
-#: vessel_tracking/templates/vessel_tracking/monitor.html:47
+#: vessel_tracking/templates/vessel_tracking/monitor.html:54
 msgid "地図"
 msgstr "地图"
 
-#: vessel_tracking/templates/vessel_tracking/monitor.html:58
+#: vessel_tracking/templates/vessel_tracking/monitor.html:65
 msgid "監視対象の便がありません（本船割当済・未出港の便が対象）。"
 msgstr "没有监视对象的航次(对象为已分配船舶·未离港的航次)。"
 

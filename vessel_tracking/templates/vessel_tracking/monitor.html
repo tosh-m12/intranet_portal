@@ -7,8 +7,15 @@
   <h2 class="sec">{% trans "ライブ監視（発地出発予測）" %}
     {% if alert_count %}<span class="badge bad">{% trans "出発遅延予測" %} {{ alert_count }}</span>{% endif %}
   </h2>
-  <div class="muted" style="font-size:12px">
-    {% if last_updated %}{% trans "最終取得" %}: {{ last_updated|date:'Y-m-d H:i' }}{% else %}{% trans "未取得" %}{% endif %}
+  <div class="head-actions">
+    <span class="muted" style="font-size:12px">
+      {% if last_updated %}{% trans "最終取得" %}: {{ last_updated|date:'Y-m-d H:i' }}{% else %}{% trans "未取得" %}{% endif %}
+    </span>
+    <form method="post" action="{% url 'vessel_tracking:monitor_refresh' %}" style="display:inline"
+          onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='{% trans "更新中…" %}';">
+      {% csrf_token %}
+      <button type="submit" class="btn primary">⟳ {% trans "今すぐ更新" %}</button>
+    </form>
   </div>
 </div>
 
