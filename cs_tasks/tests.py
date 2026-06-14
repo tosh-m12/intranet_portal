@@ -891,6 +891,22 @@ class BridgeApiTests(TestCase):
         self.assertIn(self.task.id, data["meta"]["active_task_ids"])
         self.assertEqual(data["tasks"][0]["title"], "任务A")
 
+    # --- 週報 ---
+    def test_weekly_requires_token(self):
+        self.assertEqual(
+            self.client.get(reverse("cs_tasks:bridge_api_weekly")).status_code, 401)
+
+    def test_weekly_returns_report(self):
+        r = self.client.get(reverse("cs_tasks:bridge_api_weekly"), **self._auth())
+        self.assertEqual(r.status_code, 200)
+        d = r.json()
+        for k in ("week_start", "week_end", "new_tasks", "progressed_tasks",
+                  "completed_tasks", "overdue_tasks", "due_soon_tasks", "summary"):
+            self.assertIn(k, d)
+        self.assertIn("in_progress", d["summary"])
+        # setUp の task は今週作成 → 当週新規に出る
+        self.assertTrue(any(t["title"] == "任务A" for t in d["new_tasks"]))
+
     # --- writeback(復路) ---
     def test_writeback_requires_token(self):
         p = make_payload([{"op_id": "z", "action": "add_comment"}])

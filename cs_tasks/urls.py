@@ -8,6 +8,7 @@ app_name = "cs_tasks"
 urlpatterns = [
     # リアルタイム連携API(Mac cs_bridge がトンネル越しに叩く。メール往復の置換)
     path("bridge/api/sync", bridge_api.bridge_sync, name="bridge_api_sync"),
+    path("bridge/api/weekly-report", bridge_api.bridge_weekly, name="bridge_api_weekly"),
     path("bridge/api/writeback", bridge_api.bridge_writeback, name="bridge_api_writeback"),
     path("", views.index, name="index"),
     path("new/", views.task_new, name="new"),
