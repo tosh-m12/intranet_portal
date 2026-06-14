@@ -89,7 +89,7 @@ def _route_text(text):
     return (text, "")
 
 
-def _build_board(user, assignee_id=None, category=None):
+def _build_board(user, assignee_id=None, category=None, for_report=False):
     """
     担当者 > 顧客 > 課題 > 進捗 の3階層でグルーピングした
     課題ボード用のデータを組み立てる。
@@ -99,6 +99,8 @@ def _build_board(user, assignee_id=None, category=None):
           "clients": [{"client_name", "client_rows", "tasks": [task, ...]}],
       }]
       各 task には row_count / progress_list / can_edit を付与。
+
+    for_report=True … レポート(読み取り専用)用。進捗1件=1行、コメント列・追加行なし。
     """
     tasks_qs = (
         Task.objects.filter(is_cancelled=False)
@@ -131,6 +133,10 @@ def _build_board(user, assignee_id=None, category=None):
         # 各進捗の行数を算出（コメント行 + 末尾の「＋コメントを追加」行）
         progress_rows_total = 0
         for p in t.progress_list:
+            if for_report:
+                # レポートはコメント列なし・読み取り専用。進捗1件=1行。
+                progress_rows_total += 1
+                continue
             comment_list = list(p.comments.all())
             for c in comment_list:
                 c.author_name = _display_name(c.author)
@@ -143,9 +149,9 @@ def _build_board(user, assignee_id=None, category=None):
             p.rows = rows
             p.comment_rows = len(rows)
             progress_rows_total += p.comment_rows
-        # 行数 = タイトル行(1) + 進捗の全行 + 進捗追加行(1)
-        t.row_count = 1 + progress_rows_total + 1
-        t.can_edit = can_edit_task(user, t)
+        # 行数 = タイトル行(1) + 進捗の全行 [+ 進捗追加行(1)]。レポートは追加行なし。
+        t.row_count = 1 + progress_rows_total + (0 if for_report else 1)
+        t.can_edit = False if for_report else can_edit_task(user, t)
 
         akey = t.assignee_id  # None も可
         if akey not in groups_map:
@@ -224,6 +230,33 @@ def index(request):
     })
 
 
+# =========================================================
+# レポート（区分別の課題ボードを縦に並べた読み取り専用ビュー）
+# 上から クレーム・インシデント → 既存 → 新規 → 部内。
+# =========================================================
+_REPORT_CATEGORY_ORDER = [
+    Task.CATEGORY_INCIDENT,
+    Task.CATEGORY_EXISTING,
+    Task.CATEGORY_NEW,
+    Task.CATEGORY_INTERNAL,
+]
+
+
+@login_required
+def report(request):
+    sections = []
+    for cat in _REPORT_CATEGORY_ORDER:
+        groups, _ = _build_board(request.user, category=cat, for_report=True)
+        sections.append({
+            "key": cat,
+            "label": _CATEGORY_TITLE[cat],
+            "hide_client": cat == Task.CATEGORY_INTERNAL,
+            "groups": groups,
+        })
+    return render(request, "cs_tasks/report.html", {
+        "sections": sections,
+        "active_tab": "report",
+    })
 
 
 # =========================================================
