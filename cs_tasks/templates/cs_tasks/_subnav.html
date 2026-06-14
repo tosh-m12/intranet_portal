@@ -27,9 +27,5 @@
            class="{% if active_tab == 'mailing_list' %}active{% endif %}">
             <svg class="ic"><use href="#ic-mail"/></svg>{% trans "メーリングリスト" %}
         </a>
-        <a href="{% url 'cs_tasks:weekly_report' %}"
-           class="{% if active_tab == 'weekly_report' %}active{% endif %}">
-            <svg class="ic"><use href="#ic-chart"/></svg>{% trans "週報" %}
-        </a>
     {% endif %}
 </div>
