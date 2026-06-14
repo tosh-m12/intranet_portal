@@ -63,9 +63,7 @@
                 <tr data-task-id="{{ task.id }}" class="task-title-row {% if task.is_closed %}task-closed{% endif %}">
                     {% if forloop.parentloop.first and forloop.first %}
                     <td class="col-assignee" rowspan="{{ group.total_rows }}">
-                        <a href="{% url 'cs_tasks:index' %}?assignee={{ group.assignee_id|default:'' }}">
-                            {{ group.assignee_name }}
-                        </a>
+                        {{ group.assignee_name }}
                     </td>
                     {% endif %}
                     {% if not hide_client %}
