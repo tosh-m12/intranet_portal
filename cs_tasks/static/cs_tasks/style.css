@@ -129,7 +129,7 @@
     display: block;
     padding: 1px 2px;
     color: #2f6fb0;
-    font-size: 12px;
+    /* フォントサイズは指定せず表の基準(.cs-board=16px)を継承＝名前/タイトル/コメントと統一 */
     white-space: nowrap;
     pointer-events: none;
     min-height: 1.5em;
@@ -415,12 +415,13 @@ textarea.add-input {
     border-bottom: 2px solid #e5e9f0;
 }
 .report-cat-title.incident { color: #c0392b; border-bottom-color: #f3c6c0; }
-/* レポートの実施日: 「2026/06/05」が収まる幅・左寄せ・読み取り専用テキスト */
-.cs-board.report-board .cg-date { width: 92px; }
+/* レポートの実施日: 16px の「2026/06/05」に余裕を持たせた幅・左寄せ・読み取り専用テキスト */
+.cs-board.report-board .cg-date { width: 116px; }
 .cs-board.report-board .col-date {
     position: static;
     text-align: left;
     white-space: nowrap;
     color: #2f6fb0;
+    /* font-size は表の基準(16px)を継承 */
 }
 .cs-board.report-board .task-title-row .col-task { background: #fafbfc; }
