@@ -106,29 +106,40 @@
     white-space: pre-wrap;
 }
 
-/* 実施日のカレンダー入力（枠なし風で日付セルに馴染ませる） */
+/* 実施日: ネイティブ日付入力の表示はブラウザのロケール依存で並び順を強制できず、
+   空欄でもプレースホルダ(例「06/14/2026」)が出る。そこで入力は opacity:0 で
+   日付セル全面に重ねてカレンダー専用にし、見える日付は .date-disp(YYYY/MM/DD・
+   未入力は空欄)だけで描く。これでロケールに関係なく一覧表とレポートで表記が揃う。 */
+.cs-board td.col-date { position: relative; }
 .cs-board .date-input {
-    border: 1px solid transparent;
-    background: transparent;
-    color: #2f6fb0;
-    font: inherit;
-    padding: 1px 2px;
-    border-radius: 4px;
+    position: absolute;
+    inset: 0;
     width: 100%;
-    box-sizing: border-box;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    opacity: 0;
     cursor: pointer;
 }
-.cs-board .date-input:hover { border-color: #ddd; }
-.cs-board .date-input:focus { outline: none; background: #fff9e6; border-color: #e0c46a; }
+.cs-board .date-disp {
+    position: relative;
+    z-index: 1;
+    display: block;
+    padding: 1px 2px;
+    color: #2f6fb0;
+    font-size: 12px;
+    white-space: nowrap;
+    pointer-events: none;
+    min-height: 1.5em;
+}
 /* カレンダーのアイコンは隠す（クリックで showPicker を呼ぶ） */
 .cs-board .date-input::-webkit-calendar-picker-indicator { display: none; -webkit-appearance: none; }
-/* 未入力(追加行)の日付は mm/dd/yyyy を見せず空欄に見せる（フォーカス時は表示） */
-.cs-board .date-input.is-empty::-webkit-datetime-edit { color: transparent; }
-.cs-board .date-input.is-empty:focus::-webkit-datetime-edit { color: inherit; }
-/* 実施日 未入力のまま確定しようとした時の警告（赤枠） */
-.cs-board .date-input.date-missing {
-    border-color: #e74c3c !important;
+/* 実施日 未入力のまま確定しようとした時の警告（不可視入力ではなくセルを赤く） */
+.cs-board td.col-date.date-missing {
     background: #fdecea;
+    box-shadow: inset 0 0 0 2px #e74c3c;
 }
 
 /* 進捗セル: 上下結合(rowspan)されていても記入日を最下部の右に固定する */
@@ -404,6 +415,12 @@ textarea.add-input {
     border-bottom: 2px solid #e5e9f0;
 }
 .report-cat-title.incident { color: #c0392b; border-bottom-color: #f3c6c0; }
-/* 実施日は左寄せ（ボードのカレンダー入力と違い読み取り専用テキスト） */
-.cs-board.report-board .col-date { text-align: left; }
+/* レポートの実施日: 「2026/06/05」が収まる幅・左寄せ・読み取り専用テキスト */
+.cs-board.report-board .cg-date { width: 92px; }
+.cs-board.report-board .col-date {
+    position: static;
+    text-align: left;
+    white-space: nowrap;
+    color: #2f6fb0;
+}
 .cs-board.report-board .task-title-row .col-task { background: #fafbfc; }

@@ -160,8 +160,16 @@
     function setEmpty(el) {
         if (el && el.classList) el.classList.toggle("is-empty", !el.value);
     }
+    // ネイティブ日付の表示を隠し、重ねた .date-disp に YYYY/MM/DD を出す（ロケール非依存で統一）
+    function syncDateDisp(el) {
+        if (!el || !el.parentNode) return;
+        var span = el.parentNode.querySelector(".date-disp");
+        if (span) span.textContent = el.value ? el.value.replace(/-/g, "/") : "";
+    }
+    // 未入力警告は不可視の入力ではなくセル(.col-date)に付ける
     function warnDate(el, show) {
-        if (el && el.classList) el.classList.toggle("date-missing", !!show);
+        var c = el && el.closest ? el.closest(".col-date") : null;
+        if (c) c.classList.toggle("date-missing", !!show);
     }
     // 追加行(add_progress)フォームは content(textarea) と execution_date を併せ持つ。
     // 既存編集(data-ajax)や add_comment(日付なし)は対象外として null を返す。
@@ -174,6 +182,7 @@
         var el = e.target;
         if (!(el.classList && el.classList.contains("date-input"))) return;
         setEmpty(el);
+        syncDateDisp(el);
         if (el.value) warnDate(el, false);
         if (el.form && el.form.dataset.ajax) {     // 既存進捗の実施日変更 → 即確定
             submitForm(el);
@@ -341,7 +350,7 @@
         document.querySelectorAll("textarea.add-input").forEach(autoGrow);
 
         // 実施日の空欄表示クラスを初期化（値ありは通常表示、未入力は mm/dd/yyyy を隠す）
-        document.querySelectorAll(".date-input").forEach(setEmpty);
+        document.querySelectorAll(".date-input").forEach(function (el) { setEmpty(el); syncDateDisp(el); });
 
         // ===== ブラウザのオートフィル抑止（顧客名・課題） =====
         // 読み込み時に readonly にしておくとオートフィル対象から外れる。

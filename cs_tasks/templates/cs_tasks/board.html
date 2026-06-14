@@ -132,9 +132,10 @@
                                     <input type="hidden" name="next" value="{{ request.get_full_path }}">
                                     <input type="date" name="execution_date" class="date-input"
                                            value="{{ p.effective_date|date:'Y-m-d' }}">
+                                    <span class="date-disp">{{ p.effective_date|date:'Y/m/d' }}</span>
                                 </form>
                             {% else %}
-                                {{ p.effective_date|date:"n/j/Y" }}
+                                {{ p.effective_date|date:"Y/m/d" }}
                             {% endif %}
                         </td>
                         <td class="col-progress" rowspan="{{ p.comment_rows }}">
@@ -205,6 +206,7 @@
                         {# 進捗が未入力の行では日付を空欄表示（mm/dd/yyyy を隠す）。確定時に未入力なら赤枠警告 #}
                         <input type="date" form="addprog-{{ task.id }}" name="execution_date"
                                class="date-input is-empty" value="">
+                        <span class="date-disp"></span>
                         {% endif %}
                     </td>
                     <td class="col-progress">
