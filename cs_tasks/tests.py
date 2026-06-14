@@ -121,6 +121,28 @@ class InboundApplyTests(TestCase):
         p = make_payload(ops, nonce=nonce)
         return inbound.apply_writeback(p, signed(p), sender=sender)
 
+    def test_set_closed_task_cascades(self):
+        res = self._apply([{"op_id": "op-sc", "action": "set_closed",
+                            "target": "task", "id": self.task.id, "closed": True}])
+        self.assertTrue(res["ok"])
+        self.assertEqual(res["applied"], ["op-sc"])
+        self.task.refresh_from_db(); self.progress.refresh_from_db()
+        self.assertTrue(self.task.is_closed)
+        self.assertTrue(self.progress.is_closed)   # 配下進捗も連動
+        # 再開
+        self._apply([{"op_id": "op-sc2", "action": "set_closed",
+                      "target": "task", "id": self.task.id, "closed": False}], nonce="n2")
+        self.task.refresh_from_db(); self.progress.refresh_from_db()
+        self.assertFalse(self.task.is_closed)
+        self.assertFalse(self.progress.is_closed)
+
+    def test_set_closed_progress(self):
+        res = self._apply([{"op_id": "op-pc", "action": "set_closed",
+                            "target": "progress", "id": self.progress.id, "closed": True}])
+        self.assertTrue(res["ok"])
+        self.progress.refresh_from_db()
+        self.assertTrue(self.progress.is_closed)
+
     def test_add_comment(self):
         res = self._apply(
             [{
