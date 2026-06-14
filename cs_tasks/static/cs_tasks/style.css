@@ -392,3 +392,18 @@ textarea.add-input {
 .subnav a.incident { color: #c0392b; font-weight: bold; }
 .subnav a.incident:hover { color: #c0392b; background-color: #fdecea; }
 .subnav a.incident.active { color: #c0392b; border-bottom-color: #c0392b; }
+
+/* ===== レポート（区分別の課題ボードを縦に並べた読み取り専用ビュー） ===== */
+.report-cat { margin: 0 0 22px; }
+.report-cat-title {
+    font-size: 15px;
+    font-weight: bold;
+    color: #1a2b3c;
+    margin: 0 0 8px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #e5e9f0;
+}
+.report-cat-title.incident { color: #c0392b; border-bottom-color: #f3c6c0; }
+/* 実施日は左寄せ（ボードのカレンダー入力と違い読み取り専用テキスト） */
+.cs-board.report-board .col-date { text-align: left; }
+.cs-board.report-board .task-title-row .col-task { background: #fafbfc; }

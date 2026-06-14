@@ -31,4 +31,5 @@ urlpatterns = [
     ),
     path("mailing-list/", views.mailing_list, name="mailing_list"),
     path("weekly-report/", views.weekly_report, name="weekly_report"),
+    path("report/", views.report, name="report"),
 ]

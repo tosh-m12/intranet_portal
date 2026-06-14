@@ -1,0 +1,72 @@
+{% extends "portal/base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "レポート" %}{% endblock %}
+
+{% block app_name %}
+<h1><svg class="ic"><use href="#ic-clipboard"/></svg> {% trans "CS課題管理" %}</h1>
+{% endblock %}
+
+{% block subnav %}
+    {% include "cs_tasks/_subnav.html" with active_tab=active_tab %}
+{% endblock %}
+
+{% block content %}
+{# 区分別の課題ボードを縦に並べた読み取り専用レポート。
+   上から クレーム・インシデント → 既存 → 新規 → 部内。空欄・上長コメント・入力日は省略。 #}
+{% for sec in sections %}
+<section class="report-cat">
+    <h2 class="report-cat-title {% if sec.key == 'incident' %}incident{% endif %}">{{ sec.label }}</h2>
+    {% if sec.groups %}
+    <div class="table-wrapper">
+    <table class="cs-board report-board">
+        <colgroup>
+            <col class="cg-assignee">
+            {% if not sec.hide_client %}<col class="cg-client">{% endif %}
+            <col class="cg-date">
+            <col class="cg-progress">
+        </colgroup>
+        <thead>
+            <tr>
+                <th class="col-assignee">{% trans "担当" %}</th>
+                {% if not sec.hide_client %}<th class="col-client">{% trans "顧客" %}</th>{% endif %}
+                <th class="col-date">{% trans "実施日" %}</th>
+                <th class="col-progress">{% trans "課題および進捗" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for group in sec.groups %}
+                {% for client in group.clients %}
+                    {% for task in client.tasks %}
+                    <tr class="task-title-row">
+                        {% if forloop.parentloop.first and forloop.first %}
+                        <td class="col-assignee" rowspan="{{ group.total_rows }}">{{ group.assignee_name }}</td>
+                        {% endif %}
+                        {% if not sec.hide_client and forloop.first %}
+                        <td class="col-client" rowspan="{{ client.client_rows }}">{{ client.client_name }}</td>
+                        {% endif %}
+                        <td class="col-task" colspan="2">
+                            <span class="task-title">{{ task.display_title }}</span>
+                            {% if task.display_description %}
+                            <div class="task-desc-text">{{ task.display_description|linebreaksbr }}</div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% for p in task.progress_list %}
+                    <tr class="progress-row">
+                        <td class="col-date">{{ p.effective_date|date:"Y/m/d" }}</td>
+                        <td class="col-progress">{{ p.display_content|linebreaksbr }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% endfor %}
+                {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    {% else %}
+    <p class="muted">{% trans "なし" %}</p>
+    {% endif %}
+</section>
+{% endfor %}
+{% endblock %}
