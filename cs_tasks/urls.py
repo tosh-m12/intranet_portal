@@ -10,7 +10,6 @@ urlpatterns = [
     path("bridge/api/sync", bridge_api.bridge_sync, name="bridge_api_sync"),
     path("bridge/api/writeback", bridge_api.bridge_writeback, name="bridge_api_writeback"),
     path("", views.index, name="index"),
-    path("my/", views.my_tasks, name="my"),
     path("new/", views.task_new, name="new"),
     path("add/", views.task_add_inline, name="task_add_inline"),
     path("<int:task_id>/edit/", views.task_edit, name="edit"),

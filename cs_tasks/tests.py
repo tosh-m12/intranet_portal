@@ -560,10 +560,6 @@ class CategoryTabTests(TestCase):
         self.assertTrue(r.context["hide_client"])
         self.assertNotContains(r, '<th class="col-client">')
 
-    def test_my_tab_all_categories(self):
-        r = self.client.get(reverse("cs_tasks:my"))
-        self.assertEqual(self._ids(r), {self.t_exist.id, self.t_new.id, self.t_int.id})
-
     def test_add_inline_sets_category_and_no_client_for_internal(self):
         self.client.post(reverse("cs_tasks:task_add_inline"),
                          {"cs_subj": "部内の新課題", "cs_cust": "無視される客", "category": "internal"})

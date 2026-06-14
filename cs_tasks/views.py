@@ -207,7 +207,7 @@ _CATEGORY_TITLE = {
 
 @login_required
 def index(request):
-    assignee_id = request.GET.get("assignee")
+    assignee_id = None   # 担当者名クリックでの絞り込みは廃止
     cat = request.GET.get("cat") or Task.CATEGORY_EXISTING
     if cat not in _CATEGORY_TITLE:
         cat = Task.CATEGORY_EXISTING
@@ -224,22 +224,6 @@ def index(request):
     })
 
 
-# =========================================================
-# 自分の担当課題（全カテゴリ横断で自分が担当の課題）
-# =========================================================
-@login_required
-def my_tasks(request):
-    groups, _ = _build_board(request.user, assignee_id=request.user.id)
-    return render(request, "cs_tasks/board.html", {
-        "groups": groups,
-        "filtered_user": request.user,
-        "filtered_user_name": _display_name(request.user),
-        "is_admin": is_admin(request.user),
-        "board_title": "自分の担当課題",
-        "is_my_view": True,
-        "active_tab": "my",
-        "current_category": Task.CATEGORY_EXISTING,
-    })
 
 
 # =========================================================
