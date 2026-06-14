@@ -630,34 +630,3 @@ def mailing_list(request):
 
     entries = WeeklyReportMailingList.objects.all()
     return render(request, "cs_tasks/mailing_list.html", {"entries": entries})
-
-
-# =========================================================
-# 週報プレビュー・手動送信（is_staff のみ）
-# =========================================================
-@user_passes_test(is_admin)
-@login_required
-def weekly_report(request):
-    from .email_utils import build_weekly_report_context, send_weekly_report
-    from django.utils.timezone import localdate
-
-    if request.method == "POST" and request.POST.get("action") == "send":
-        result = send_weekly_report(ignore_schedule=True)
-        if result.get("sent"):
-            recipients = result.get("recipients") or []
-            messages.success(
-                request,
-                _("週報を送信しました。宛先: %(recipients)s")
-                % {"recipients": ", ".join(recipients)},
-            )
-        else:
-            messages.error(
-                request,
-                _("週報の送信に失敗しました。%(reason)s")
-                % {"reason": result.get("reason", "")},
-            )
-        return redirect("cs_tasks:weekly_report")
-
-    today = localdate()
-    report = build_weekly_report_context(today)
-    return render(request, "cs_tasks/weekly_report.html", {"report": report})
