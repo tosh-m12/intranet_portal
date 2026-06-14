@@ -56,6 +56,38 @@ def bridge_sync(request):
     return JsonResponse(snapshot, json_dumps_params={"ensure_ascii": False})
 
 
+@require_GET
+def bridge_weekly(request):
+    """週報: 社内側の集計(build_weekly_report_context)をそのまま JSON で返す。
+
+    完了日(completed_at)・中止件数など Mac のスナップショットに無い情報も含むため、
+    社内側で計算して返し、Mac は表示のみ行う(正本一致・ロジック重複なし)。"""
+    if not _token_ok(request):
+        return JsonResponse({"ok": False, "reason": "unauthorized"}, status=401)
+    from ..email_utils import build_weekly_report_context
+    from django.utils.timezone import localdate
+    r = build_weekly_report_context(localdate())
+
+    def _t(qs):
+        return [{"title": t.title, "title_ja": t.title_ja, "client_name": t.client_name} for t in qs]
+
+    def _d(qs):
+        return [{"title": t.title, "title_ja": t.title_ja, "client_name": t.client_name,
+                 "due_date": t.due_date.isoformat() if t.due_date else None} for t in qs]
+
+    data = {
+        "week_start": r["week_start"].isoformat(),
+        "week_end": r["week_end"].isoformat(),
+        "new_tasks": _t(r["new_tasks"]),
+        "progressed_tasks": _t(r["progressed_tasks"]),
+        "completed_tasks": _t(r["completed_tasks"]),
+        "overdue_tasks": _d(r["overdue_tasks"]),
+        "due_soon_tasks": _d(r["due_soon_tasks"]),
+        "summary": r["summary"],
+    }
+    return JsonResponse(data, json_dumps_params={"ensure_ascii": False})
+
+
 @csrf_exempt
 @require_POST
 def bridge_writeback(request):
