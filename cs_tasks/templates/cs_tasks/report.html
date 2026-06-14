@@ -12,8 +12,10 @@
 {% endblock %}
 
 {% block content %}
-{# 区分別の課題ボードを縦に並べた読み取り専用レポート。
-   上から クレーム・インシデント → 既存 → 新規 → 部内。空欄・上長コメント・入力日は省略。 #}
+{% comment %}
+区分別の課題ボードを縦に並べた読み取り専用レポート。
+上から クレーム・インシデント → 既存 → 新規 → 部内。空欄・上長コメント・入力日は省略。
+{% endcomment %}
 {% for sec in sections %}
 <section class="report-cat">
     <h2 class="report-cat-title {% if sec.key == 'incident' %}incident{% endif %}">{{ sec.label }}</h2>
