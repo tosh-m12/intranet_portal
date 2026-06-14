@@ -33,6 +33,7 @@ ALLOWED_HOSTS = [
     '10.214.80.86',
     'localhost',
     '127.0.0.1',
+    'bridge.deucenet.app',   # CSブリッジ リアルタイム連携API(Cloudflare Tunnel経由)
 ]
 
 # Application definition
