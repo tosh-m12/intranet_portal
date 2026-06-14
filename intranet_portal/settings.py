@@ -179,6 +179,10 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # 復路メールの署名検証用 共有秘密鍵(必須。未設定なら受信は全拒否)
 CS_BRIDGE_HMAC_SECRET = os.environ.get('CS_BRIDGE_HMAC_SECRET', '')
 
+# リアルタイム連携API(メール置換)のBearerトークン。未設定なら API は全拒否(フェイルクローズ)。
+# Mac(cs_bridge)はこのトークンで sync/writeback を呼ぶ。本番は更に Cloudflare Access で多層防御。
+CS_BRIDGE_API_TOKEN = os.environ.get('CS_BRIDGE_API_TOKEN', '')
+
 # 復路メールで受け付ける差出人(カンマ区切り)。空なら差出人限定なし(HMACのみ)
 CS_BRIDGE_ALLOWED_SENDERS = [
     s.strip() for s in os.environ.get('CS_BRIDGE_ALLOWED_SENDERS', '').split(',') if s.strip()
