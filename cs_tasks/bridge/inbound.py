@@ -215,11 +215,14 @@ def _apply_op(op, author, created_map=None):
         # 対象が無くても黙って no-op。op_id 冪等で重複適用は防がれる。
 
 
-def apply_writeback(payload, signature, sender=None, raw_text=None):
+def apply_writeback(payload, signature, sender=None, raw_text=None, enforce_sender=True):
     """検証済みの書き戻しを適用する。結果サマリ(dict)を返す。
 
     raw_text を渡すと、監査用に受信本文原文を BridgeProcessedMessage に保存する
     （社内側はメール削除運用のため、原文を DB に残して追跡できるようにする）。
+
+    enforce_sender=False のときは差出人許可チェックを省く。API(Bearerトークン認証)
+    経由の呼び出しは、メールの差出人許可リストの代わりにトークンで認証するため。
     """
     result = {
         "ok": False,
@@ -237,8 +240,8 @@ def apply_writeback(payload, signature, sender=None, raw_text=None):
         result["reason"] = f"未対応のschema: {payload.get('schema')}"
         return result
 
-    # (1) 差出人限定
-    if not _sender_allowed(sender):
+    # (1) 差出人限定(API経由は enforce_sender=False でスキップ)
+    if enforce_sender and not _sender_allowed(sender):
         result["reason"] = "許可されていない差出人です。"
         logger.warning("[CSBRIDGE] rejected sender=%r", sender)
         return result

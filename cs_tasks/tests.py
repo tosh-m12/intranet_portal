@@ -817,3 +817,102 @@ class AutoDeployGuardTests(TestCase):
             sch._auto_deploy_check()
             calls = [c.args[0] for c in mock_git.call_args_list]
             self.assertNotIn(["fetch", "--quiet"], calls)
+
+
+API_TOKEN = "unit-test-api-token"
+
+
+@override_settings(
+    CS_BRIDGE_HMAC_SECRET=SECRET,
+    CS_BRIDGE_API_TOKEN=API_TOKEN,
+    CS_BRIDGE_AUTHOR_EMAIL="boss@ngls.sh.cn",
+)
+class BridgeApiTests(TestCase):
+    """リアルタイム連携API(sync/writeback)。契約はメール経路と同一、transportのみHTTP。"""
+
+    def setUp(self):
+        import json
+        self.json = json
+        self.boss = User.objects.create_user(
+            email="boss@ngls.sh.cn", password="x", is_staff=True
+        )
+        self.member = User.objects.create_user(
+            email="member@ngls.sh.cn", password="x", last_name="李", first_name="四"
+        )
+        self.task = Task.objects.create(title="任务A", client_name="客户X")
+        self.progress = ProgressUpdate.objects.create(
+            task=self.task, author=self.member, content="进展内容"
+        )
+        self.sync_url = reverse("cs_tasks:bridge_api_sync")
+        self.wb_url = reverse("cs_tasks:bridge_api_writeback")
+
+    def _auth(self, token=API_TOKEN):
+        return {"HTTP_AUTHORIZATION": f"Bearer {token}"}
+
+    def _post_wb(self, ops, nonce="nonce-1", token=API_TOKEN, signer=signed):
+        p = make_payload(ops, nonce=nonce)
+        body = {"payload": p, "signature": signer(p)}
+        return self.client.post(
+            self.wb_url, data=self.json.dumps(body),
+            content_type="application/json", **self._auth(token),
+        )
+
+    # --- sync(往路) ---
+    def test_sync_requires_token(self):
+        self.assertEqual(self.client.get(self.sync_url).status_code, 401)
+        self.assertEqual(
+            self.client.get(self.sync_url, **self._auth("wrong")).status_code, 401
+        )
+
+    def test_sync_returns_snapshot(self):
+        r = self.client.get(self.sync_url, **self._auth())
+        self.assertEqual(r.status_code, 200)
+        data = r.json()
+        self.assertEqual(data["type"], "snapshot")
+        self.assertEqual(data["schema"], payload.SCHEMA_VERSION)
+        self.assertIn(self.task.id, data["meta"]["active_task_ids"])
+        self.assertEqual(data["tasks"][0]["title"], "任务A")
+
+    # --- writeback(復路) ---
+    def test_writeback_requires_token(self):
+        p = make_payload([{"op_id": "z", "action": "add_comment"}])
+        r = self.client.post(
+            self.wb_url,
+            data=self.json.dumps({"payload": p, "signature": signed(p)}),
+            content_type="application/json",
+        )
+        self.assertEqual(r.status_code, 401)
+
+    def test_writeback_applies_op(self):
+        r = self._post_wb([{
+            "op_id": "op-1", "action": "add_comment",
+            "progress_id": self.progress.id,
+            "content_zh": "请尽快处理", "content_ja": "至急対応してください",
+        }])
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.json()["applied"], ["op-1"])
+        c = SupervisorComment.objects.get()
+        self.assertEqual(c.content_ja, "至急対応してください")
+        self.assertEqual(c.author, self.boss)  # CS_BRIDGE_AUTHOR_EMAIL
+
+    def test_writeback_bad_signature_rejected(self):
+        p = make_payload([{"op_id": "op-x", "action": "add_comment",
+                           "progress_id": self.progress.id, "content_zh": "x"}])
+        r = self.client.post(
+            self.wb_url,
+            data=self.json.dumps({"payload": p, "signature": "deadbeef"}),
+            content_type="application/json", **self._auth(),
+        )
+        self.assertEqual(r.status_code, 400)
+        self.assertIn("署名", r.json()["reason"])
+        self.assertFalse(SupervisorComment.objects.exists())
+
+    def test_writeback_idempotent_by_nonce(self):
+        ops = [{"op_id": "op-i", "action": "add_comment",
+                "progress_id": self.progress.id,
+                "content_zh": "请处理", "content_ja": "対応して"}]
+        r1 = self._post_wb(ops, nonce="dup")
+        r2 = self._post_wb(ops, nonce="dup")
+        self.assertEqual(r1.status_code, 200)
+        self.assertEqual(r2.status_code, 200)
+        self.assertEqual(SupervisorComment.objects.count(), 1)  # 二重適用しない
