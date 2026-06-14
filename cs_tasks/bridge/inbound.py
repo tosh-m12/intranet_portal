@@ -26,13 +26,16 @@ User = get_user_model()
 
 VALID_ACTIONS = {
     "add_comment", "edit_progress", "edit_task", "add_task", "edit_comment",
-    "add_progress", "delete",
+    "add_progress", "delete", "set_closed",
 }
 
 # delete action の target → 削除方式
 # Task は既存運用に合わせて論理削除(is_cancelled=True)。
 # ProgressUpdate / SupervisorComment は物理削除。
 _DELETE_TARGETS = {"task", "progress", "comment"}
+
+# set_closed action の target（クローズ⇔再開トグルの対象）
+_CLOSE_TARGETS = {"task", "progress"}
 
 # edit_task / add_task の fields キー → Task の属性名
 _TASK_FIELD_MAP = {
@@ -213,6 +216,40 @@ def _apply_op(op, author, created_map=None):
             if parent_task:
                 parent_task.save(update_fields=["updated_at"])
         # 対象が無くても黙って no-op。op_id 冪等で重複適用は防がれる。
+
+    elif action == "set_closed":
+        # クローズ⇔再開（Mac から）。社内 UI の toggle_complete / toggle_progress_close と同等。
+        target = op.get("target")
+        target_id = op.get("id")
+        closed = bool(op.get("closed"))
+        if target not in _CLOSE_TARGETS:
+            raise ValueError(f"set_closed の target が不正: {target!r}")
+        if not isinstance(target_id, int):
+            raise ValueError("set_closed には id(int) が必要です。")
+        now = timezone.now()
+        if target == "task":
+            task = m.Task.objects.filter(pk=target_id).first()
+            if not task:
+                return None
+            task.is_closed = closed
+            task.completed_at = now if closed else None
+            task.completed_by = author if closed else None
+            # 課題と配下の進捗を連動（社内 toggle_complete と同じ）
+            task.progress_updates.update(
+                is_closed=closed,
+                closed_at=now if closed else None,
+                closed_by=author if closed else None,
+            )
+            task.save(update_fields=["is_closed", "completed_at", "completed_by", "updated_at"])
+        else:  # progress
+            progress = m.ProgressUpdate.objects.filter(pk=target_id).first()
+            if not progress:
+                return None
+            progress.is_closed = closed
+            progress.closed_at = now if closed else None
+            progress.closed_by = author if closed else None
+            progress.save(update_fields=["is_closed", "closed_at", "closed_by"])
+            progress.task.save(update_fields=["updated_at"])
 
 
 def apply_writeback(payload, signature, sender=None, raw_text=None, enforce_sender=True):
