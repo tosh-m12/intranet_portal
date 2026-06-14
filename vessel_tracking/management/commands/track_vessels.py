@@ -29,6 +29,10 @@ from vessel_tracking.models import Shipment
 BASE = 'https://api.datalastic.com/api/v0/'
 # 着地港の中心座標(到着=ATA 自動記入の判定用)。
 DEST_CENTER = {'JPTYO': (35.61168, 139.8268), 'JPOSA': (34.61406, 135.4404)}
+# 申告仕向(AIS)が出荷の仕向地と「同一港湾圏」とみなせる UN/LOCODE 群。
+# 東京湾(東京/横浜)・大阪湾(大阪/神戸)は実務上同一圏で、AIS は隣接港(例:東京便でも横浜)を
+# 申告し得る。ATD(上海出港→日本行き)判定は厳密一致でなくこの圏内一致で行う。
+DEST_GROUP = {'TOKYO': {'JPTYO', 'JPYOK'}, 'OSAKA': {'JPOSA', 'JPUKB'}}
 
 
 def _haversine(la1, lo1, la2, lo2):
@@ -172,9 +176,11 @@ class Command(BaseCommand):
                 # (1) 上海出港 → 着地 のレグなら ATD・上海入港 を自動記入(予定日に依存しない)
                 #     ただし実出港が予定ETDより大幅に前(>3日)なら別航海とみなし弾く
                 #     (本船は1〜2週で周回するため、前航海の出港を誤記入しない)。
+                #     申告仕向は同一港湾圏(東京湾=東京/横浜 等)を許容する。
                 ad_cand = _jst_date(atd_dt) if atd_dt else None
                 wrong_voyage = (ad_cand and s.etd and ad_cand < s.etd - datetime.timedelta(days=3))
-                if (s.atd is None and dep_u == 'CNSHG' and target and dest_u == target
+                dest_grp = DEST_GROUP.get(s.dest, {target} if target else set())
+                if (s.atd is None and dep_u == 'CNSHG' and dest_grp and dest_u in dest_grp
                         and atd_dt and not wrong_voyage):
                     ad = ad_cand
                     s.atd = ad
