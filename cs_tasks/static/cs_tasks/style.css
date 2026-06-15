@@ -419,7 +419,7 @@ textarea.add-input {
 .cs-board.report-board .cg-date { width: 116px; }
 .cs-board.report-board .col-date {
     position: static;
-    text-align: left;
+    text-align: center;   /* 一覧表の日付(中央揃え)に合わせる */
     white-space: nowrap;
     color: #2f6fb0;
     /* font-size は表の基準(16px)を継承 */
