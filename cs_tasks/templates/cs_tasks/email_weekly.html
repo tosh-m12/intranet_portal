@@ -1,0 +1,55 @@
+{% load i18n %}{% comment %}
+週報メール本文。設定本文(body)の下にレポート表(区分別)を配置。
+メールクライアント対策で全てインラインスタイルで指定する。
+{% endcomment %}<div style="font-family:'Hiragino Sans','Yu Gothic',Meiryo,sans-serif; color:#1c1f24; font-size:14px; line-height:1.6;">
+
+{% if body %}<div style="white-space:pre-wrap; margin:0 0 18px;">{{ body }}</div>{% endif %}
+
+<div style="color:#5a6470; margin:0 0 16px; font-size:13px;">対象: {{ today|date:"Y/m/d" }} 時点</div>
+
+{% for sec in sections %}
+<div style="margin:0 0 22px;">
+  <div style="font-size:15px; font-weight:bold; color:{% if sec.key == 'incident' %}#c0392b{% else %}#1a2b3c{% endif %}; margin:0 0 6px; padding-bottom:4px; border-bottom:2px solid #e5e9f0;">{{ sec.label }}</div>
+  {% if sec.groups %}
+  <table style="width:100%; border-collapse:collapse; font-size:13px;">
+    <thead>
+      <tr>
+        <th style="background:#1f3864; color:#fff; border:1px solid #1f3864; padding:6px 8px; text-align:center; white-space:nowrap;">{% trans "担当" %}</th>
+        {% if not sec.hide_client %}<th style="background:#1f3864; color:#fff; border:1px solid #1f3864; padding:6px 8px; text-align:center; white-space:nowrap;">{% trans "顧客" %}</th>{% endif %}
+        <th colspan="2" style="background:#1f3864; color:#fff; border:1px solid #1f3864; padding:6px 8px; text-align:center;">{% trans "課題および進捗" %}</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for group in sec.groups %}
+      {% for client in group.clients %}
+        {% for task in client.tasks %}
+        <tr>
+          {% if forloop.parentloop.first and forloop.first %}
+          <td rowspan="{{ group.total_rows }}" style="border:1px solid #ddd; padding:6px 8px; vertical-align:top; font-weight:bold; width:96px; word-break:break-all;">{{ group.assignee_name }}</td>
+          {% endif %}
+          {% if not sec.hide_client and forloop.first %}
+          <td rowspan="{{ client.client_rows }}" style="border:1px solid #ddd; padding:6px 8px; vertical-align:top; font-weight:bold; width:130px; word-break:break-all;">{{ client.client_name }}</td>
+          {% endif %}
+          <td colspan="2" style="border:1px solid #ddd; padding:6px 8px; vertical-align:top; background:#fafbfc;">
+            <span style="font-weight:bold;">{{ task.display_title }}</span>
+            {% if task.display_description %}<div style="color:#5a6470; font-size:12px; margin-top:3px; white-space:pre-wrap;">{{ task.display_description }}</div>{% endif %}
+          </td>
+        </tr>
+        {% for p in task.progress_list %}
+        <tr>
+          <td style="border:1px solid #ddd; padding:6px 8px; vertical-align:top; white-space:nowrap; text-align:center; color:#2f6fb0; width:96px;">{{ p.effective_date|date:"Y/m/d" }}</td>
+          <td style="border:1px solid #ddd; padding:6px 8px; vertical-align:top; white-space:pre-wrap;">{{ p.display_content }}</td>
+        </tr>
+        {% endfor %}
+        {% endfor %}
+      {% endfor %}
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div style="color:#999;">{% trans "なし" %}</div>
+  {% endif %}
+</div>
+{% endfor %}
+
+</div>
