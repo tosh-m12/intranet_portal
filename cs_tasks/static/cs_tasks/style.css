@@ -10,6 +10,8 @@
     /* 表の背景はページ全体（body の #f5f5f5）に合わせるため透過 */
     background-color: transparent;
     /* フォントは body(共通CSS)で全ポータル統一 — ここでは指定しない */
+    border-radius: 8px;
+    overflow: hidden;   /* ヘッダの角を丸く見せる(請求書台帳の grid と同手法) */
 }
 .cs-board th,
 .cs-board td {
@@ -23,7 +25,9 @@
 
 /* 見出し行（thead）は来客予定/訪問予定の表と同じ薄いグレー（罫線が見える濃さ） */
 .cs-board thead th {
-    background-color: #f1f3f5;
+    background-color: #1f3864;   /* 請求書管理台帳のヘッダと同じ濃紺 */
+    color: #fff;
+    border-color: #1f3864;       /* グレー罫線を濃紺に同化 */
     text-align: center;
     white-space: nowrap;
     font-weight: bold;
