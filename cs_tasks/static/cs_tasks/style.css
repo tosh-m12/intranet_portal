@@ -28,9 +28,13 @@
     background-color: #1f3864;   /* 請求書管理台帳のヘッダと同じ濃紺 */
     color: #fff;
     border-color: #1f3864;       /* グレー罫線を濃紺に同化 */
+    box-shadow: inset 1px 0 0 #fff;   /* 見出し間の白い縦罫線 */
     text-align: center;
     white-space: nowrap;
     font-weight: bold;
+}
+.cs-board thead th:first-child {
+    box-shadow: none;            /* 外側(左端)には白罫線を入れない */
 }
 
 /* 列幅は colgroup で固定（table-layout: fixed と併用）。
