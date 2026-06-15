@@ -43,11 +43,10 @@ body {
     background-color: #f5f5f5;
     min-height: 100vh;
     font-size: 17px;                 /* 視認性優先で拡大(Win で小さく見える対策) */
-    font-weight: 500;                /* Medium。システムフォント(Hiragino/PingFang)で日中とも
-                                        同じ太さ。antialiased で細く見えるのを相殺し、細すぎ解消 */
+    font-weight: 500;                /* Medium。システムフォント(Hiragino/PingFang)で日中とも同じ太さ */
     line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    /* font-smoothing は指定しない: antialiased は Mac で字を細く見せるため、
+       Mac アプリ(cs_bridge=未指定)と同じくブラウザ既定にして細見えを解消する。 */
     font-feature-settings: "palt";   /* 約物の詰めで読みやすく */
     color: #1c1f24;
 }
