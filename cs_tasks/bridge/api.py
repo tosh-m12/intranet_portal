@@ -90,42 +90,89 @@ def bridge_weekly(request):
 
 @require_GET
 def bridge_report_settings(request):
-    """レポートメールの件名・本文設定(日本語/中文)を JSON で返す。
-    Mac はこれを取得し、日本語の件名・本文を中文へ翻訳して writeback する。"""
+    """レポートメール設定一式(件名・本文 日中／翻訳状態／送信タイミング／宛先)を JSON で返す。
+    Mac はこれを取得して、未翻訳なら相手言語へ翻訳して書き戻し、宛先/タイミングも編集できる。"""
     if not _token_ok(request):
         return JsonResponse({"ok": False, "reason": "unauthorized"}, status=401)
-    from ..models import WeeklyReportConfig
+    from ..models import WeeklyReportConfig, WeeklyReportMailingList
     config, _ = WeeklyReportConfig.objects.get_or_create(pk=1)
+    recipients = [
+        {"name": e.name, "email": e.email, "is_active": e.is_active}
+        for e in WeeklyReportMailingList.objects.all()
+    ]
     return JsonResponse({
         "ok": True,
         "subject": config.subject or "",
         "body": config.body or "",
         "subject_zh": config.subject_zh or "",
         "body_zh": config.body_zh or "",
+        "source_lang": config.source_lang or "ja",
+        "translated": bool(config.translated),
+        "mode": config.mode,
+        "send_weekday": config.send_weekday,
+        "send_time": config.send_time.strftime("%H:%M") if config.send_time else "",
+        "recipients": recipients,
     }, json_dumps_params={"ensure_ascii": False})
 
 
 @csrf_exempt
 @require_POST
 def bridge_report_settings_writeback(request):
-    """Mac から件名・本文の中文訳を受けて保存する。{subject_zh, body_zh}。
-    日本語の原文(subject/body)は本番が正本のため上書きしない。"""
+    """Mac からの部分更新を受けて保存する。指定されたキーのみ更新:
+      翻訳結果: subject / body / subject_zh / body_zh / translated
+      送信設定: mode / send_weekday / send_time(HH:MM)
+      宛先   : recipients = [{name,email,is_active}, ...]（全置換）"""
     if not _token_ok(request):
         return JsonResponse({"ok": False, "reason": "unauthorized"}, status=401)
     try:
         data = json.loads(request.body.decode("utf-8", errors="replace"))
     except json.JSONDecodeError as e:
         return JsonResponse({"ok": False, "reason": f"JSON不正: {e}"}, status=400)
-    from ..models import WeeklyReportConfig
+    from datetime import datetime as _dt
+    from ..models import WeeklyReportConfig, WeeklyReportMailingList
     config, _ = WeeklyReportConfig.objects.get_or_create(pk=1)
+    fields = []
+    if "subject" in data:
+        config.subject = (data.get("subject") or "")[:255]; fields.append("subject")
+    if "body" in data:
+        config.body = data.get("body") or ""; fields.append("body")
     if "subject_zh" in data:
-        config.subject_zh = (data.get("subject_zh") or "")[:255]
+        config.subject_zh = (data.get("subject_zh") or "")[:255]; fields.append("subject_zh")
     if "body_zh" in data:
-        config.body_zh = data.get("body_zh") or ""
-    config.save(update_fields=["subject_zh", "body_zh"])
-    logger.info("[BRIDGE_API] report settings 中文訳を保存(subject_zh=%s文字, body_zh=%s文字)",
-                len(config.subject_zh), len(config.body_zh))
-    return JsonResponse({"ok": True}, json_dumps_params={"ensure_ascii": False})
+        config.body_zh = data.get("body_zh") or ""; fields.append("body_zh")
+    if "translated" in data:
+        config.translated = bool(data.get("translated")); fields.append("translated")
+    if "source_lang" in data and data.get("source_lang") in ("ja", "zh"):
+        config.source_lang = data["source_lang"]; fields.append("source_lang")
+    if "mode" in data and data.get("mode") in dict(WeeklyReportConfig.MODE_CHOICES):
+        config.mode = data["mode"]; fields.append("mode")
+    if "send_weekday" in data:
+        try:
+            wd = int(data["send_weekday"])
+            if wd in dict(WeeklyReportConfig.WEEKDAY_CHOICES):
+                config.send_weekday = wd; fields.append("send_weekday")
+        except (TypeError, ValueError):
+            pass
+    if "send_time" in data and data.get("send_time"):
+        try:
+            config.send_time = _dt.strptime(data["send_time"], "%H:%M").time()
+            fields.append("send_time")
+        except ValueError:
+            pass
+    if fields:
+        config.save(update_fields=fields)
+    if isinstance(data.get("recipients"), list):
+        WeeklyReportMailingList.objects.all().delete()
+        for r in data["recipients"]:
+            email = (r.get("email") or "").strip().lower()
+            if email:
+                WeeklyReportMailingList.objects.get_or_create(
+                    email=email,
+                    defaults={"name": r.get("name") or "", "is_active": bool(r.get("is_active", True))},
+                )
+        fields.append("recipients")
+    logger.info("[BRIDGE_API] report settings 更新: %s", fields)
+    return JsonResponse({"ok": True, "updated": fields}, json_dumps_params={"ensure_ascii": False})
 
 
 @csrf_exempt
