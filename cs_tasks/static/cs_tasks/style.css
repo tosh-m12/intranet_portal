@@ -10,8 +10,9 @@
     /* 表の背景はページ全体（body の #f5f5f5）に合わせるため透過 */
     background-color: transparent;
     /* フォントは body(共通CSS)で全ポータル統一 — ここでは指定しない */
-    border-radius: 8px;
-    overflow: hidden;   /* ヘッダの角を丸く見せる(請求書台帳の grid と同手法) */
+    border-radius: 8px 8px 0 0;   /* ヘッダ(上)だけ丸める。下も丸めると collapse の罫線が
+                                     クリップされ角が途切れて見えるため、下は四角に保つ */
+    overflow: hidden;
 }
 .cs-board th,
 .cs-board td {
