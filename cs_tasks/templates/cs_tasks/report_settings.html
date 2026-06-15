@@ -45,14 +45,26 @@
     </div>
 
     <div class="rs-field">
-        <label>{% trans "件名" %}</label>
-        <input type="text" name="subject" value="{{ config.subject }}" maxlength="255" style="width:100%; max-width:560px;">
+        <label>{% trans "件名" %}
+            <span class="muted" style="font-weight:normal; font-size:12px;">
+                {% if is_zh %}（中文版・編集中）{% else %}（日本語版・編集中）{% endif %}
+            </span>
+        </label>
+        <input type="text" name="subject" value="{{ cur_subject }}" maxlength="255" style="width:100%; max-width:560px;">
     </div>
 
     <div class="rs-field">
-        <label>{% trans "本文" %}</label>
-        <textarea name="body" rows="5" style="width:100%; max-width:720px;">{{ config.body }}</textarea>
-        <div class="muted" style="font-size:12px;">{% trans "この本文の下に、レポートの課題表が自動で挿入されて送信されます。" %}</div>
+        <label>{% trans "本文" %}
+            <span class="muted" style="font-weight:normal; font-size:12px;">
+                {% if is_zh %}（中文版・編集中）{% else %}（日本語版・編集中）{% endif %}
+            </span>
+        </label>
+        <textarea name="body" rows="5" style="width:100%; max-width:720px;">{{ cur_body }}</textarea>
+        <div class="muted" style="font-size:12px;">
+            {% trans "この本文の下に、レポートの課題表が自動で挿入されて送信されます。" %}
+            {% if is_zh %}<br>{% trans "※中文版は Mac 側で件名・本文を翻訳して書き戻します（ここでも手動編集可）。" %}
+            {% else %}<br>{% trans "※日本語版を編集してください。中文版は上部の言語トグル「中」で表示・編集できます（Mac 側翻訳で自動反映）。" %}{% endif %}
+        </div>
     </div>
 
     <div class="rs-actions">

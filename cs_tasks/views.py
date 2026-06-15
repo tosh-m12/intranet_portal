@@ -273,18 +273,26 @@ def report(request):
 @user_passes_test(is_admin)
 @login_required
 def report_settings(request):
-    from django.template.loader import render_to_string
-    from .email_utils import get_recipients, send_weekly_report
+    from django.utils import translation
+    from .email_utils import get_recipients, send_weekly_report, compose_weekly_email
 
     config, _created = WeeklyReportConfig.objects.get_or_create(pk=1)
+    # 表示言語(サイドバーの日中トグル=Django i18n)。中文表示なら中文版を編集・プレビュー。
+    lang = translation.get_language() or "ja"
+    is_zh = lang.startswith("zh")
     preview = None
 
     if request.method == "POST":
         action = request.POST.get("action")
 
         if action == "save_config":
-            config.subject = request.POST.get("subject", "").strip()
-            config.body = request.POST.get("body", "")
+            # 件名・本文は表示言語側を保存(中文表示時は中文版、日本語表示時は日本語版)
+            if is_zh:
+                config.subject_zh = request.POST.get("subject", "").strip()
+                config.body_zh = request.POST.get("body", "")
+            else:
+                config.subject = request.POST.get("subject", "").strip()
+                config.body = request.POST.get("body", "")
             try:
                 wd = int(request.POST.get("send_weekday", config.send_weekday))
                 if wd in dict(WeeklyReportConfig.WEEKDAY_CHOICES):
@@ -330,9 +338,12 @@ def report_settings(request):
         elif action == "send":
             res = send_weekly_report(ignore_schedule=True)
             if res.get("sent"):
+                langmap = {"ja": "日本語版", "zh-hans": "中文版"}
+                langs = "・".join(langmap.get(x, x) for x in res.get("sent_langs") or [])
                 messages.success(
                     request,
-                    _("送信しました。宛先: %(r)s") % {"r": ", ".join(res.get("recipients") or [])},
+                    _("送信しました（%(l)s）。宛先: %(r)s")
+                    % {"l": langs, "r": ", ".join(res.get("recipients") or [])},
                 )
             else:
                 messages.error(
@@ -341,23 +352,28 @@ def report_settings(request):
             return redirect("cs_tasks:report_settings")
 
         elif action == "preview":
-            # フォームの未保存入力を反映してプレビュー（宛先は保存済み有効分）
-            subject = (request.POST.get("subject") or config.subject or "").strip() or "CS課題 週次レポート"
-            body = request.POST.get("body", config.body)
-            html = render_to_string("cs_tasks/email_weekly.html", {
-                "body": body,
-                "sections": build_report_sections(request.user),
-                "today": timezone.localdate(),
-            })
+            # フォームの未保存入力を反映して、表示言語のメールをプレビュー
+            subject = request.POST.get("subject")
+            body = request.POST.get("body")
+            subj, html = compose_weekly_email(
+                lang=("zh-hans" if is_zh else "ja"),
+                subject=subject, body=body,
+            )
             preview = {
-                "subject": subject,
+                "subject": subj,
                 "recipients": get_recipients(),
                 "html": html,
             }
             # redirect せず、プレビュー付きで再描画
 
+    # フォームに出す件名・本文は表示言語側
+    cur_subject = config.subject_zh if is_zh else config.subject
+    cur_body = config.body_zh if is_zh else config.body
     return render(request, "cs_tasks/report_settings.html", {
         "config": config,
+        "is_zh": is_zh,
+        "cur_subject": cur_subject,
+        "cur_body": cur_body,
         "entries": WeeklyReportMailingList.objects.all(),
         "weekday_choices": WeeklyReportConfig.WEEKDAY_CHOICES,
         "mode_choices": WeeklyReportConfig.MODE_CHOICES,
