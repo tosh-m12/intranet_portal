@@ -30,28 +30,25 @@
 @font-face{font-family:'Noto Sans JP';font-style:normal;font-weight:500;font-display:swap;
     src:url('fonts/notosansjp-500.woff2') format('woff2');}
 
-/* 既定（日本語）: Noto Sans JP を最優先。未収録グリフは OS フォントへフォールバック。 */
+/* ポータル全体のフォントを Mac アプリ(cs_bridge)と統一する。
+   OS システムフォントを使い、-apple-system が 日本語=Hiragino / 中文=PingFang を
+   均一ウェイトで自動振り分けするため、日中・全ページ・Mac/本番で同じ見た目になる。
+   (自前ホストの Noto Sans JP 500 は日中で太さが食い違い「中文だけ薄い」原因だったため不使用。
+    @font-face 定義は残置=参照しなければ読み込まれない。) */
 body {
-    font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo",
+    font-family: -apple-system, "Hiragino Sans", "Yu Gothic", "Meiryo",
                  "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB",
-                 system-ui, -apple-system, sans-serif;
+                 system-ui, sans-serif;
     margin: 0;
     background-color: #f5f5f5;
     min-height: 100vh;
     font-size: 17px;                 /* 視認性優先で拡大(Win で小さく見える対策) */
-    font-weight: 500;                /* Win の細見え対策で Medium を基準に(Mac もきれいなまま) */
+    font-weight: 400;                /* Mac アプリと同じ標準ウェイト(日中を均一に) */
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-feature-settings: "palt";   /* 約物の詰めで読みやすく */
     color: #1c1f24;
-}
-/* 中国語表示時は簡体字フォントを優先（和文混在による“チグハグ”を防止）。
-   contract_manager の Hiragino 系に近い PingFang SC / Microsoft YaHei / Hiragino Sans GB を当てる。JPもフォールバックに残す */
-html[lang^="zh"] body {
-    font-family: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB",
-                 "Source Han Sans SC", "Hiragino Sans", "Yu Gothic", "Meiryo",
-                 system-ui, sans-serif;
 }
 
 /* ------------ トップバー（横型ナビ） ------------ */

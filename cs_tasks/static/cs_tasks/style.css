@@ -9,13 +9,7 @@
     table-layout: fixed;
     /* 表の背景はページ全体（body の #f5f5f5）に合わせるため透過 */
     background-color: transparent;
-    /* CS課題の本文は Mac アプリ(cs_bridge)と同じ OS システムフォントで描く。
-       -apple-system が日本語=Hiragino / 中文=PingFang を均一ウェイトで自動振り分けし、
-       日中とも Mac と同じ見た目になる(本番の Noto Sans JP 500 による日中の太さ差を解消)。
-       ＊この指定は CS課題の表のみ。他アプリ(来客/温湿度等)は従来フォントのまま。 */
-    font-family: -apple-system, "Hiragino Sans", "Yu Gothic", "Meiryo",
-                 "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
-    font-weight: 400;         /* Mac 表示と同じ標準ウェイト(日中を均一に) */
+    /* フォントは body(共通CSS)で全ポータル統一 — ここでは指定しない */
 }
 .cs-board th,
 .cs-board td {
@@ -165,6 +159,7 @@
     padding: 2px 4px;
     font-size: 16px;
     font-family: inherit;
+    font-weight: inherit;   /* 入力欄も周囲の素テキストと同じウェイトに(一覧表とレポートの不一致防止) */
     line-height: 1.5;
     color: #333;
     box-sizing: border-box;
