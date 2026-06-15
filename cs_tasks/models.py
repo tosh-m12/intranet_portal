@@ -252,19 +252,31 @@ class WeeklyReportConfig(models.Model):
         blank=True,
     )
     subject = models.CharField(
-        verbose_name="メール件名",
+        verbose_name="メール件名(日本語)",
         max_length=255,
         blank=True,
         default="CS課題 週次レポート",
     )
     body = models.TextField(
-        verbose_name="メール本文",
+        verbose_name="メール本文(日本語)",
         blank=True,
         default=(
             "お疲れ様です。\n"
             "今週の CS 課題レポートを送付します。ご確認をお願いいたします。"
         ),
         help_text="この本文の下に、レポートの課題表が自動で挿入されます。",
+    )
+    # 中文版(Mac側で件名・本文を翻訳して書き戻す)。日本語版とは別便で送信。
+    subject_zh = models.CharField(
+        verbose_name="メール件名(中文)",
+        max_length=255,
+        blank=True,
+        default="",
+    )
+    body_zh = models.TextField(
+        verbose_name="メール本文(中文)",
+        blank=True,
+        default="",
     )
 
     class Meta:

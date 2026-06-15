@@ -88,6 +88,46 @@ def bridge_weekly(request):
     return JsonResponse(data, json_dumps_params={"ensure_ascii": False})
 
 
+@require_GET
+def bridge_report_settings(request):
+    """レポートメールの件名・本文設定(日本語/中文)を JSON で返す。
+    Mac はこれを取得し、日本語の件名・本文を中文へ翻訳して writeback する。"""
+    if not _token_ok(request):
+        return JsonResponse({"ok": False, "reason": "unauthorized"}, status=401)
+    from ..models import WeeklyReportConfig
+    config, _ = WeeklyReportConfig.objects.get_or_create(pk=1)
+    return JsonResponse({
+        "ok": True,
+        "subject": config.subject or "",
+        "body": config.body or "",
+        "subject_zh": config.subject_zh or "",
+        "body_zh": config.body_zh or "",
+    }, json_dumps_params={"ensure_ascii": False})
+
+
+@csrf_exempt
+@require_POST
+def bridge_report_settings_writeback(request):
+    """Mac から件名・本文の中文訳を受けて保存する。{subject_zh, body_zh}。
+    日本語の原文(subject/body)は本番が正本のため上書きしない。"""
+    if not _token_ok(request):
+        return JsonResponse({"ok": False, "reason": "unauthorized"}, status=401)
+    try:
+        data = json.loads(request.body.decode("utf-8", errors="replace"))
+    except json.JSONDecodeError as e:
+        return JsonResponse({"ok": False, "reason": f"JSON不正: {e}"}, status=400)
+    from ..models import WeeklyReportConfig
+    config, _ = WeeklyReportConfig.objects.get_or_create(pk=1)
+    if "subject_zh" in data:
+        config.subject_zh = (data.get("subject_zh") or "")[:255]
+    if "body_zh" in data:
+        config.body_zh = data.get("body_zh") or ""
+    config.save(update_fields=["subject_zh", "body_zh"])
+    logger.info("[BRIDGE_API] report settings 中文訳を保存(subject_zh=%s文字, body_zh=%s文字)",
+                len(config.subject_zh), len(config.body_zh))
+    return JsonResponse({"ok": True}, json_dumps_params={"ensure_ascii": False})
+
+
 @csrf_exempt
 @require_POST
 def bridge_writeback(request):
