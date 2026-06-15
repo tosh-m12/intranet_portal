@@ -278,6 +278,18 @@ class WeeklyReportConfig(models.Model):
         blank=True,
         default="",
     )
+    # 自動翻訳連携: 件名・本文をどちらの言語で編集したか(翻訳元)と、相手言語へ反映済みか。
+    # 本番で編集すると translated=False になり、Mac のバックグラウンド翻訳が拾って相手言語へ
+    # 翻訳→書き戻し(translated=True)する。
+    source_lang = models.CharField(
+        verbose_name="翻訳元言語",
+        max_length=8,
+        default="ja",
+    )
+    translated = models.BooleanField(
+        verbose_name="相手言語へ翻訳済み",
+        default=True,
+    )
 
     class Meta:
         verbose_name = "週報送信設定"

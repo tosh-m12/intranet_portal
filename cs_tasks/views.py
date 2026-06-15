@@ -286,13 +286,17 @@ def report_settings(request):
         action = request.POST.get("action")
 
         if action == "save_config":
-            # 件名・本文は表示言語側を保存(中文表示時は中文版、日本語表示時は日本語版)
+            # 件名・本文は表示言語側を保存(中文表示時は中文版、日本語表示時は日本語版)。
+            # 編集言語を翻訳元として記録し translated=False に → Mac が相手言語へ自動翻訳して返す。
             if is_zh:
                 config.subject_zh = request.POST.get("subject", "").strip()
                 config.body_zh = request.POST.get("body", "")
+                config.source_lang = "zh"
             else:
                 config.subject = request.POST.get("subject", "").strip()
                 config.body = request.POST.get("body", "")
+                config.source_lang = "ja"
+            config.translated = False
             try:
                 wd = int(request.POST.get("send_weekday", config.send_weekday))
                 if wd in dict(WeeklyReportConfig.WEEKDAY_CHOICES):
