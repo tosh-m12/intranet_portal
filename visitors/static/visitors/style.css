@@ -30,13 +30,10 @@
 @font-face{font-family:'Noto Sans JP';font-style:normal;font-weight:500;font-display:swap;
     src:url('fonts/notosansjp-500.woff2') format('woff2');}
 
-/* 既定（日本語）: Noto Sans JP を最優先。未収録グリフ(簡体字等)は SC フォントへ。
-   ＊簡体字フォント(PingFang SC / Microsoft YaHei / Hiragino Sans GB)を JP系より前に
-     置く。日本語は Noto Sans JP が最優先なので不変。Noto に無い簡体字は JP系で細く
-     落ちる代わりに、適切な太さの SC フォントで描かれる(日中混在の薄字/チグハグ防止)。 */
+/* 既定（日本語）: Noto Sans JP を最優先。未収録グリフは OS フォントへフォールバック。 */
 body {
-    font-family: "Noto Sans JP", "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB",
-                 "Hiragino Sans", "Yu Gothic", "Meiryo",
+    font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo",
+                 "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB",
                  system-ui, -apple-system, sans-serif;
     margin: 0;
     background-color: #f5f5f5;
