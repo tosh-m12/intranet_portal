@@ -23,9 +23,9 @@
     </a>
 
     {% if request.user.is_superuser or request.user.is_staff %}
-        <a href="{% url 'cs_tasks:mailing_list' %}"
-           class="{% if active_tab == 'mailing_list' %}active{% endif %}">
-            <svg class="ic"><use href="#ic-mail"/></svg>{% trans "メーリングリスト" %}
+        <a href="{% url 'cs_tasks:report_settings' %}"
+           class="{% if active_tab == 'report_settings' %}active{% endif %}">
+            <svg class="ic"><use href="#ic-mail"/></svg>{% trans "詳細設定" %}
         </a>
     {% endif %}
 </div>

@@ -251,6 +251,21 @@ class WeeklyReportConfig(models.Model):
         null=True,
         blank=True,
     )
+    subject = models.CharField(
+        verbose_name="メール件名",
+        max_length=255,
+        blank=True,
+        default="CS課題 週次レポート",
+    )
+    body = models.TextField(
+        verbose_name="メール本文",
+        blank=True,
+        default=(
+            "お疲れ様です。\n"
+            "今週の CS 課題レポートを送付します。ご確認をお願いいたします。"
+        ),
+        help_text="この本文の下に、レポートの課題表が自動で挿入されます。",
+    )
 
     class Meta:
         verbose_name = "週報送信設定"

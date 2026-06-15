@@ -9,7 +9,7 @@ from django.http import JsonResponse, HttpResponseForbidden
 from django.views.decorators.http import require_POST
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.dateparse import parse_date
+from django.utils.dateparse import parse_date, parse_time
 from django.utils.translation import gettext as _
 
 from .models import (
@@ -17,6 +17,7 @@ from .models import (
     ProgressUpdate,
     SupervisorComment,
     WeeklyReportMailingList,
+    WeeklyReportConfig,
 )
 from .forms import TaskForm
 from .permissions import (
@@ -123,7 +124,8 @@ def _build_board(user, assignee_id=None, category=None, for_report=False):
         except (User.DoesNotExist, ValueError):
             filtered_user = None
 
-    admin = is_admin(user)
+    # for_report はコメント列・編集を出さないので admin 判定不要(=メール送信の user=None でも可)
+    admin = False if for_report else is_admin(user)
 
     # 担当者ID -> {顧客名 -> 課題リスト}
     groups_map = {}
@@ -242,20 +244,125 @@ _REPORT_CATEGORY_ORDER = [
 ]
 
 
-@login_required
-def report(request):
+def build_report_sections(user=None):
+    """レポート(区分別の読み取り専用ボード)のセクション一覧を組み立てる。
+    レポート画面・週報メールの両方で共用。user は None 可(メール送信時)。"""
     sections = []
     for cat in _REPORT_CATEGORY_ORDER:
-        groups, _ = _build_board(request.user, category=cat, for_report=True)
+        groups, _ = _build_board(user, category=cat, for_report=True)
         sections.append({
             "key": cat,
             "label": _CATEGORY_TITLE[cat],
             "hide_client": cat == Task.CATEGORY_INTERNAL,
             "groups": groups,
         })
+    return sections
+
+
+@login_required
+def report(request):
     return render(request, "cs_tasks/report.html", {
-        "sections": sections,
+        "sections": build_report_sections(request.user),
         "active_tab": "report",
+    })
+
+
+# =========================================================
+# 詳細設定（週報メール: 送信タイミング・宛先・件名・本文の編集＋プレビュー/手動送信）
+# =========================================================
+@user_passes_test(is_admin)
+@login_required
+def report_settings(request):
+    from django.template.loader import render_to_string
+    from .email_utils import get_recipients, send_weekly_report
+
+    config, _created = WeeklyReportConfig.objects.get_or_create(pk=1)
+    preview = None
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        if action == "save_config":
+            config.subject = request.POST.get("subject", "").strip()
+            config.body = request.POST.get("body", "")
+            try:
+                wd = int(request.POST.get("send_weekday", config.send_weekday))
+                if wd in dict(WeeklyReportConfig.WEEKDAY_CHOICES):
+                    config.send_weekday = wd
+            except (TypeError, ValueError):
+                pass
+            st = (request.POST.get("send_time") or "").strip()
+            if st:
+                t = parse_time(st)
+                if t:
+                    config.send_time = t
+            mode = request.POST.get("mode")
+            if mode in dict(WeeklyReportConfig.MODE_CHOICES):
+                config.mode = mode
+            config.save()
+            messages.success(request, _("送信設定を保存しました。"))
+            return redirect("cs_tasks:report_settings")
+
+        elif action == "add":
+            email = request.POST.get("email", "").strip().lower()
+            name = request.POST.get("name", "").strip()
+            if email:
+                WeeklyReportMailingList.objects.get_or_create(
+                    email=email, defaults={"name": name, "is_active": True}
+                )
+                messages.success(request, _("宛先を追加しました。"))
+            else:
+                messages.error(request, _("メールアドレスを入力してください。"))
+            return redirect("cs_tasks:report_settings")
+
+        elif action == "delete":
+            WeeklyReportMailingList.objects.filter(pk=request.POST.get("entry_id")).delete()
+            messages.success(request, _("宛先を削除しました。"))
+            return redirect("cs_tasks:report_settings")
+
+        elif action == "toggle":
+            entry = WeeklyReportMailingList.objects.filter(pk=request.POST.get("entry_id")).first()
+            if entry:
+                entry.is_active = not entry.is_active
+                entry.save(update_fields=["is_active"])
+            return redirect("cs_tasks:report_settings")
+
+        elif action == "send":
+            res = send_weekly_report(ignore_schedule=True)
+            if res.get("sent"):
+                messages.success(
+                    request,
+                    _("送信しました。宛先: %(r)s") % {"r": ", ".join(res.get("recipients") or [])},
+                )
+            else:
+                messages.error(
+                    request, _("送信できませんでした: %(r)s") % {"r": res.get("reason", "")}
+                )
+            return redirect("cs_tasks:report_settings")
+
+        elif action == "preview":
+            # フォームの未保存入力を反映してプレビュー（宛先は保存済み有効分）
+            subject = (request.POST.get("subject") or config.subject or "").strip() or "CS課題 週次レポート"
+            body = request.POST.get("body", config.body)
+            html = render_to_string("cs_tasks/email_weekly.html", {
+                "body": body,
+                "sections": build_report_sections(request.user),
+                "today": timezone.localdate(),
+            })
+            preview = {
+                "subject": subject,
+                "recipients": get_recipients(),
+                "html": html,
+            }
+            # redirect せず、プレビュー付きで再描画
+
+    return render(request, "cs_tasks/report_settings.html", {
+        "config": config,
+        "entries": WeeklyReportMailingList.objects.all(),
+        "weekday_choices": WeeklyReportConfig.WEEKDAY_CHOICES,
+        "mode_choices": WeeklyReportConfig.MODE_CHOICES,
+        "preview": preview,
+        "active_tab": "report_settings",
     })
 
 

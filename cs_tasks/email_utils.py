@@ -88,9 +88,28 @@ def build_weekly_report_context(today: date):
     }
 
 
+def compose_weekly_email(today: date = None):
+    """週報メールの (件名, HTML本文, 宛先リスト, config) を組み立てる。
+    詳細設定の本文(body)の下に、レポート画面と同じ課題表(区分別)を配置する。
+    プレビュー・送信で共用。"""
+    from .models import WeeklyReportConfig
+    from .views import build_report_sections   # 遅延 import で循環参照回避
+
+    today = today or localdate()
+    config, _ = WeeklyReportConfig.objects.get_or_create(pk=1)
+    sections = build_report_sections(user=None)
+    html = render_to_string(
+        "cs_tasks/email_weekly.html",
+        {"body": config.body, "sections": sections, "today": today},
+    )
+    subject = (config.subject or "").strip() or "CS課題 週次レポート"
+    return subject, html, get_recipients(), config
+
+
 def send_weekly_report(ignore_schedule: bool = False):
     """
     週次レポートをメーリングリスト宛にHTMLメールで送信する。
+    件名・本文は詳細設定(WeeklyReportConfig)の値を使い、本文の下にレポート表を付ける。
 
     ignore_schedule:
         True  → スケジュール条件を無視して送信（手動送信・管理画面ボタン用）
@@ -104,7 +123,7 @@ def send_weekly_report(ignore_schedule: bool = False):
 
     result = {"sent": False, "reason": "", "recipients": []}
 
-    recipients = get_recipients()
+    subject, html_content, recipients, _config = compose_weekly_email(today)
     result["recipients"] = recipients
     if not recipients:
         msg = "メーリングリストが空のため送信しません。"
@@ -112,10 +131,6 @@ def send_weekly_report(ignore_schedule: bool = False):
         result["reason"] = msg
         return result
 
-    context = build_weekly_report_context(today)
-    html_content = render_to_string("cs_tasks/email_report.html", context)
-
-    subject = f"【CS課題 週次レポート】{today.strftime('%Y/%m/%d')}"
     send_res = send_html_mail(
         subject=subject,
         html_body=html_content,

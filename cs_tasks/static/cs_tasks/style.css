@@ -436,3 +436,44 @@ textarea.add-input {
     /* font-size は表の基準(16px)を継承 */
 }
 .cs-board.report-board .task-title-row .col-task { background: #fafbfc; }
+
+/* ===== レポートメール 詳細設定ページ ===== */
+.report-settings { max-width: 760px; }
+.report-settings .rs-field { margin: 0 0 14px; }
+.report-settings .rs-field > label {
+    display: block;
+    font-weight: 600;
+    color: #1a2b3c;
+    margin: 0 0 4px;
+}
+.report-settings select,
+.report-settings input[type="text"],
+.report-settings input[type="time"],
+.report-settings textarea {
+    padding: 6px 9px;
+    border: 1px solid #c7ccd4;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+.rs-actions { margin: 8px 0 0; display: flex; gap: 10px; }
+/* 送信プレビュー */
+.rs-preview {
+    border: 1px solid #c7ccd4;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin: 0 0 22px;
+    background: #fff;
+}
+.rs-preview-head { font-weight: 700; color: #1a2b3c; margin: 0 0 8px; }
+.rs-preview-meta { font-size: 13px; color: #44506a; margin: 0 0 4px; }
+.rs-preview-body {
+    border: 1px solid #e5e9f0;
+    border-radius: 6px;
+    padding: 14px;
+    margin-top: 6px;
+    background: #fafbfc;
+    max-height: 540px;
+    overflow: auto;
+}
