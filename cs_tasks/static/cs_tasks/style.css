@@ -95,12 +95,12 @@
 /* 課題タイトル直下の詳細（細め・やや薄い） */
 .cs-board .task-desc-input {
     font-weight: normal;
-    font-size: 13px;
+    font-size: 16px;            /* 課題タイトル/進捗本文と同サイズに揃える(小さすぎ対策) */
     color: #555;
     margin-top: 2px;
 }
 .cs-board .task-desc-text {
-    font-size: 13px;
+    font-size: 16px;            /* 同上。一覧表・レポート共通 */
     color: #555;
     margin-top: 2px;
     white-space: pre-wrap;
