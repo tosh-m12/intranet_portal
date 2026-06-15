@@ -41,6 +41,7 @@ def scheduler_loop():
     first_loop = True
     last_run_cache = None  # キャッシュ用
     last_run_track = None  # 本船ライブ監視用
+    last_run_shanghai = None  # 積地(上海)着岸/離岸 検出用
 
     while True:
         now = timezone.localtime(timezone.now())
@@ -142,6 +143,30 @@ def scheduler_loop():
                     last_run_track = now
         except Exception as e:
             print(f"[VESSEL_TRACK] error: {e}")
+
+        # ===== 積地(上海)着岸/離岸の即時検出 =====
+        # vessel_pro の集計(atd_UTC)は数時間遅れるため、上海近傍・atd未記入の便だけ
+        # 生航跡(vessel_history)を引いて着岸(上海入港)・離岸(ATD)を即時記入する。
+        # SHANGHAI_TRACK_INTERVAL_SEC で間隔変更、0 明示で無効化。既定はライブ監視と同間隔。
+        try:
+            raw = (os.environ.get("SHANGHAI_TRACK_INTERVAL_SEC", "") or "").strip()
+            if raw == "":
+                sh_interval = 10800 if _has_datalastic_key() else 0   # 既定3時間
+            else:
+                sh_interval = int(raw or "0")
+            if sh_interval > 0 and (
+                last_run_shanghai is None
+                or (now - last_run_shanghai).total_seconds() >= sh_interval
+            ):
+                print(f"[SHANGHAI_TRACK] running track_shanghai at {now}")
+                try:
+                    call_command("track_shanghai")
+                except Exception as e:
+                    print(f"[SHANGHAI_TRACK] error while calling track_shanghai: {e}")
+                finally:
+                    last_run_shanghai = now
+        except Exception as e:
+            print(f"[SHANGHAI_TRACK] error: {e}")
 
         time_module.sleep(60)
 
