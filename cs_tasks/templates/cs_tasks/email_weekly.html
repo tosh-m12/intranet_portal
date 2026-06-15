@@ -25,10 +25,10 @@
         {% for task in client.tasks %}
         <tr>
           {% if forloop.parentloop.first and forloop.first %}
-          <td rowspan="{{ group.total_rows }}" style="border:1px solid #ddd; padding:6px 8px; vertical-align:top; font-weight:bold; width:96px; word-break:break-all;">{{ group.assignee_name }}</td>
+          <td rowspan="{{ group.total_rows }}" style="border:1px solid #ddd; padding:6px 8px; vertical-align:top; font-weight:bold; width:104px; word-break:break-all;">{{ group.assignee_name }}</td>
           {% endif %}
           {% if not sec.hide_client and forloop.first %}
-          <td rowspan="{{ client.client_rows }}" style="border:1px solid #ddd; padding:6px 8px; vertical-align:top; font-weight:bold; width:130px; word-break:break-all;">{{ client.client_name }}</td>
+          <td rowspan="{{ client.client_rows }}" style="border:1px solid #ddd; padding:6px 8px; vertical-align:top; font-weight:bold; width:150px; word-break:break-all;">{{ client.client_name }}</td>
           {% endif %}
           <td colspan="2" style="border:1px solid #ddd; padding:6px 8px; vertical-align:top; background:#fafbfc;">
             <span style="font-weight:bold;">{{ task.display_title }}</span>
