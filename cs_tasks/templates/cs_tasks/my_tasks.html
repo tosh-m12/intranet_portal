@@ -1,0 +1,35 @@
+{% extends "portal/base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "自分の課題" %}{% endblock %}
+
+{% block app_name %}
+<h1><svg class="ic"><use href="#ic-clipboard"/></svg> {% trans "CS課題管理" %}</h1>
+{% endblock %}
+
+{% block subnav %}
+    {% include "cs_tasks/_subnav.html" with active_tab=active_tab %}
+{% endblock %}
+
+{% block content %}
+{% if messages %}
+<ul class="cs-messages">
+    {% for m in messages %}<li class="{{ m.tags }}">{{ m }}</li>{% endfor %}
+</ul>
+{% endif %}
+
+{% comment %}
+ログイン中ユーザー担当の課題を区分別に縦並びで表示。編集は通常ボードと同じ（インライン）。
+新規追加は区分タブ側で行う想定のため、このビューでは「＋課題追加」を出さない。
+{% endcomment %}
+{% for sec in sections %}
+<section class="report-cat">
+    <h2 class="report-cat-title {% if sec.key == 'incident' %}incident{% endif %}">{{ sec.label }}</h2>
+    {% include "cs_tasks/_board_table.html" with groups=sec.groups hide_client=sec.hide_client show_add=False %}
+</section>
+{% endfor %}
+{% endblock %}
+
+{% block extra_head %}
+<script defer src="{% static 'cs_tasks/board.js' %}"></script>
+{% endblock %}
