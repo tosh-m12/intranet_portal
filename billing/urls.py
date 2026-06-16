@@ -18,5 +18,4 @@ urlpatterns = [
     # 候補サジェスト/検証用 JSON API
     path('api/parties/', views.api_parties, name='api_parties'),
     path('api/check-company/', views.api_check_company, name='api_check_company'),
-    path('api/next-serial/', views.api_next_serial, name='api_next_serial'),
 ]

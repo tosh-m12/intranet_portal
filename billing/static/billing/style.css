@@ -37,7 +37,17 @@
 .billing-app .grid tfoot th{background:#f7f9fc;color:#44506a;font-size:15px;padding:8px 10px;text-align:left;border-top:1px solid var(--line)}
 .billing-app .grid tfoot td{background:#f7f9fc;border-top:1px solid var(--line)}
 .billing-app .grid tfoot td.strong{font-weight:700;color:var(--navy)}
+/* 保存完了モーダル(連番確定の確認) */
+.billing-modal-overlay{position:fixed;inset:0;background:rgba(20,30,50,.45);
+  display:flex;align-items:center;justify-content:center;z-index:1000}
+.billing-modal{background:#fff;border-radius:10px;padding:24px 28px;min-width:300px;
+  box-shadow:0 12px 40px rgba(20,30,50,.3);text-align:center}
+.billing-modal-msg{font-size:16px;color:var(--navy);margin:0 0 18px;font-variant-numeric:tabular-nums}
+.billing-modal .btn{min-width:96px}
+
 .billing-app .tablewrap{border-radius:8px}
+/* 一覧へ戻った時(#r<pk>)、対象行を上端ピッタリでなく約2行下に出す */
+.billing-app .grid tbody tr[id]{scroll-margin-top:72px}
 .billing-app tr.rowlink{cursor:pointer}
 .billing-app tr.rowlink:hover td{background:#eef4fc}
 .billing-app .badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;font-weight:600}
