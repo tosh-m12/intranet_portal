@@ -43,7 +43,7 @@
   </thead>
   <tbody>
     {% for r in rows %}
-    <tr class="rowlink{% if not r.is_approved and not r.is_cancelled %} unapproved{% endif %}" data-href="{% url 'billing:detail' r.pk %}">
+    <tr id="r{{ r.pk }}" class="rowlink{% if not r.is_approved and not r.is_cancelled %} unapproved{% endif %}" data-href="{% url 'billing:detail' r.pk %}">
       <td class="c">{{ r.serial|default:'' }}</td>
       <td>{{ r.customer_gc }}</td>
       <td>{{ r.bill_to }}</td>

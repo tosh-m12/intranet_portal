@@ -4,7 +4,10 @@
 document.addEventListener('click', function (e) {
   var row = e.target.closest('tr.rowlink');
   if (row && row.dataset.href && !e.target.closest('a, button, input, select')) {
-    window.location.href = row.dataset.href;
+    // 詳細へ。承認/戻る後に一覧の直前位置(絞り込み+この行)へ戻れるよう back を渡す。
+    var back = encodeURIComponent(window.location.pathname + window.location.search);
+    var sep = row.dataset.href.indexOf('?') < 0 ? '?' : '&';
+    window.location.href = row.dataset.href + sep + 'back=' + back;
   }
 });
 
