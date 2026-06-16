@@ -469,6 +469,11 @@ textarea.add-input {
     border-bottom: 2px solid #e5e9f0;
 }
 .rs-actions { margin: 8px 0 0; display: flex; gap: 10px; }
+/* 送信先リスト(Mac の rs-list と同じ見た目) */
+.rs-list { width: 100%; max-width: 560px; border-collapse: collapse; margin-top: 8px; }
+.rs-list th, .rs-list td { border: 1px solid #c7ccd4; padding: 5px 8px; text-align: left; font-size: 14px; }
+.rs-list th { background: #f1f3f5; }
+.rs-list tr.off td { color: #999; }
 /* 送信プレビュー */
 .rs-preview {
     border: 1px solid #c7ccd4;
