@@ -22,7 +22,7 @@ _last_inbound_at = None
 
 # 自動デプロイ(Gitee 監視): upstream に新コミットがあれば pull → migrate →
 # self-exit。run_portal.bat の loop が新コードで waitress を再起動する。
-_DEPLOY_INTERVAL_SEC = 300       # 5分毎にチェック
+_DEPLOY_INTERVAL_SEC = int(os.environ.get("CS_DEPLOY_INTERVAL_SEC", "180"))  # 既定3分毎にチェック
 _DEPLOY_COOLDOWN_SEC = 600       # 直前デプロイから10分は再デプロイしない
 _DEPLOY_DISABLE_FLAG = r"D:\INTRANET_PORTAL\.no_auto_deploy"  # 緊急停止フラグ
 _last_deploy_check_at = None
