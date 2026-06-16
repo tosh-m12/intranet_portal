@@ -115,9 +115,9 @@
     </label>
     <label>{% trans "換算方法" %}
       {# 書面のレート表記に合わせて選ぶ。÷=税込合計÷レート(既定) / ×=税込合計×レート。 #}
-      <select name="exrate_op" id="id_exrate_op">
-        <option value="div"{% if not obj.exrate_multiply %} selected{% endif %}>÷ {% trans "レートで割る" %}</option>
-        <option value="mul"{% if obj.exrate_multiply %} selected{% endif %}>× {% trans "レートを掛ける" %}</option>
+      <select name="exrate_op" id="id_exrate_op" class="op-select">
+        <option value="div"{% if not obj.exrate_multiply %} selected{% endif %}>÷</option>
+        <option value="mul"{% if obj.exrate_multiply %} selected{% endif %}>×</option>
       </select>
     </label>
     <label>{% trans "レート日付" %}
