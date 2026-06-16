@@ -69,6 +69,8 @@
 .billing-app .form-grid input,.billing-app .form-grid select{width:100%;box-sizing:border-box;padding:7px 9px;border:1px solid #c7ccd4;border-radius:6px;font-size:14px;font-family:inherit;background:#fff}
 .billing-app .form-grid input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(46,84,150,.15)}
 .billing-app .form-grid label.wide{grid-column:span 2}
+/* 換算方法(÷/×)は記号のみ。必要幅だけにする */
+.billing-app .form-grid select.op-select{width:auto;align-self:flex-start}
 .billing-app .form-grid input.alnum-up,.billing-app .form-grid input.iso-cur{text-transform:uppercase}
 .billing-app .ac-wrap{position:relative}
 /* 読み取り専用フィールド: 入力欄と同形状・同サイズ＋グレー背景 */
