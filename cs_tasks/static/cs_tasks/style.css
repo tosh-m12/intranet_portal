@@ -457,6 +457,17 @@ textarea.add-input {
     font-family: inherit;
     box-sizing: border-box;
 }
+/* ドロップダウン(自動送信・曜日)は幅を統一 */
+.report-settings select { width: 240px; }
+/* レポート設定 各セクション見出し */
+.rs-h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a2b3c;
+    margin: 22px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #e5e9f0;
+}
 .rs-actions { margin: 8px 0 0; display: flex; gap: 10px; }
 /* 送信プレビュー */
 .rs-preview {

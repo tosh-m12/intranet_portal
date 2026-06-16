@@ -285,18 +285,8 @@ def report_settings(request):
     if request.method == "POST":
         action = request.POST.get("action")
 
-        if action == "save_config":
-            # 件名・本文は表示言語側を保存(中文表示時は中文版、日本語表示時は日本語版)。
-            # 編集言語を翻訳元として記録し translated=False に → Mac が相手言語へ自動翻訳して返す。
-            if is_zh:
-                config.subject_zh = request.POST.get("subject", "").strip()
-                config.body_zh = request.POST.get("body", "")
-                config.source_lang = "zh"
-            else:
-                config.subject = request.POST.get("subject", "").strip()
-                config.body = request.POST.get("body", "")
-                config.source_lang = "ja"
-            config.translated = False
+        if action == "save_timing":
+            # 送信設定: 自動送信モード・送信タイミングのみ
             try:
                 wd = int(request.POST.get("send_weekday", config.send_weekday))
                 if wd in dict(WeeklyReportConfig.WEEKDAY_CHOICES):
@@ -311,8 +301,25 @@ def report_settings(request):
             mode = request.POST.get("mode")
             if mode in dict(WeeklyReportConfig.MODE_CHOICES):
                 config.mode = mode
-            config.save()
+            config.save(update_fields=["send_weekday", "send_time", "mode"])
             messages.success(request, _("送信設定を保存しました。"))
+            return redirect("cs_tasks:report_settings")
+
+        elif action == "save_content":
+            # 送信内容編集: 件名・本文(表示言語側)。編集言語を翻訳元に、translated=False で
+            # Mac が相手言語へ自動翻訳して書き戻す。
+            if is_zh:
+                config.subject_zh = request.POST.get("subject", "").strip()
+                config.body_zh = request.POST.get("body", "")
+                config.source_lang = "zh"
+            else:
+                config.subject = request.POST.get("subject", "").strip()
+                config.body = request.POST.get("body", "")
+                config.source_lang = "ja"
+            config.translated = False
+            config.save(update_fields=["subject", "body", "subject_zh", "body_zh",
+                                       "source_lang", "translated"])
+            messages.success(request, _("送信内容を保存しました（相手言語は自動翻訳されます）。"))
             return redirect("cs_tasks:report_settings")
 
         elif action == "add":
