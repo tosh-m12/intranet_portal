@@ -11,10 +11,11 @@
     {% else %}<span class="badge ok"{% if obj.approved_by %} title="{% trans '承認' %}: {{ obj.approved_by.last_name }}{{ obj.approved_by.first_name }}{% if obj.approved_at %} {{ obj.approved_at|date:'Y-m-d H:i' }}{% endif %}"{% endif %}>{% trans "承認済" %}</span>{% endif %}
   </h2>
   <div class="head-actions">
-    <a class="back" href="{% url 'billing:list' %}">← {% trans "請求一覧へ" %}</a>
+    <a class="back" href="{% if back %}{{ back }}{% else %}{% url 'billing:list' %}{% endif %}#r{{ obj.pk }}">← {% trans "請求一覧へ" %}</a>
     {% if can_approve %}
     <form method="post" action="{% url 'billing:approve' obj.pk %}" style="display:inline">
       {% csrf_token %}
+      <input type="hidden" name="next" value="{{ back }}">
       <button type="submit" class="btn approve">✓ {% trans "承認" %}</button>
     </form>
     {% endif %}

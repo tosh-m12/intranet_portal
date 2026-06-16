@@ -6,7 +6,9 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Max, Q, Sum
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from .models import CURRENCIES, FEE_KEYS, FEES, InvoiceLine, MasterParty
@@ -26,6 +28,13 @@ def display_name(user):
 def is_admin(user):
     """承認できるのは管理者権限(staff または superuser)。"""
     return bool(user.is_staff or user.is_superuser)
+
+
+def _safe_back(request, raw):
+    """一覧へ戻る URL(絞り込みを保持)。外部URLは弾き、無ければ一覧トップ。"""
+    if raw and url_has_allowed_host_and_scheme(raw, allowed_hosts={request.get_host()}):
+        return raw
+    return reverse('billing:list')
 EXTRA_FLOAT = ['exrate']  # 為替レート(換算後金額は save() で自動計算)
 
 
@@ -96,18 +105,23 @@ def detail(request, pk):
         fee_rows.append({'label': label, 'net': net, 'rate': getattr(obj, f'{k}_rate'),
                          'tax': _r2(incl - net) if net else None, 'incl': incl})
     admin = is_admin(request.user)
+    # 一覧から来たときの戻り先(絞り込み付きURL)。承認/戻るで一覧の直前位置へ復帰。
+    raw_back = request.GET.get('back') or ''
+    back = raw_back if (raw_back and url_has_allowed_host_and_scheme(
+        raw_back, allowed_hosts={request.get_host()})) else ''
     return render(request, 'billing/detail.html', {
         'active_tab': 'list', 'obj': obj, 'fee_rows': fee_rows,
         'is_admin': admin,
         # 管理者かつ未承認・未取消のとき承認可能
         'can_approve': admin and not obj.is_approved and not obj.is_cancelled,
+        'back': back,
     })
 
 
 @login_required
 @require_POST
 def approve(request, pk):
-    """請求明細を承認(管理者のみ)。承認後は次の未承認へ、無ければ一覧へ。"""
+    """請求明細を承認(管理者のみ)。承認後は一覧へ戻り、直前の位置(承認した行)へ。"""
     if not is_admin(request.user):
         messages.error(request, '承認は管理者のみ可能です。')
         return redirect('billing:detail', pk=pk)
@@ -118,10 +132,9 @@ def approve(request, pk):
         obj.approved_at = timezone.now()
         obj.save(update_fields=['is_approved', 'approved_by', 'approved_at', 'updated_at'])
         messages.success(request, f'請求明細 {obj.serial} を承認しました。')
-    # 次の未承認(一覧と同じ並び=新しい順)へ。無ければ一覧へ。
-    nxt = (InvoiceLine.objects.filter(is_approved=False, is_cancelled=False)
-           .exclude(pk=obj.pk).first())
-    return redirect('billing:detail', pk=nxt.pk) if nxt else redirect('billing:list')
+    # 一覧へ戻る。直前の絞り込みを保ち、承認した行(#r<pk>)まで戻す(先頭に戻さない)。
+    base = _safe_back(request, request.POST.get('next') or '')
+    return redirect(f'{base}#r{obj.pk}')
 
 
 # ---------------------------------------------------------------- 入力/編集
