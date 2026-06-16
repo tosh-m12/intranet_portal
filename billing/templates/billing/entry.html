@@ -13,14 +13,14 @@
       action="{% if obj %}{% url 'billing:edit' obj.pk %}{% else %}{% url 'billing:entry' %}{% endif %}"
       data-master-add="{% url 'billing:master_add' %}"
       data-api-parties="{% url 'billing:api_parties' %}"
-      data-api-check="{% url 'billing:api_check_company' %}"
-      data-api-serial="{% url 'billing:api_next_serial' %}">
+      data-api-check="{% url 'billing:api_check_company' %}">
   {% csrf_token %}
 
   <h3 class="sec">{% trans "識別・取引先" %}</h3>
   <div class="form-grid">
     <label>{% trans "連番" %}
-      <span class="ro-field" id="ro_serial"{% if not obj.serial %} data-auto="1"{% endif %}>{% if obj.serial %}{{ obj.serial }}{% else %}{% trans "保存時に自動採番" %}{% endif %}</span>
+      {# 新規は保存時に確定するため入力中は空欄(グレー枠=読み取り専用)。編集時は確定済みを表示。 #}
+      <span class="ro-field" id="ro_serial">{{ obj.serial|default:'' }}</span>
     </label>
     <label>{% trans "担当者" %}
       {# 担当者はログインユーザーから自動。読み取り専用(グレー枠=非編集)。 #}

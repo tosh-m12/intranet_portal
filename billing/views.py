@@ -167,6 +167,11 @@ def entry(request, pk=None):
             obj.assignee = display_name(request.user)   # 担当者はログインユーザーから自動
             obj.is_approved = False                      # 新規は未承認(管理者承認待ち)
         obj.save()
+        if is_new:
+            # 新規は採番した連番をモーダルで確認(保存時に確定。入力中は番号を出さない)。
+            dest = reverse('billing:entry') if 'save_new' in request.POST \
+                else reverse('billing:detail', args=[obj.pk])
+            return redirect(f'{dest}?saved={obj.serial}')
         messages.success(request, f'請求明細を保存しました（税込合計 {obj.total_after_tax:,.2f}）。')
         if 'save_new' in request.POST:
             return redirect('billing:entry')
@@ -309,7 +314,3 @@ def api_check_company(request):
     return JsonResponse({'exists': False, 'other_groups': others})
 
 
-@login_required
-def api_next_serial(request):
-    d = (request.GET.get('date') or '').strip() or None
-    return JsonResponse({'next': InvoiceLine.next_serial(d)})

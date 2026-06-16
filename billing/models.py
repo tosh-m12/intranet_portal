@@ -10,7 +10,7 @@
 import datetime
 
 from django.conf import settings
-from django.db import models
+from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
 
 # 8 費目: (フィールド接頭辞, 表示名)。各費目に <prefix>(税抜額) と <prefix>_rate(税率%) を持つ。
@@ -173,12 +173,39 @@ class InvoiceLine(models.Model):
         return _r2((self.total_after_tax or 0.0) - (self.total_before_tax or 0.0))
 
     def save(self, *args, **kwargs):
-        if not self.serial:
-            self.serial = self.next_serial()
         self.currency = norm_currency(self.currency)
         self.fx_currency = norm_currency(self.fx_currency)
         self.compute_totals()
-        super().save(*args, **kwargs)
+        if not self.serial:
+            # 同時保存でも連番が重複しないよう、暦年ごとのロック行で採番を直列化する。
+            # ロック取得〜採番〜INSERT を 1 トランザクションに収め、SQLite でも排他になる。
+            # 番号は実データの最大+1から導出するため、台帳取込で連番が入っても自己補正される。
+            d = datetime.date.today()
+            with transaction.atomic():
+                lock, _created = SerialLock.objects.get_or_create(year=int(d.strftime('%Y')))
+                # この UPDATE で書き込みロックを取得し、後続の採番計算と INSERT を排他化する。
+                SerialLock.objects.filter(pk=lock.pk).update(bump=models.F('bump') + 1)
+                self.serial = self.next_serial(d)
+                super().save(*args, **kwargs)
+        else:
+            super().save(*args, **kwargs)
 
     def __str__(self):
         return f'#{self.serial} {self.bill_to}'
+
+
+class SerialLock(models.Model):
+    """連番採番の直列化用ロック行(暦年単位)。同時保存での連番重複を防ぐ。
+
+    値そのものは保持せず、行ロックの取得対象としてのみ使う(番号は実データの
+    最大+1から都度導出するので、台帳取込などで連番が入っても破綻しない)。
+    """
+    year = models.PositiveIntegerField(unique=True)
+    bump = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = _('連番ロック')
+        verbose_name_plural = _('連番ロック')
+
+    def __str__(self):
+        return f'{self.year}: {self.bump}'

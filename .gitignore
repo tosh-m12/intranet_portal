@@ -11,6 +11,8 @@ env/
 
 # Django stuff
 db.sqlite3
+db.sqlite3-wal
+db.sqlite3-shm
 staticfiles/
 media/
 

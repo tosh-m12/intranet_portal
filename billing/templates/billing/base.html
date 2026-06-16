@@ -2,8 +2,8 @@
 {% load static i18n %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'billing/style.css' %}?v=9">
-<script defer src="{% static 'billing/app.js' %}?v=3"></script>
+<link rel="stylesheet" href="{% static 'billing/style.css' %}?v=10">
+<script defer src="{% static 'billing/app.js' %}?v=4"></script>
 {% endblock %}
 
 {% block app_name %}
@@ -16,6 +16,14 @@
   {% if messages %}
   <div class="billing-msgs">
     {% for m in messages %}<div class="billing-msg {{ m.tags }}">{{ m }}</div>{% endfor %}
+  </div>
+  {% endif %}
+  {% if request.GET.saved %}
+  <div class="billing-modal-overlay" id="savedModal">
+    <div class="billing-modal" role="dialog" aria-modal="true" aria-labelledby="savedModalMsg">
+      <p class="billing-modal-msg" id="savedModalMsg">{% blocktrans with s=request.GET.saved %}連番 {{ s }} にて登録しました。{% endblocktrans %}</p>
+      <button type="button" class="btn primary" id="savedModalOk">OK</button>
+    </div>
   </div>
   {% endif %}
 {% endblock %}

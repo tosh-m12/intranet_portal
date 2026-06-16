@@ -101,6 +101,15 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        # Waitress はマルチスレッドで SQLite に同時書き込みする。既定(DEFERRED)だと
+        # 「読んでから書く」トランザクションがロック昇格で即 "database is locked" に
+        # なり busy timeout が効かない。IMMEDIATE で開始時に書込ロックを取り、競合は
+        # timeout 秒だけ待って直列化する。WAL で読み取りは書き込みにブロックされない。
+        'OPTIONS': {
+            'timeout': 20,
+            'transaction_mode': 'IMMEDIATE',
+            'init_command': 'PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;',
+        },
     }
 }
 

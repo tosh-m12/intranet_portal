@@ -78,7 +78,6 @@ document.addEventListener('click', function (e) {
 
   var API_PARTIES = form.dataset.apiParties;
   var API_CHECK = form.dataset.apiCheck;
-  var API_SERIAL = form.dataset.apiSerial;
   var MASTER_ADD = form.dataset.masterAdd;
 
   /* ---- 数値ユーティリティ ---- */
@@ -344,13 +343,24 @@ document.addEventListener('click', function (e) {
 
   attachAC(document.getElementById('id_customer_gc'), 'group');
   attachAC(document.getElementById('id_bill_to'), 'company');
+})();
 
-  /* ===== 連番(登録時当日YYYYMMDD+4桁)のプレビュー表示(読み取り専用) ===== */
-  var roSerial = document.getElementById('ro_serial');
-  if (roSerial && roSerial.dataset.auto === '1') {
-    fetch(API_SERIAL).then(function (r) { return r.json(); })
-      .then(function (j) { roSerial.textContent = j.next; });
+/* ===== 保存完了モーダル(連番を確定表示) ===== */
+(function () {
+  var modal = document.getElementById('savedModal');
+  if (!modal) return;
+  function close() {
+    modal.remove();
+    // ?saved をURLから消し、リロードで再表示されないようにする
+    if (window.history.replaceState) {
+      window.history.replaceState(null, '', window.location.pathname + window.location.hash);
+    }
   }
+  var ok = document.getElementById('savedModalOk');
+  if (ok) { ok.addEventListener('click', close); ok.focus(); }
+  document.addEventListener('keydown', function (e) {
+    if (modal.isConnected && (e.key === 'Enter' || e.key === 'Escape')) { e.preventDefault(); close(); }
+  });
 })();
 
 /* ===== 取引先マスタ: ヘッダクリックで並べ替え(▲▼) ===== */
