@@ -15,10 +15,8 @@ logger = logging.getLogger(__name__)
 
 _scheduler_started = False  # 多重起動防止
 
-# CS Bridge: 往路/復路の実行間隔と最終実行時刻(プロセス内モノトニック秒)
-_BRIDGE_INTERVAL_SEC = 300  # 5分
-_last_sync_at = None
-_last_inbound_at = None
+# CS Bridge: メール経路(往路 cs_sync_send / 復路 cs_inbound_poll)は撤去済み。
+# 連携は HTTP API(cs_tasks/bridge/api.py)に一本化。残りは過去メールの一回限り掃除のみ。
 
 # 自動デプロイ(Gitee 監視): upstream に新コミットがあれば pull → migrate →
 # self-exit。run_portal.bat の loop が新コードで waitress を再起動する。
@@ -150,18 +148,19 @@ def _auto_deploy_check():
     threading.Thread(target=_exit_soon, daemon=True).start()
 
 
-# 過去分 [CS-WB] の一括掃除を「初回1回だけ」実行するための永続フラグ。
+# メール経路撤去に伴う「溜まったブリッジメールの一括掃除」を初回1回だけ実行するための
+# 永続フラグ。新フラグ名にすることで、旧 [CS-WB] 掃除済みでも拡張版 purge を一度走らせる。
 # プロジェクト直下にファイルを置く（git pull では消えないので再デプロイ後も再実行しない）。
-_PURGE_DONE_FILENAME = ".cs_wb_purge_done"
+_PURGE_DONE_FILENAME = ".cs_bridge_mail_purged"
 
 
-def _run_inbound_purge_once():
-    """受信箱の過去分 [CS-WB] を初回1回だけ一括削除する（成功するまで毎ループ再試行）。"""
+def _run_bridge_mail_purge_once():
+    """受信箱の [CS-WB] と Sent の [CS-SYNC] を初回1回だけ一括削除する（成功まで毎ループ再試行）。"""
     flag = os.path.join(_project_root(), _PURGE_DONE_FILENAME)
     if os.path.exists(flag):
         return
     try:
-        print("### [CSBRIDGE_SCHED] running cs_inbound_purge (one-time)")
+        print("### [CSBRIDGE_SCHED] running cs_inbound_purge (one-time bridge mail cleanup)")
         call_command("cs_inbound_purge")
     except Exception:
         logger.exception("[CSBRIDGE_SCHED] cs_inbound_purge failed（次回再試行）")
@@ -230,29 +229,12 @@ def _scheduler_loop():
                             "[CSTASKS_SCHED] NOT sent (reason=%s)", res.get("reason")
                         )
 
-            # ===== CS Bridge: 5分毎に 往路/復路 を Waitress プロセス内で実行 =====
-            # タスクスケジューラ起動の .bat に頼らず、Waitress 内スレッドで定期実行する。
-            # 環境変数(CS_BRIDGE_*)は run_portal.bat 経由で Waitress プロセスに継承済み。
-            global _last_sync_at, _last_inbound_at
+            # ===== CS Bridge: メール経路は撤去済み(API一本化) =====
+            # 往路 cs_sync_send / 復路 cs_inbound_poll のメール送受信は廃止。連携は
+            # HTTP API(cs_tasks/bridge/api.py)に一本化。ここでは溜まったブリッジメールの
+            # 一括掃除だけを初回1回実行する（永続フラグで再実行しない）。
             mono = time.monotonic()
-            if _last_sync_at is None or (mono - _last_sync_at) >= _BRIDGE_INTERVAL_SEC:
-                try:
-                    print("### [CSBRIDGE_SCHED] running cs_sync_send")
-                    call_command("cs_sync_send", "--minutes", "30")
-                except Exception:
-                    logger.exception("[CSBRIDGE_SCHED] cs_sync_send failed")
-                finally:
-                    _last_sync_at = mono
-            if _last_inbound_at is None or (mono - _last_inbound_at) >= _BRIDGE_INTERVAL_SEC:
-                # 過去分 [CS-WB] の一括掃除（初回1回だけ。永続フラグで再実行しない）
-                _run_inbound_purge_once()
-                try:
-                    print("### [CSBRIDGE_SCHED] running cs_inbound_poll")
-                    call_command("cs_inbound_poll")
-                except Exception:
-                    logger.exception("[CSBRIDGE_SCHED] cs_inbound_poll failed")
-                finally:
-                    _last_inbound_at = mono
+            _run_bridge_mail_purge_once()
 
             # ===== 自動デプロイ: Gitee 監視(5分毎) =====
             global _last_deploy_check_at

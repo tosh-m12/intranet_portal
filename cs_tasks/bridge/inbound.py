@@ -337,9 +337,3 @@ def apply_writeback(payload, signature, sender=None, raw_text=None, enforce_send
 
     result["ok"] = True
     return result
-
-
-def apply_writeback_text(raw_text, sender=None):
-    """メール本文テキストから payload/署名を抽出して適用する。"""
-    payload, signature = pl.extract_writeback(raw_text)
-    return apply_writeback(payload, signature, sender=sender, raw_text=raw_text)
