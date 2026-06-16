@@ -52,18 +52,16 @@
 <form method="post" class="cs-inline-form">
     {% csrf_token %}
     <input type="hidden" name="action" value="add">
-    <input type="text" name="name" placeholder="{% trans "表示名（任意）" %}">
     <input type="email" name="email" placeholder="{% trans "メールアドレス" %}" required>
     <button type="submit" class="btn btn-primary">{% trans "追加" %}</button>
 </form>
-<table class="visit-table" style="margin-top:10px;">
+<table class="rs-list" style="margin-top:10px;">
     <thead>
-        <tr><th>{% trans "表示名" %}</th><th>{% trans "メールアドレス" %}</th><th>{% trans "状態" %}</th><th></th></tr>
+        <tr><th>{% trans "メールアドレス" %}</th><th>{% trans "状態" %}</th><th></th></tr>
     </thead>
     <tbody>
         {% for e in entries %}
-        <tr class="{% if not e.is_active %}task-cancelled{% endif %}">
-            <td>{{ e.name|default:"—" }}</td>
+        <tr class="{% if not e.is_active %}off{% endif %}">
             <td>{{ e.email }}</td>
             <td>{% if e.is_active %}{% trans "有効" %}{% else %}{% trans "無効" %}{% endif %}</td>
             <td>
@@ -84,7 +82,7 @@
             </td>
         </tr>
         {% empty %}
-        <tr><td colspan="4" class="muted">{% trans "宛先が登録されていません。" %}</td></tr>
+        <tr><td colspan="3" class="muted">{% trans "宛先が登録されていません。" %}</td></tr>
         {% endfor %}
     </tbody>
 </table>
