@@ -20,10 +20,10 @@
 
 <div class="page-header"><h2><svg class="ic"><use href="#ic-mail"/></svg> {% trans "レポートメール 詳細設定" %}</h2></div>
 
-{# ===== 送信設定（タイミング・件名・本文） ===== #}
+{# ===== ① 送信設定（自動送信 + 送信タイミング） ===== #}
+<h3 class="rs-h3">{% trans "送信設定" %}</h3>
 <form method="post" class="report-settings">
     {% csrf_token %}
-
     <div class="rs-field">
         <label>{% trans "自動送信" %}</label>
         <select name="mode">
@@ -32,7 +32,6 @@
             {% endfor %}
         </select>
     </div>
-
     <div class="rs-field">
         <label>{% trans "送信タイミング" %}</label>
         <span>{% trans "毎週" %}</span>
@@ -43,57 +42,13 @@
         </select>
         <input type="time" name="send_time" value="{{ config.send_time|time:'H:i' }}">
     </div>
-
-    <div class="rs-field">
-        <label>{% trans "件名" %}
-            <span class="muted" style="font-weight:normal; font-size:12px;">
-                {% if is_zh %}（中文版・編集中）{% else %}（日本語版・編集中）{% endif %}
-            </span>
-        </label>
-        <input type="text" name="subject" value="{{ cur_subject }}" maxlength="255" style="width:100%; max-width:560px;">
-    </div>
-
-    <div class="rs-field">
-        <label>{% trans "本文" %}
-            <span class="muted" style="font-weight:normal; font-size:12px;">
-                {% if is_zh %}（中文版・編集中）{% else %}（日本語版・編集中）{% endif %}
-            </span>
-        </label>
-        <textarea name="body" rows="5" style="width:100%; max-width:720px;">{{ cur_body }}</textarea>
-        <div class="muted" style="font-size:12px;">
-            {% trans "この本文の下に、レポートの課題表が自動で挿入されて送信されます。" %}
-            {% if is_zh %}<br>{% trans "※中文版は Mac 側で件名・本文を翻訳して書き戻します（ここでも手動編集可）。" %}
-            {% else %}<br>{% trans "※日本語版を編集してください。中文版は上部の言語トグル「中」で表示・編集できます（Mac 側翻訳で自動反映）。" %}{% endif %}
-        </div>
-    </div>
-
     <div class="rs-actions">
-        <button type="submit" name="action" value="save_config" class="btn btn-primary">{% trans "設定を保存" %}</button>
-        <button type="submit" name="action" value="preview" class="btn btn-secondary">{% trans "送信プレビュー" %}</button>
+        <button type="submit" name="action" value="save_timing" class="btn btn-primary">{% trans "設定を保存" %}</button>
     </div>
 </form>
 
-{# ===== 手動送信（保存済み設定で送信タイミングに関わらず即送信） ===== #}
-<form method="post" style="margin:10px 0 22px;" onsubmit="return confirm('{% trans "保存済みの設定でレポートメールを今すぐ送信します。よろしいですか？" %}');">
-    {% csrf_token %}
-    <button type="submit" name="action" value="send" class="btn btn-danger">{% trans "今すぐ手動送信" %}</button>
-    <span class="muted" style="font-size:12px;">{% trans "※送信タイミングに関わらず、保存済みの件名・本文・宛先で送信します。" %}</span>
-</form>
-
-{# ===== 送信プレビュー ===== #}
-{% if preview %}
-<div class="rs-preview">
-    <div class="rs-preview-head">{% trans "送信プレビュー" %}</div>
-    <div class="rs-preview-meta"><b>{% trans "宛先" %}:</b> {{ preview.recipients|join:", "|default:"（有効な宛先がありません）" }}</div>
-    <div class="rs-preview-meta"><b>{% trans "件名" %}:</b> {{ preview.subject }}</div>
-    <div class="rs-preview-meta"><b>{% trans "本文" %}:</b></div>
-    <div class="rs-preview-body">{{ preview.html|safe }}</div>
-</div>
-{% endif %}
-
-{# ===== 送信先リスト ===== #}
-<div class="page-header" style="margin-top:22px;"><h2><svg class="ic"><use href="#ic-mail"/></svg> {% trans "送信先リスト" %}</h2></div>
-
+{# ===== ② 送信先リスト ===== #}
+<h3 class="rs-h3">{% trans "送信先リスト" %}</h3>
 <form method="post" class="cs-inline-form">
     {% csrf_token %}
     <input type="hidden" name="action" value="add">
@@ -101,7 +56,6 @@
     <input type="email" name="email" placeholder="{% trans "メールアドレス" %}" required>
     <button type="submit" class="btn btn-primary">{% trans "追加" %}</button>
 </form>
-
 <table class="visit-table" style="margin-top:10px;">
     <thead>
         <tr><th>{% trans "表示名" %}</th><th>{% trans "メールアドレス" %}</th><th>{% trans "状態" %}</th><th></th></tr>
@@ -134,4 +88,49 @@
         {% endfor %}
     </tbody>
 </table>
+
+{# ===== ③ 送信内容編集（件名・本文。表示言語側） ===== #}
+<h3 class="rs-h3" style="margin-top:22px;">{% trans "送信内容編集" %}
+    <span class="muted" style="font-weight:normal; font-size:12px;">
+        {% if is_zh %}（中文版・編集中）{% else %}（日本語版・編集中）{% endif %}
+    </span>
+</h3>
+<form method="post" class="report-settings">
+    {% csrf_token %}
+    <div class="rs-field">
+        <label>{% trans "件名" %}</label>
+        <input type="text" name="subject" value="{{ cur_subject }}" maxlength="255" style="width:100%; max-width:560px;">
+    </div>
+    <div class="rs-field">
+        <label>{% trans "本文" %}</label>
+        <textarea name="body" rows="5" style="width:100%; max-width:560px;">{{ cur_body }}</textarea>
+        <div class="muted" style="font-size:12px;">
+            {% trans "この本文の下に、レポートの課題表が自動で挿入されて送信されます。" %}
+            {% if is_zh %}<br>{% trans "※中文版。日本語版は上部の言語トグル「日」で編集できます。" %}
+            {% else %}<br>{% trans "※日本語版。中文版は上部の言語トグル「中」で編集できます（相手言語は Mac 翻訳で自動反映）。" %}{% endif %}
+        </div>
+    </div>
+    <div class="rs-actions">
+        <button type="submit" name="action" value="save_content" class="btn btn-primary">{% trans "設定を保存" %}</button>
+        <button type="submit" name="action" value="preview" class="btn btn-secondary">{% trans "送信プレビュー" %}</button>
+    </div>
+</form>
+
+{# 手動送信（保存済み設定で送信タイミングに関わらず即送信） #}
+<form method="post" style="margin:10px 0 22px;" onsubmit="return confirm('{% trans "保存済みの設定でレポートメールを今すぐ送信します。よろしいですか？" %}');">
+    {% csrf_token %}
+    <button type="submit" name="action" value="send" class="btn btn-danger">{% trans "今すぐ手動送信" %}</button>
+    <span class="muted" style="font-size:12px;">{% trans "※送信タイミングに関わらず、保存済みの件名・本文・宛先で送信します。" %}</span>
+</form>
+
+{# 送信プレビュー（ボタン押下時のみ） #}
+{% if preview %}
+<div class="rs-preview">
+    <div class="rs-preview-head">{% trans "送信プレビュー" %}</div>
+    <div class="rs-preview-meta"><b>{% trans "宛先" %}:</b> {{ preview.recipients|join:", "|default:"（有効な宛先がありません）" }}</div>
+    <div class="rs-preview-meta"><b>{% trans "件名" %}:</b> {{ preview.subject }}</div>
+    <div class="rs-preview-meta"><b>{% trans "本文" %}:</b></div>
+    <div class="rs-preview-body">{{ preview.html|safe }}</div>
+</div>
+{% endif %}
 {% endblock %}
