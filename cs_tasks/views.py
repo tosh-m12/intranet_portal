@@ -197,8 +197,13 @@ def _build_board(user, assignee_id=None, category=None, for_report=False):
         del grp["clients_order"]
         groups.append(grp)
 
-    # 担当者名で並べ替え（未割当は末尾）
-    groups.sort(key=lambda g: (g["assignee_id"] is None, g["assignee_name"]))
+    # ユーザー管理の表示順(display_order)で並べ替え（未割当は末尾）。
+    # 同順位は氏名で安定化。
+    def _sort_key(g):
+        a = g["assignee"]
+        order = a.display_order if a is not None else 0
+        return (a is None, order, g["assignee_name"])
+    groups.sort(key=_sort_key)
     return groups, filtered_user
 
 
