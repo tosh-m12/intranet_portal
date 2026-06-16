@@ -97,6 +97,7 @@ document.addEventListener('click', function (e) {
   var rateWarn = document.getElementById('rateWarn');
   var rateWarnList = document.getElementById('rateWarnList');
   var exEl = document.getElementById('id_exrate');
+  var opEl = document.getElementById('id_exrate_op');
   var roConverted = document.getElementById('ro_converted');
 
   function feeLabel(key) {
@@ -132,10 +133,11 @@ document.addEventListener('click', function (e) {
     document.getElementById('sumAfter').textContent = fmt(after);
     document.getElementById('sumTax').textContent = fmt(after - before);
 
-    // 換算後金額(自動) = 税込合計 ÷ 為替レート
+    // 換算後金額(自動) = 税込合計 ÷ or × 為替レート(換算方法に従う)
     if (roConverted) {
       var ex = exEl ? num(exEl) : 0;
-      roConverted.textContent = ex ? fmt(after / ex) : '—';
+      var mul = opEl && opEl.value === 'mul';
+      roConverted.textContent = ex ? fmt(mul ? after * ex : after / ex) : '—';
     }
 
     if (warns.length) { rateWarnList.textContent = warns.join('、'); rateWarn.hidden = false; }
@@ -186,6 +188,8 @@ document.addEventListener('click', function (e) {
   form.addEventListener('change', function (e) {
     if (e.target.classList && e.target.classList.contains('fee-net-chk')) {
       syncMaster();
+      recalc();
+    } else if (e.target.id === 'id_exrate_op') {
       recalc();
     }
   });

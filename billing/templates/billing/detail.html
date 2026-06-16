@@ -63,7 +63,7 @@
 <h3 class="sec">{% trans "第2通貨" %}</h3>
 <dl class="kv">
   <dt>{% trans "通貨" %}</dt><dd>{{ obj.fx_currency|default:'—' }}</dd>
-  <dt>{% trans "為替レート" %}</dt><dd>{{ obj.exrate }}</dd>
+  <dt>{% trans "為替レート" %}</dt><dd>{% if obj.exrate_multiply %}× {% else %}÷ {% endif %}{{ obj.exrate }}</dd>
   <dt>{% trans "レート日付" %}</dt><dd>{{ obj.rate_date|date:'Y-m-d'|default:'—' }}</dd>
   <dt>{% trans "換算後金額" %}</dt><dd>{{ obj.converted_amount|floatformat:2|intcomma|default:'—' }}</dd>
 </dl>

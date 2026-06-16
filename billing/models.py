@@ -107,6 +107,8 @@ class InvoiceLine(models.Model):
 
     # 第2通貨(2通貨記載時に記入)
     exrate = models.FloatField(_('為替レート'), null=True, blank=True)
+    # 換算方法: False=税込合計÷レート(既定) / True=税込合計×レート。書面のレート表記に合わせる。
+    exrate_multiply = models.BooleanField(_('レートを掛ける'), default=False)
     rate_date = models.DateField(_('レート日付'), null=True, blank=True)
     fx_currency = models.CharField(_('通貨'), max_length=8, blank=True)
     converted_amount = models.FloatField(_('換算後金額'), null=True, blank=True)
@@ -165,8 +167,13 @@ class InvoiceLine(models.Model):
         after = sum(self.fee_incl(k) for k in FEE_KEYS)
         self.total_before_tax = _r2(before)
         self.total_after_tax = _r2(after)
-        # 換算後金額(2通貨) = 税込合計 ÷ 為替レート。レート未入力なら無し。
-        self.converted_amount = _r2(self.total_after_tax / self.exrate) if self.exrate else None
+        # 換算後金額(2通貨)。書面のレート表記に合わせて ÷(既定) か × を選べる。
+        if self.exrate:
+            self.converted_amount = _r2(self.total_after_tax * self.exrate
+                                        if self.exrate_multiply
+                                        else self.total_after_tax / self.exrate)
+        else:
+            self.converted_amount = None
 
     @property
     def tax_amount(self):
