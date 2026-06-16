@@ -32,6 +32,7 @@ urlpatterns = [
         name="toggle_progress_close",
     ),
     path("mailing-list/", views.mailing_list, name="mailing_list"),
+    path("mine/", views.my_tasks, name="my_tasks"),
     path("report/", views.report, name="report"),
     path("report/settings/", views.report_settings, name="report_settings"),
 ]

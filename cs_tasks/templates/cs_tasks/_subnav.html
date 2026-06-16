@@ -17,6 +17,10 @@
        class="{% if active_tab == 'internal' %}active{% endif %}">
         <svg class="ic"><use href="#ic-users"/></svg>{% trans "部内課題" %}
     </a>
+    <a href="{% url 'cs_tasks:my_tasks' %}"
+       class="{% if active_tab == 'mine' %}active{% endif %}">
+        <svg class="ic"><use href="#ic-user"/></svg>{% trans "自分の課題" %}
+    </a>
     <a href="{% url 'cs_tasks:report' %}"
        class="{% if active_tab == 'report' %}active{% endif %}">
         <svg class="ic"><use href="#ic-chart"/></svg>{% trans "レポート" %}

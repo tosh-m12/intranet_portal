@@ -273,6 +273,33 @@ def report(request):
 
 
 # =========================================================
+# 自分の課題（ログインユーザー担当分を区分別に縦並び・編集可）
+# =========================================================
+def build_my_sections(user):
+    """ログインユーザー担当の課題を区分別に組み立てる（編集可・読み取り専用ではない）。
+    区分の並びはレポートと同じ。"""
+    sections = []
+    for cat in _REPORT_CATEGORY_ORDER:
+        groups, _ = _build_board(user, assignee_id=user.id, category=cat)
+        sections.append({
+            "key": cat,
+            "label": _CATEGORY_TITLE[cat],
+            "hide_client": cat == Task.CATEGORY_INTERNAL,
+            "groups": groups,
+        })
+    return sections
+
+
+@login_required
+def my_tasks(request):
+    return render(request, "cs_tasks/my_tasks.html", {
+        "sections": build_my_sections(request.user),
+        "is_admin": is_admin(request.user),
+        "active_tab": "mine",
+    })
+
+
+# =========================================================
 # 詳細設定（週報メール: 送信タイミング・宛先・件名・本文の編集＋プレビュー/手動送信）
 # =========================================================
 @user_passes_test(is_admin)
