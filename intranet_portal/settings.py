@@ -186,19 +186,20 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # 機密値(HMAC鍵・受信箱パスワード)は環境変数から読む。
 # リポジトリにはコミットしないこと。
 # =========================================================
-# 復路メールの署名検証用 共有秘密鍵(必須。未設定なら受信は全拒否)
+# 復路の署名検証用 共有秘密鍵(必須。未設定なら writeback は全拒否)
 CS_BRIDGE_HMAC_SECRET = os.environ.get('CS_BRIDGE_HMAC_SECRET', '')
 
 # リアルタイム連携API(メール置換)のBearerトークン。未設定なら API は全拒否(フェイルクローズ)。
 # Mac(cs_bridge)はこのトークンで sync/writeback を呼ぶ。本番は更に Cloudflare Access で多層防御。
 CS_BRIDGE_API_TOKEN = os.environ.get('CS_BRIDGE_API_TOKEN', '')
 
-# 復路メールで受け付ける差出人(カンマ区切り)。空なら差出人限定なし(HMACのみ)
+# (廃止) 復路メールの差出人許可リスト。メール経路撤去済み。API は Bearerトークン認証のため未使用。
+# inbound.apply_writeback の enforce_sender=True 既定の後方互換のためだけに残置。
 CS_BRIDGE_ALLOWED_SENDERS = [
     s.strip() for s in os.environ.get('CS_BRIDGE_ALLOWED_SENDERS', '').split(',') if s.strip()
 ]
 
-# 往路 同期メールの宛先(Mac側Gmail。カンマ区切り)
+# (廃止) 往路 同期メールの宛先。メール経路撤去済み(往路は API bridge_sync)。未使用。
 CS_BRIDGE_SYNC_RECIPIENTS = [
     s.strip() for s in os.environ.get('CS_BRIDGE_SYNC_RECIPIENTS', '').split(',') if s.strip()
 ]
@@ -206,10 +207,11 @@ CS_BRIDGE_SYNC_RECIPIENTS = [
 # ブリッジ起票/反映の操作主体にするユーザー(email)。空ならauthor=null
 CS_BRIDGE_AUTHOR_EMAIL = os.environ.get('CS_BRIDGE_AUTHOR_EMAIL', '')
 
-# 送信に使う MailAccount.code(未設定時は cs_report → 共通へフォールバック)
+# (廃止) 往路メール送信に使っていた MailAccount.code。メール経路撤去済み。未使用。
 CS_BRIDGE_MAIL_ACCOUNT = os.environ.get('CS_BRIDGE_MAIL_ACCOUNT', 'cs_report')
 
-# 復路 受信箱(IMAP)。未設定なら cs_inbound_poll は安全にスキップ
+# 受信箱(IMAP)。メール経路撤去後は「溜まったブリッジメールの一回限り掃除」(cs_inbound_purge)で使用。
+# 未設定時は cs_inbound_purge が MailAccount(来客通知の送信アカウント)の資格情報へフォールバックする。
 CS_BRIDGE_INTAKE_IMAP_HOST = os.environ.get('CS_BRIDGE_INTAKE_IMAP_HOST', '')
 CS_BRIDGE_INTAKE_IMAP_PORT = int(os.environ.get('CS_BRIDGE_INTAKE_IMAP_PORT', '993'))
 CS_BRIDGE_INTAKE_IMAP_USER = os.environ.get('CS_BRIDGE_INTAKE_IMAP_USER', '')

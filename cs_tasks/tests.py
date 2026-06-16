@@ -445,21 +445,6 @@ class InboundApplyTests(TestCase):
         self.assertFalse(res["ok"])
         self.assertIn("差出人", res["reason"])
 
-    def test_end_to_end_via_text(self):
-        p = make_payload(
-            [{"op_id": "e2e", "action": "add_comment", "progress_id": self.progress.id,
-              "content_zh": "文本", "content_ja": "本文"}],
-            nonce="e2e-nonce",
-        )
-        text = payload.wrap_writeback(p, signed(p))
-        res = inbound.apply_writeback_text(text, sender=SENDER)
-        self.assertTrue(res["ok"])
-        self.assertEqual(SupervisorComment.objects.get().content_ja, "本文")
-        # 監査用に受信本文原文と差出人が保存される（メール削除後も追跡可能）
-        rec = BridgeProcessedMessage.objects.get(nonce="e2e-nonce")
-        self.assertEqual(rec.raw_body, text)
-        self.assertEqual(rec.sender, SENDER)
-
 
 class ViewChildEditPropagationTests(TestCase):
     """社内UIで既存の進捗/コメントを編集すると、親課題が touch され

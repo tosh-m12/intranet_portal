@@ -32,5 +32,6 @@ Thumbs.db
 .env.*
 !.env.example
 
-# CS Bridge: 過去分[CS-WB]一括掃除の初回完了フラグ(本番ローカル)
+# CS Bridge: ブリッジメール一括掃除の初回完了フラグ(本番ローカル)
 .cs_wb_purge_done
+.cs_bridge_mail_purged

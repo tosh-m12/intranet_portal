@@ -1,21 +1,20 @@
 # cs_tasks/bridge/outbound.py
-"""往路(社内→Mac)の同期スナップショットを組み立て、メール送信する。
+"""往路(社内→Mac)の同期スナップショットを組み立てる。
 
-Mac側(Cowork/Claude)はこのスナップショットを取り込み、中国語を日本語へ
-翻訳してレビュー画面に表示する。ID(task_id/progress_id/comment_id)を
-含めるため、後続の書き戻しで対象を一意に参照できる。
+Mac側(cs_bridge)は HTTP API(bridge_sync)経由でこのスナップショットを取得し、
+中国語を日本語へ翻訳してレビュー画面に表示する。ID(task_id/progress_id/comment_id)
+を含めるため、後続の書き戻しで対象を一意に参照できる。
+(メール送信経路は撤去済み。build_snapshot は api.bridge_sync が再利用する。)
 """
 import logging
 from datetime import datetime
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.utils.timezone import localtime
 
 from .. import models as m
 from . import payload as pl
-from mailcenter.email_utils import send_text_mail
 
 logger = logging.getLogger(__name__)
 
@@ -139,28 +138,3 @@ def build_snapshot(since=None):
         },
         "tasks": tasks,
     }
-
-
-def send_snapshot(since=None, recipients=None):
-    """スナップショットを同期メールとして送信する。結果dictを返す。"""
-    recipients = recipients or getattr(settings, "CS_BRIDGE_SYNC_RECIPIENTS", [])
-    recipients = [r for r in recipients if r]
-    if not recipients:
-        msg = "同期メールの宛先(CS_BRIDGE_SYNC_RECIPIENTS)が未設定です。"
-        logger.warning("[CSBRIDGE] %s", msg)
-        return {"sent": False, "reason": msg}
-
-    snapshot = build_snapshot(since=since)
-    body = pl.wrap_sync(snapshot)
-    subject = f"[CS-SYNC] {snapshot['generated_at']} seq={snapshot['seq']}"
-    account_code = getattr(settings, "CS_BRIDGE_MAIL_ACCOUNT", "cs_report")
-
-    res = send_text_mail(
-        subject=subject,
-        text_body=body,
-        recipients=recipients,
-        account_code=account_code,
-    )
-    res["seq"] = snapshot["seq"]
-    res["task_count"] = len(snapshot["tasks"])
-    return res
