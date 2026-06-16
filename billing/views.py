@@ -162,6 +162,7 @@ def entry(request, pk=None):
         for fld in EXTRA_FLOAT:
             setattr(obj, fld, _f(request.POST.get(fld)))
         obj.rate_date = (request.POST.get('rate_date') or '').strip() or None
+        obj.exrate_multiply = request.POST.get('exrate_op') == 'mul'
         if is_new:
             obj.created_by = request.user
             obj.assignee = display_name(request.user)   # 担当者はログインユーザーから自動
