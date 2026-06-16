@@ -40,13 +40,14 @@ def _build_assignees():
     User = get_user_model()
     qs = (
         User.objects.filter(is_active=True, is_superuser=False)
-        .order_by("last_name", "first_name", "email")
+        .order_by("display_order", "last_name", "first_name", "email")
     )
     return [
         {
             "email": u.email,
             "display_name": _user_label(u),
             "is_staff": bool(u.is_staff),
+            "display_order": u.display_order,
         }
         for u in qs
     ]
