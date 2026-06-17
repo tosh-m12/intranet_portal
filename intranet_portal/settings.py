@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'billing.apps.BillingConfig',
     'sales_trend.apps.SalesTrendConfig',
     'vessel_tracking.apps.VesselTrackingConfig',
+    'opsbridge.apps.OpsbridgeConfig',
 ]
 
 MIDDLEWARE = [
@@ -192,6 +193,24 @@ CS_BRIDGE_HMAC_SECRET = os.environ.get('CS_BRIDGE_HMAC_SECRET', '')
 # リアルタイム連携API(メール置換)のBearerトークン。未設定なら API は全拒否(フェイルクローズ)。
 # Mac(cs_bridge)はこのトークンで sync/writeback を呼ぶ。本番は更に Cloudflare Access で多層防御。
 CS_BRIDGE_API_TOKEN = os.environ.get('CS_BRIDGE_API_TOKEN', '')
+
+# =========================================================
+# opsbridge: 汎用メンテナンス用 export/writeback API のホワイトリスト。
+#   認証は上の CS_BRIDGE_API_TOKEN(Bearer) と CS_BRIDGE_HMAC_SECRET(writeback署名) を再利用。
+#   export は読取専用。writeback はモデル単位＋フィールド単位で許可を限定。
+# =========================================================
+# export 許可モデル(ラベル集合)。ここに無いモデルは 403。
+OPSBRIDGE_EXPORT_MODELS = {
+    "visitors.Visitor",
+    "meetings.Meeting",
+}
+
+# writeback 許可: model_label -> 更新を許可するフィールド集合。
+#   ここに無いモデル/フィールドへの更新は拒否。cancelled(論理削除)は意図的に含めない。
+OPSBRIDGE_WRITEBACK_MODELS = {
+    "visitors.Visitor": {"company_name", "last_name", "first_name", "title"},
+    "meetings.Meeting": {"company_name", "last_name", "first_name", "title"},
+}
 
 # (廃止) 復路メールの差出人許可リスト。メール経路撤去済み。API は Bearerトークン認証のため未使用。
 # inbound.apply_writeback の enforce_sender=True 既定の後方互換のためだけに残置。
