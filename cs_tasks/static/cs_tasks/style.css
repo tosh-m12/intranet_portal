@@ -158,11 +158,14 @@
     box-shadow: inset 0 0 0 2px #e74c3c;
 }
 
-/* 進捗セル: 上下結合(rowspan)されていても記入日を最下部の右に固定する */
-.cs-board td.col-progress { height: 1px; }   /* 内側 height:100% を実高さに解決させる */
-.cs-board .prog-cell { display: flex; flex-direction: column; height: 100%; }
+/* 進捗セル: 本文の下に記入日を右寄せで置く。
+   以前は td{height:1px}+子{height:100%} で記入日をセル最下部へ固定していたが、
+   この百分率高さの解決はブラウザ依存(Firefox は指定値=1px に解決)で、進捗本文が
+   1px の箱からあふれて行が伸びず、複数行のテキストが縦に重なる原因になっていた。
+   高さに依存しない通常フロー(本文→記入日)に変更し、全ブラウザで安定させる。 */
+.cs-board .prog-cell { display: flex; flex-direction: column; }
 .cs-board .prog-cell .prog-body { flex: 0 0 auto; }
-.cs-board .prog-cell .entry-date { margin-top: auto; }
+.cs-board .prog-cell .entry-date { margin-top: 4px; }
 
 /* 行内の追加フォーム（visit-table の枠なし入力と統一） */
 .add-inline { margin: 0; }
