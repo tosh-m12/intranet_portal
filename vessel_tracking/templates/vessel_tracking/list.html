@@ -8,7 +8,10 @@
 </div>
 
 {# 検索機能は一旦非表示。代わりに簡易入力フォームを設置。 #}
-<form class="quick-form" id="quickForm" method="post" action="{% url 'vessel_tracking:quick_create' %}">
+<form class="quick-form" id="quickForm" method="post" action="{% url 'vessel_tracking:quick_create' %}"
+      data-dupcheck="{% url 'vessel_tracking:dup_check' %}"
+      data-dup-warn="{% trans '⚠ 同じ便（荷主・本船・航海No）が既に登録されています。二重登録に注意してください。' %}"
+      data-dup-confirm="{% trans '同じ便（荷主・本船・航海No）が既に登録されています。このまま二重登録しますか？' %}">
   {% csrf_token %}
   <label><span class="qf-head">{% trans "荷主" %} <span class="req">（{% trans "必須" %}）</span></span>
     <input type="text" name="customer" list="dl-customers" autocomplete="off"
@@ -56,6 +59,7 @@
     <span class="ro-field">{{ auto_assignee }}</span>
   </label>
   <button type="submit" class="btn primary">＋ {% trans "登録" %}</button>
+  <div class="dup-warn" hidden></div>
 </form>
 <datalist id="dl-customers">{% for g in shippers %}<option value="{{ g }}">{% endfor %}</datalist>
 <datalist id="dl-dests">{% for d in dests %}<option value="{{ d }}">{% endfor %}</datalist>

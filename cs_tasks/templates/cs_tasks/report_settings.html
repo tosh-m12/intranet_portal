@@ -90,7 +90,7 @@
 {# ===== ③ 送信内容編集（件名・本文。表示言語側） ===== #}
 <h3 class="rs-h3" style="margin-top:22px;">{% trans "送信内容編集" %}
     <span class="muted" style="font-weight:normal; font-size:12px;">
-        {% if is_zh %}（中文版・編集中）{% else %}（日本語版・編集中）{% endif %}
+        {% if is_zh %}{% trans "（中文版・編集中）" %}{% else %}{% trans "（日本語版・編集中）" %}{% endif %}
     </span>
 </h3>
 <form method="post" class="report-settings">
@@ -125,7 +125,7 @@
 {% if preview %}
 <div class="rs-preview">
     <div class="rs-preview-head">{% trans "送信プレビュー" %}</div>
-    <div class="rs-preview-meta"><b>{% trans "宛先" %}:</b> {{ preview.recipients|join:", "|default:"（有効な宛先がありません）" }}</div>
+    <div class="rs-preview-meta"><b>{% trans "宛先" %}:</b> {% if preview.recipients %}{{ preview.recipients|join:", " }}{% else %}{% trans "（有効な宛先がありません）" %}{% endif %}</div>
     <div class="rs-preview-meta"><b>{% trans "件名" %}:</b> {{ preview.subject }}</div>
     <div class="rs-preview-meta"><b>{% trans "本文" %}:</b></div>
     <div class="rs-preview-body">{{ preview.html|safe }}</div>

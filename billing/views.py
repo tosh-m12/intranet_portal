@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
 from .models import CURRENCIES, FEE_KEYS, FEES, InvoiceLine, MasterParty
@@ -123,7 +124,7 @@ def detail(request, pk):
 def approve(request, pk):
     """請求明細を承認(管理者のみ)。承認後は一覧へ戻り、直前の位置(承認した行)へ。"""
     if not is_admin(request.user):
-        messages.error(request, '承認は管理者のみ可能です。')
+        messages.error(request, _('承認は管理者のみ可能です。'))
         return redirect('billing:detail', pk=pk)
     obj = get_object_or_404(InvoiceLine, pk=pk)
     if not obj.is_approved and not obj.is_cancelled:
@@ -131,7 +132,7 @@ def approve(request, pk):
         obj.approved_by = request.user
         obj.approved_at = timezone.now()
         obj.save(update_fields=['is_approved', 'approved_by', 'approved_at', 'updated_at'])
-        messages.success(request, f'請求明細 {obj.serial} を承認しました。')
+        messages.success(request, _('請求明細 %(serial)s を承認しました。') % {'serial': obj.serial})
     # 一覧へ戻る。直前の絞り込みを保ち、承認した行(#r<pk>)まで戻す(先頭に戻さない)。
     base = _safe_back(request, request.POST.get('next') or '')
     return redirect(f'{base}#r{obj.pk}')
@@ -173,7 +174,8 @@ def entry(request, pk=None):
             dest = reverse('billing:entry') if 'save_new' in request.POST \
                 else reverse('billing:detail', args=[obj.pk])
             return redirect(f'{dest}?saved={obj.serial}')
-        messages.success(request, f'請求明細を保存しました（税込合計 {obj.total_after_tax:,.2f}）。')
+        messages.success(request, _('請求明細を保存しました（税込合計 %(total)s）。')
+                         % {'total': f'{obj.total_after_tax:,.2f}'})
         if 'save_new' in request.POST:
             return redirect('billing:entry')
         return redirect('billing:detail', pk=obj.pk)
@@ -197,7 +199,7 @@ def cancel(request, pk):
     obj.is_cancelled = True
     obj.cancelled_at = timezone.now()
     obj.save(update_fields=['is_cancelled', 'cancelled_at', 'updated_at'])
-    messages.success(request, '請求明細を取消しました。')
+    messages.success(request, _('請求明細を取消しました。'))
     return redirect('billing:list')
 
 
@@ -223,13 +225,15 @@ def master_add(request):
         company = (request.POST.get('company_name') or '').strip()
         business_summary = (request.POST.get('business_summary') or '').strip()
         if not group or not company:
-            messages.error(request, 'グループ名と会社名は必須です。')
+            messages.error(request, _('グループ名と会社名は必須です。'))
         elif MasterParty.objects.filter(group_name=group, company_name=company).exists():
-            messages.error(request, f'「{group} / {company}」は既に登録済みです。')
+            messages.error(request, _('「%(group)s / %(company)s」は既に登録済みです。')
+                           % {'group': group, 'company': company})
         else:
             MasterParty.objects.create(group_name=group, company_name=company,
                                        business_summary=business_summary)
-            messages.success(request, f'取引先「{group} / {company}」を登録しました。')
+            messages.success(request, _('取引先「%(group)s / %(company)s」を登録しました。')
+                             % {'group': group, 'company': company})
             nxt = request.POST.get('next')
             return redirect(nxt) if nxt else redirect('billing:master')
         prefill_group, prefill_company = group, company

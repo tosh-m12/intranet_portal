@@ -5,8 +5,11 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.management import call_command
 from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
 from .models import CONTAINER_TYPES, Shipment
@@ -110,7 +113,7 @@ def shipment_list(request):
 def quick_create(request):
     name = (request.POST.get('customer') or '').strip()
     if not name:
-        messages.error(request, '荷主は必須です。')
+        messages.error(request, _('荷主は必須です。'))
         return redirect('vessel_tracking:list')
     s = Shipment(customer=name, source='manual', created_by=request.user,
                  assignee=display_name(request.user))
@@ -127,8 +130,50 @@ def quick_create(request):
     s.etd = _date(request.POST.get('etd'))
     s.eta = _date(request.POST.get('eta'))
     s.save()
-    messages.success(request, f'出荷を登録しました（{s.customer} / {s.dest}）。')
+    messages.success(request, _('出荷を登録しました（%(customer)s / %(dest)s）。')
+                     % {'customer': s.customer, 'dest': s.dest})
     return redirect('vessel_tracking:list')
+
+
+# ---------------------------------------------------------------- 重複チェック(入力中ライブ警告)
+@login_required
+def dup_check(request):
+    """重複候補の既存便を返す(JSON)。入力フォームの重複登録防止に使う。
+
+    便の同一性は 荷主×本船×航海No。定期配船では同じ荷主×本船が航海違いで何度も並ぶため、
+    そこまでを重複扱いにすると警告がノイズになる。よって航海No一致(未入力時は仕向地一致かつ
+    双方航海No未入力)に絞り、本当の二重登録だけを警告する。登録自体は妨げない(人に確認させる)。
+    """
+    customer = (request.GET.get('customer') or '').strip()
+    vessel = (request.GET.get('vessel') or '').strip()
+    voyage = (request.GET.get('voyage') or '').strip()
+    dest = (request.GET.get('dest') or '').strip()
+    if not customer or not vessel:
+        return JsonResponse({'matches': []})
+    qs = (Shipment.objects.filter(is_cancelled=False,
+                                  customer__iexact=customer, vessel__iexact=vessel)
+          .order_by('-etd', '-id'))
+    if voyage:
+        qs = qs.filter(voyage__iexact=voyage)
+    else:
+        # 航海No未入力時は同定できないので、双方航海No空＋仕向地一致の場合のみ重複候補とする。
+        qs = qs.filter(voyage='')
+        if dest:
+            qs = qs.filter(dest__iexact=dest)
+        else:
+            return JsonResponse({'matches': []})
+    exclude = (request.GET.get('exclude') or '').strip()
+    if exclude.isdigit():
+        qs = qs.exclude(pk=int(exclude))
+    matches = [{
+        'pk': s.pk,
+        'vessel': s.vessel,
+        'voyage': s.voyage,
+        'dest': s.dest,
+        'etd': s.etd.strftime('%Y/%m/%d') if s.etd else '',
+        'url': reverse('vessel_tracking:detail', args=[s.pk]),
+    } for s in qs[:10]]
+    return JsonResponse({'matches': matches})
 
 
 # ---------------------------------------------------------------- ライブ監視
@@ -143,12 +188,16 @@ def monitor(request):
     order = {'bad': 0, 'info': 1, 'ok': 2, 'muted': 3, 'none': 4}
     rows.sort(key=lambda s: (order.get(s.live_departure_predict[0], 9), s.etd or _dt.date.max))
     last = max((s.live_updated_at for s in rows if s.live_updated_at), default=None)
+    # 最終更新は JST(+9) で表示(TIME_ZONE は Asia/Shanghai のため明示変換)。
+    jst = _dt.timezone(_dt.timedelta(hours=9))
+    last_jst = last.astimezone(jst).strftime('%m/%d %H:%M') if last else ''
     ctx = {
         'active_tab': 'monitor',
         'rows': rows,
         'count': len(rows),
         'alert_count': sum(1 for s in rows if s.live_departure_predict[0] == 'bad'),
         'last_updated': last,
+        'last_updated_jst': last_jst,
     }
     return render(request, 'vessel_tracking/monitor.html', ctx)
 
@@ -161,11 +210,11 @@ def monitor_refresh(request):
     try:
         call_command('track_vessels', stdout=out, stderr=out)
     except Exception as e:   # noqa: BLE001
-        messages.error(request, f'ライブ更新に失敗しました: {e}')
+        messages.error(request, _('ライブ更新に失敗しました: %(err)s') % {'err': e})
         return redirect('vessel_tracking:monitor')
     lines = [ln for ln in out.getvalue().splitlines() if ln.strip()]
     summary = lines[-1].strip() if lines else ''
-    messages.success(request, f'ライブ更新を実行しました。{summary}')
+    messages.success(request, _('ライブ更新を実行しました。%(summary)s') % {'summary': summary})
     return redirect('vessel_tracking:monitor')
 
 
@@ -197,7 +246,7 @@ def entry(request, pk=None):
         obj.remarks = (request.POST.get('remarks') or '').strip()
 
         if not name:
-            messages.error(request, '荷主は必須です。')
+            messages.error(request, _('荷主は必須です。'))
             return render(request, 'vessel_tracking/entry.html',
                           _entry_ctx(obj, is_new, request))
         obj.customer = name
@@ -206,7 +255,8 @@ def entry(request, pk=None):
             obj.created_by = request.user
             obj.assignee = display_name(request.user)
         obj.save()
-        messages.success(request, f'出荷トレーシングを保存しました（{obj.order_no} / {obj.inv_no}）。')
+        messages.success(request, _('出荷トレーシングを保存しました（%(order)s / %(inv)s）。')
+                         % {'order': obj.order_no, 'inv': obj.inv_no})
         if 'save_new' in request.POST:
             return redirect('vessel_tracking:entry')
         return redirect('vessel_tracking:detail', pk=obj.pk)
@@ -233,5 +283,5 @@ def cancel(request, pk):
     obj.is_cancelled = True
     obj.cancelled_at = timezone.now()
     obj.save(update_fields=['is_cancelled', 'cancelled_at', 'updated_at'])
-    messages.success(request, '出荷トレーシングを取消しました。')
+    messages.success(request, _('出荷トレーシングを取消しました。'))
     return redirect('vessel_tracking:list')
