@@ -31,7 +31,9 @@
     border-color: #1f3864;       /* グレー罫線を濃紺に同化 */
     box-shadow: inset 1px 0 0 #fff;   /* 見出し間の白い縦罫線 */
     text-align: center;
-    white-space: nowrap;
+    /* 文字拡大時は見出しを折り返す（nowrap だと「クローズ」等が切れる/はみ出す） */
+    white-space: normal;
+    overflow-wrap: anywhere;
     font-weight: bold;
 }
 .cs-board thead th:first-child {
@@ -50,7 +52,9 @@
 .cs-board .col-date {
     padding-left: 4px;
     padding-right: 4px;
-    white-space: nowrap;
+    /* 文字拡大時に日付が列幅(px固定)を超えても隣の進捗セルへはみ出さないよう折り返す */
+    white-space: normal;
+    overflow-wrap: anywhere;
     text-align: center;
     color: #2f6fb0;
 }
@@ -140,7 +144,9 @@
     padding: 1px 2px;
     color: #2f6fb0;
     /* フォントサイズは指定せず表の基準(.cs-board=16px)を継承＝名前/タイトル/コメントと統一 */
-    white-space: nowrap;
+    /* nowrap だと文字拡大時に120px列を超えて進捗セルへ重なるため、折り返し可にする */
+    white-space: normal;
+    overflow-wrap: anywhere;
     pointer-events: none;
     min-height: 1.5em;
 }
