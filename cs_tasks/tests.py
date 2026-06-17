@@ -935,3 +935,29 @@ class BridgeApiTests(TestCase):
         self.assertEqual(r1.status_code, 200)
         self.assertEqual(r2.status_code, 200)
         self.assertEqual(SupervisorComment.objects.count(), 1)  # 二重適用しない
+
+    # --- 請求台帳エクスポート(財務照合用・読み取り専用) ---
+    def test_billing_export_requires_token(self):
+        url = reverse("cs_tasks:bridge_api_billing_export")
+        self.assertEqual(self.client.get(url).status_code, 401)
+        self.assertEqual(self.client.get(url, **self._auth("wrong")).status_code, 401)
+
+    def test_billing_export_returns_rows_including_cancelled(self):
+        from billing.models import InvoiceLine
+        InvoiceLine.objects.create(
+            customer_gc="ACME", bill_to="ACME CO.", currency="CNY",
+            bill_year=2026, bill_month=3, storage=100.0, storage_rate=6.0,
+        )
+        InvoiceLine.objects.create(
+            customer_gc="ACME", bill_to="ACME CO.", currency="CNY",
+            bill_year=2026, bill_month=3, service=50.0, is_cancelled=True,
+        )
+        r = self.client.get(reverse("cs_tasks:bridge_api_billing_export"), **self._auth())
+        self.assertEqual(r.status_code, 200)
+        d = r.json()
+        self.assertTrue(d["ok"])
+        self.assertEqual(d["count"], len(d["rows"]))
+        mine = [row for row in d["rows"] if row["customer_gc"] == "ACME"]
+        self.assertEqual({row["is_cancelled"] for row in mine}, {True, False})
+        live = next(row for row in mine if not row["is_cancelled"])
+        self.assertAlmostEqual(live["total_after_tax"], 106.0)  # 100 * 1.06
