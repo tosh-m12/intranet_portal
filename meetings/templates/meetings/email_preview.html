@@ -2,7 +2,7 @@
 {% extends "portal/base.html" %}
 {% load i18n %}
 
-{% block title %}訪問・WEB会議予定メール プレビュー{% endblock %}
+{% block title %}{% trans "訪問・WEB会議予定メール プレビュー" %}{% endblock %}
 
 {% block app_name %}
 <h1><svg class="ic"><use href="#ic-video"/></svg> {% trans "客先訪問・WEB会議" %}</h1>
@@ -13,11 +13,11 @@
 {% endblock %}
 
 {% block content %}
-<h1>訪問・WEB会議予定メール プレビュー</h1>
+<h1>{% trans "訪問・WEB会議予定メール プレビュー" %}</h1>
 
 <p>
-    現在の設定・データにもとづいたメール本文のプレビューです。<br>
-    実際の送信時も、ほぼこの内容で送信されます。
+    {% trans "現在の設定・データにもとづいたメール本文のプレビューです。" %}<br>
+    {% trans "実際の送信時も、ほぼこの内容で送信されます。" %}
 </p>
 
 <div style="border:1px solid #ccc; padding:16px; background:#fff; margin-top:16px;">
@@ -25,6 +25,6 @@
 </div>
 
 <p style="margin-top:16px;">
-    <a href="{% url 'meetings:settings' %}">← 設定画面に戻る</a>
+    <a href="{% url 'meetings:settings' %}">← {% trans "設定画面に戻る" %}</a>
 </p>
 {% endblock %}

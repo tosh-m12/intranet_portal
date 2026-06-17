@@ -142,6 +142,18 @@
 .vessel-app .monitor-note{background:#eef2f8;border:1px solid var(--line);border-radius:8px;
   padding:8px 12px;font-size:12px;color:#566;margin:0 0 12px}
 
+/* ライブ監視: 最終更新・自動更新周期の注記 */
+.vessel-app .live-meta{font-size:12px;font-variant-numeric:tabular-nums}
+.vessel-app .refresh-form{margin:0}
+
+/* 重複登録の警告(同一荷主×同一本船を入力中に検知) */
+.vessel-app .dup-warn{flex-basis:100%;margin:8px 0 0;padding:8px 12px;border-radius:8px;
+  background:var(--warn-b);border:1px solid #ecd27a;color:#7a5c00;font-size:13px}
+.vessel-app .dup-warn-head{font-weight:700;color:var(--bad-t);margin-bottom:4px}
+.vessel-app .dup-warn ul{margin:0;padding-left:18px}
+.vessel-app .dup-warn li{margin:2px 0}
+.vessel-app .dup-warn a{color:var(--blue)}
+
 /* 入力制限の吹き出し警告(body 直下に出すため非スコープ) */
 .vt-hint{position:fixed;z-index:9999;background:#c00000;color:#fff;font-size:11px;font-weight:600;
   padding:2px 8px;border-radius:5px;white-space:nowrap;pointer-events:none;opacity:0;

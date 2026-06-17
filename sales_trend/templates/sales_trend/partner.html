@@ -1,7 +1,7 @@
 {% extends "portal/base.html" %}
-{% load static humanize %}
+{% load static humanize i18n %}
 
-{% block title %}{{ group }} ビジネス概要{% endblock %}
+{% block title %}{{ group }} {% trans "ビジネス概要" %}{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'sales_trend/style.css' %}?v=10">
@@ -9,8 +9,8 @@
 
 {% block app_name %}
 <div class="pt-head">
-  <h1><svg class="ic"><use href="#ic-chart"/></svg> {{ group|default:"—" }} ビジネス概要</h1>
-  <a class="pt-back" href="{% url 'sales_trend:index' %}#customer">← 売上推移へ戻る</a>
+  <h1><svg class="ic"><use href="#ic-chart"/></svg> {{ group|default:"—" }} {% trans "ビジネス概要" %}</h1>
+  <a class="pt-back" href="{% url 'sales_trend:index' %}#customer">← {% trans "売上推移へ戻る" %}</a>
 </div>
 {% endblock %}
 
@@ -18,18 +18,18 @@
 <div class="partner-page">
 
   {% if not group %}
-    <p class="pt-empty">取引先が指定されていません。</p>
+    <p class="pt-empty">{% trans "取引先が指定されていません。" %}</p>
   {% else %}
-    {% if not has_data %}<p class="pt-empty">この取引先のデータはありません。</p>{% endif %}
+    {% if not has_data %}<p class="pt-empty">{% trans "この取引先のデータはありません。" %}</p>{% endif %}
 
     {# ===== 売上推移 ===== #}
     <section class="pt-sec">
-      <h3>売上推移</h3>
+      <h3>{% trans "売上推移" %}</h3>
       <div class="pt-chartwrap">
-        <span class="pt-unit">単位: 100万元</span>
+        <span class="pt-unit">{% trans "単位: 100万元" %}</span>
         <div class="st-seg pt-period" data-toggle="pt-period">
-          <button type="button" data-val="qtr" class="active">四半期</button>
-          <button type="button" data-val="month">月別</button>
+          <button type="button" data-val="qtr" class="active">{% trans "四半期" %}</button>
+          <button type="button" data-val="month">{% trans "月別" %}</button>
         </div>
         <canvas id="ptChart"></canvas>
       </div>
@@ -37,60 +37,60 @@
 
     {# ===== 基本情報 ===== #}
     <section class="pt-sec">
-      <h3>基本情報</h3>
+      <h3>{% trans "基本情報" %}</h3>
       <dl class="pt-dl">
-        <dt>荷主グループ</dt><dd>{{ group }}</dd>
-        <dt>業務形態</dt><dd class="pt-todo">未入力</dd>
-        <dt>取扱品目</dt><dd class="pt-todo">未入力</dd>
-        <dt>費用請求先</dt>
+        <dt>{% trans "荷主グループ" %}</dt><dd>{{ group }}</dd>
+        <dt>{% trans "業務形態" %}</dt><dd class="pt-todo">{% trans "未入力" %}</dd>
+        <dt>{% trans "取扱品目" %}</dt><dd class="pt-todo">{% trans "未入力" %}</dd>
+        <dt>{% trans "費用請求先" %}</dt>
         <dd>{% for b in bill_tos %}{{ b }}{% if not forloop.last %}<br>{% endif %}{% empty %}—{% endfor %}</dd>
-        <dt>取引開始年</dt><dd class="pt-todo">未入力</dd>
-        <dt>前年度（{{ prev_year|default:"—" }}）売上総額</dt>
-        <dd class="num">{% if prev_total %}{{ prev_total|intcomma }} 元{% else %}—{% endif %}</dd>
-        <dt>前年度 月額平均売上</dt>
-        <dd class="num">{% if prev_avg %}{{ prev_avg|intcomma }} 元{% else %}—{% endif %}</dd>
-        <dt>客先連絡窓口</dt><dd class="pt-todo">未入力</dd>
-        <dt>日本側日通窓口</dt><dd class="pt-todo">未入力</dd>
-        <dt>外ロジ担当者</dt><dd>{{ assignees|join:" / "|default:"—" }}</dd>
+        <dt>{% trans "取引開始年" %}</dt><dd class="pt-todo">{% trans "未入力" %}</dd>
+        <dt>{% blocktrans with py=prev_year|default:"—" %}前年度（{{ py }}）売上総額{% endblocktrans %}</dt>
+        <dd class="num">{% if prev_total %}{{ prev_total|intcomma }} {% trans "元" %}{% else %}—{% endif %}</dd>
+        <dt>{% trans "前年度 月額平均売上" %}</dt>
+        <dd class="num">{% if prev_avg %}{{ prev_avg|intcomma }} {% trans "元" %}{% else %}—{% endif %}</dd>
+        <dt>{% trans "客先連絡窓口" %}</dt><dd class="pt-todo">{% trans "未入力" %}</dd>
+        <dt>{% trans "日本側日通窓口" %}</dt><dd class="pt-todo">{% trans "未入力" %}</dd>
+        <dt>{% trans "外ロジ担当者" %}</dt><dd>{{ assignees|join:" / "|default:"—" }}</dd>
       </dl>
     </section>
 
     {# ===== 保管条件・特殊作業 ===== #}
     <section class="pt-sec">
-      <h3>保管条件・特殊作業</h3>
+      <h3>{% trans "保管条件・特殊作業" %}</h3>
       <dl class="pt-dl">
-        <dt>保管場所</dt><dd class="pt-todo">未入力</dd>
-        <dt>保管温度・湿度条件</dt><dd class="pt-todo">未入力</dd>
-        <dt>特殊作業</dt><dd class="pt-todo">未入力</dd>
+        <dt>{% trans "保管場所" %}</dt><dd class="pt-todo">{% trans "未入力" %}</dd>
+        <dt>{% trans "保管温度・湿度条件" %}</dt><dd class="pt-todo">{% trans "未入力" %}</dd>
+        <dt>{% trans "特殊作業" %}</dt><dd class="pt-todo">{% trans "未入力" %}</dd>
       </dl>
     </section>
 
     {# ===== 物流詳細 ===== #}
     <section class="pt-sec">
-      <h3>物流詳細</h3>
+      <h3>{% trans "物流詳細" %}</h3>
       <table class="pt-table pt-logi">
         <thead><tr>
-          <th>入庫区分<br><span class="th-sub">国内/海外</span></th>
-          <th>保管倉庫</th>
-          <th>集配先</th>
-          <th>配送先</th>
-          <th>仕向地</th>
-          <th>輸送モード</th>
-          <th>備考</th>
+          <th>{% trans "入庫区分" %}<br><span class="th-sub">{% trans "国内/海外" %}</span></th>
+          <th>{% trans "保管倉庫" %}</th>
+          <th>{% trans "集配先" %}</th>
+          <th>{% trans "配送先" %}</th>
+          <th>{% trans "仕向地" %}</th>
+          <th>{% trans "輸送モード" %}</th>
+          <th>{% trans "備考" %}</th>
         </tr></thead>
         <tbody>
           <tr>
-            <td class="pt-todo">未入力</td>
-            <td class="pt-todo">未入力</td>
-            <td class="pt-todo">未入力</td>
-            <td class="pt-todo">未入力</td>
-            <td class="pt-todo">未入力</td>
-            <td class="pt-todo">未入力</td>
-            <td class="pt-todo">未入力</td>
+            <td class="pt-todo">{% trans "未入力" %}</td>
+            <td class="pt-todo">{% trans "未入力" %}</td>
+            <td class="pt-todo">{% trans "未入力" %}</td>
+            <td class="pt-todo">{% trans "未入力" %}</td>
+            <td class="pt-todo">{% trans "未入力" %}</td>
+            <td class="pt-todo">{% trans "未入力" %}</td>
+            <td class="pt-todo">{% trans "未入力" %}</td>
           </tr>
         </tbody>
       </table>
-      <p class="pt-note">※ 入庫(国内/海外)→ 保管倉庫 → 集配 → 配送 → 仕向地 の一連の物流を担当者が今後入力します。</p>
+      <p class="pt-note">{% trans "※ 入庫(国内/海外)→ 保管倉庫 → 集配 → 配送 → 仕向地 の一連の物流を担当者が今後入力します。" %}</p>
     </section>
 
     {{ chart|json_script:"pt-data" }}

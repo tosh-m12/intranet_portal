@@ -10,8 +10,12 @@
 </div>
 
 <form method="post" id="entryForm"
-      action="{% if obj.pk %}{% url 'vessel_tracking:edit' obj.pk %}{% else %}{% url 'vessel_tracking:entry' %}{% endif %}">
+      action="{% if obj.pk %}{% url 'vessel_tracking:edit' obj.pk %}{% else %}{% url 'vessel_tracking:entry' %}{% endif %}"
+      data-dupcheck="{% url 'vessel_tracking:dup_check' %}"{% if obj.pk %} data-exclude="{{ obj.pk }}"{% endif %}
+      data-dup-warn="{% trans '⚠ 同じ便（荷主・本船・航海No）が既に登録されています。二重登録に注意してください。' %}"
+      data-dup-confirm="{% trans '同じ便（荷主・本船・航海No）が既に登録されています。このまま二重登録しますか？' %}">
   {% csrf_token %}
+  <div class="dup-warn" hidden></div>
 
   <h3 class="sec">{% trans "識別・取引先" %}</h3>
   <div class="form-grid">

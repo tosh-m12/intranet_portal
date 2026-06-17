@@ -5,13 +5,20 @@
 <div class="vessel-app">
 <div class="detail-head">
   <h2 class="sec">{% trans "出発前一覧" %}</h2>
+  <div class="head-actions">
+    <span class="muted live-meta">{% if last_updated_jst %}{% trans "最終更新" %} {{ last_updated_jst }}{% else %}{% trans "未取得" %}{% endif %} ・ {% trans "自動 3時間毎" %}</span>
+    <form method="post" action="{% url 'vessel_tracking:monitor_refresh' %}" id="refreshForm" class="refresh-form">
+      {% csrf_token %}
+      <button type="submit" class="btn" id="refreshBtn" data-updating="{% trans '更新中…' %}">↻ {% trans "今すぐ更新" %}</button>
+    </form>
+  </div>
 </div>
 
 <div class="tablewrap">
 <table class="grid">
   <thead>
     <tr>
-      <th class="r">{% trans "出発まであと" %}</th>
+      <th class="c">{% trans "当初ETDまであと" %}</th>
       <th>{% trans "荷主" %}</th>
       <th class="c stack2"><span>{% trans "仕出地" %}</span><span>{% trans "仕向地" %}</span></th>
       <th>{% trans "本船名" %}</th>

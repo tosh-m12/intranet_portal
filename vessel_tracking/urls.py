@@ -10,6 +10,7 @@ urlpatterns = [
     path('monitor/', views.monitor, name='monitor'),
     path('monitor/refresh/', views.monitor_refresh, name='monitor_refresh'),
     path('quick/', views.quick_create, name='quick_create'),
+    path('dup-check/', views.dup_check, name='dup_check'),
     path('detail/<int:pk>/', views.detail, name='detail'),
     path('entry/', views.entry, name='entry'),
     path('entry/<int:pk>/', views.entry, name='edit'),

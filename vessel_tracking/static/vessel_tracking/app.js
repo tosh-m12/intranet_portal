@@ -131,6 +131,85 @@ document.addEventListener('click', function (e) {
   });
 })();
 
+/* ===== 重複登録の警告(同一荷主×同一本船の既存便をライブ検知) ===== */
+(function () {
+  document.querySelectorAll('form[data-dupcheck]').forEach(function (form) {
+    var warn = form.querySelector('.dup-warn');
+    if (!warn) return;
+    var url = form.getAttribute('data-dupcheck');
+    var exclude = form.getAttribute('data-exclude') || '';
+    // 文言は静的JSで翻訳できないため、テンプレ側 {% trans %} の結果を data 属性で受け取る。
+    var warnMsg = form.getAttribute('data-dup-warn') || '重複の可能性があります。';
+    var confirmMsg = form.getAttribute('data-dup-confirm') || warnMsg;
+    var fCustomer = form.querySelector('[name=customer]');
+    var fVessel = form.querySelector('[name=vessel]');
+    var fVoyage = form.querySelector('[name=voyage]');
+    var fDest = form.querySelector('[name=dest]');
+    if (!fCustomer || !fVessel) return;
+    var timer, hasDup = false;
+
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+      });
+    }
+
+    function render(matches) {
+      hasDup = matches.length > 0;
+      if (!hasDup) { warn.hidden = true; warn.innerHTML = ''; return; }
+      var items = matches.map(function (m) {
+        var parts = [esc(m.vessel)];
+        if (m.voyage) parts.push(esc(m.voyage));
+        if (m.dest) parts.push(esc(m.dest));
+        if (m.etd) parts.push('ETD ' + esc(m.etd));
+        return '<li><a href="' + m.url + '" target="_blank" rel="noopener">'
+          + parts.join(' / ') + '</a></li>';
+      }).join('');
+      warn.innerHTML = '<div class="dup-warn-head">' + esc(warnMsg) + '（' + matches.length
+        + '）</div><ul>' + items + '</ul>';
+      warn.hidden = false;
+    }
+
+    function check() {
+      var c = (fCustomer.value || '').trim();
+      var v = (fVessel.value || '').trim();
+      if (!c || !v) { render([]); return; }
+      var qs = 'customer=' + encodeURIComponent(c) + '&vessel=' + encodeURIComponent(v)
+        + '&voyage=' + encodeURIComponent(fVoyage ? fVoyage.value : '')
+        + '&dest=' + encodeURIComponent(fDest ? fDest.value : '')
+        + (exclude ? '&exclude=' + encodeURIComponent(exclude) : '');
+      fetch(url + '?' + qs, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(function (r) { return r.json(); })
+        .then(function (d) { render(d.matches || []); })
+        .catch(function () { render([]); });
+    }
+
+    [fCustomer, fVessel, fVoyage, fDest].forEach(function (el) {
+      if (!el) return;
+      el.addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(check, 300); });
+      el.addEventListener('change', check);
+    });
+
+    // 重複候補があれば登録前に確認(警告を無視した二重登録を防ぐ)。capture で他の submit 処理より先に判定。
+    form.addEventListener('submit', function (e) {
+      if (hasDup && !window.confirm(confirmMsg)) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, true);
+  });
+})();
+
+/* ===== ライブ監視: 手動更新の二重送信防止 ===== */
+(function () {
+  var form = document.getElementById('refreshForm');
+  if (!form) return;
+  form.addEventListener('submit', function () {
+    var btn = document.getElementById('refreshBtn');
+    if (btn) { btn.disabled = true; btn.textContent = btn.getAttribute('data-updating') || '…'; }
+  });
+})();
+
 /* ===== 入力フォーム: IME/Tab/Enter 制御 ===== */
 (function () {
   var form = document.getElementById('entryForm');
