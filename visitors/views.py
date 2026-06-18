@@ -1,3 +1,5 @@
+import json
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.forms import formset_factory
 from django.contrib import messages
@@ -122,6 +124,42 @@ def history(request):
 # =========================================================
 # 新規登録
 # =========================================================
+def _contact_candidates():
+    """来客(Visitor)+訪問(Meeting)のキャンセル除外データから、入力候補を作る。
+
+    クリーニング済みの相手先表記をそのまま候補に出すことで、新規登録時の
+    表記ゆれ再発を入口で防ぐ。会社→姓→名 が一意に決まれば JS が名・役職を補完する。
+    """
+    from meetings.models import Meeting
+
+    seen, contacts = set(), []
+    companies, titles = set(), set()
+    for Model in (Visitor, Meeting):
+        rows = Model.objects.filter(cancelled=False).values(
+            "company_name", "last_name", "first_name", "title")
+        for r in rows:
+            co = (r["company_name"] or "").strip()
+            ln = (r["last_name"] or "").strip()
+            fn = (r["first_name"] or "").strip()
+            ti = (r["title"] or "").strip()
+            if co:
+                companies.add(co)
+            if ti:
+                titles.add(ti)
+            if co or ln or fn:
+                key = (co, ln, fn, ti)
+                if key not in seen:
+                    seen.add(key)
+                    contacts.append({"c": co, "l": ln, "f": fn, "t": ti})
+    return {
+        "cand_companies": sorted(companies),
+        "cand_titles": sorted(titles),
+        "cand_lastnames": sorted({c["l"] for c in contacts if c["l"]}),
+        "cand_firstnames": sorted({c["f"] for c in contacts if c["f"]}),
+        "cand_contacts_json": json.dumps(contacts, ensure_ascii=False),
+    }
+
+
 @login_required
 def add_visitor(request):
     VisitorFormSet = formset_factory(VisitorForm, extra=3)
@@ -174,7 +212,8 @@ def add_visitor(request):
     return render(request, "visitors/add.html", {
         "formset": formset,
         "time_choices": time_choices,
-        "host_name": host_name, 
+        "host_name": host_name,
+        **_contact_candidates(),
     })
 
 

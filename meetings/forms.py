@@ -32,10 +32,18 @@ class MeetingForm(forms.Form):
     time_undecided = forms.BooleanField(
         label=_l('時間未定'), required=False
     )
-    company_name = forms.CharField(label=_l('会社名'), required=False)
-    last_name = forms.CharField(label=_l('姓'), required=False)
-    first_name = forms.CharField(label=_l('名'), required=False)
-    title = forms.CharField(label=_l('役職'), required=False)
+    company_name = forms.CharField(
+        label=_l('会社名'), required=False,
+        widget=forms.TextInput(attrs={'list': 'dl-company', 'autocomplete': 'off'}))
+    last_name = forms.CharField(
+        label=_l('姓'), required=False,
+        widget=forms.TextInput(attrs={'list': 'dl-last', 'autocomplete': 'off'}))
+    first_name = forms.CharField(
+        label=_l('名'), required=False,
+        widget=forms.TextInput(attrs={'list': 'dl-first', 'autocomplete': 'off'}))
+    title = forms.CharField(
+        label=_l('役職'), required=False,
+        widget=forms.TextInput(attrs={'list': 'dl-title', 'autocomplete': 'off'}))
     purpose = forms.CharField(label=_l('目的'), required=False)
     location = forms.CharField(label=_l('場所'), required=False)
     host_staff = forms.CharField(label=_l('担当者'), required=False)

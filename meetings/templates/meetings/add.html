@@ -115,6 +115,42 @@
     </div>
 </form>
 
+{# ★ 入力候補（クリーニング済みの相手先データ）。全行・追加行で共有。 #}
+<datalist id="dl-company">{% for c in cand_companies %}<option value="{{ c }}">{% endfor %}</datalist>
+<datalist id="dl-last">{% for c in cand_lastnames %}<option value="{{ c }}">{% endfor %}</datalist>
+<datalist id="dl-first">{% for c in cand_firstnames %}<option value="{{ c }}">{% endfor %}</datalist>
+<datalist id="dl-title">{% for c in cand_titles %}<option value="{{ c }}">{% endfor %}</datalist>
+
+<script>
+    // 既知の相手先（会社・姓・名・役職）。会社/姓/名 が一意に定まれば残りを補完する。
+    const CONTACTS = {{ cand_contacts_json|safe }};
+    function autofillContactRow(row) {
+        const g = s => row.querySelector('input[name$="-' + s + '"]');
+        const co = g('company_name'), ln = g('last_name'),
+              fn = g('first_name'), ti = g('title');
+        if (!co || !ln || !fn || !ti) return;
+        const cv = co.value.trim(), lv = ln.value.trim(), fv = fn.value.trim();
+        if (!cv && !lv && !fv) return;
+        const cand = CONTACTS.filter(x =>
+            (!cv || x.c === cv) && (!lv || x.l === lv) && (!fv || x.f === fv));
+        if (cand.length === 1) {
+            const m = cand[0];
+            if (!co.value.trim()) co.value = m.c;
+            if (!ln.value.trim()) ln.value = m.l;
+            if (!fn.value.trim()) fn.value = m.f;
+            if (!ti.value.trim()) ti.value = m.t;
+        }
+    }
+    // 行追加(JS生成)にも効くようイベント委譲。change(確定/候補選択時)で発火＝IME変換中は動かない。
+    document.addEventListener('change', function (e) {
+        const t = e.target;
+        if (t && t.name && /-(company_name|last_name|first_name)$/.test(t.name)) {
+            const row = t.closest('tr');
+            if (row) autofillContactRow(row);
+        }
+    });
+</script>
+
 <script>
     let activeLocationRow = null;
     // ログインユーザーのフルネーム（なければユーザー名など）
@@ -431,10 +467,10 @@
                     ${timeChoicesHtml}
                 </select>
             </td>
-            <td><input type="text" name="form-__prefix__-company_name"></td>
-            <td><input type="text" name="form-__prefix__-last_name"></td>
-            <td><input type="text" name="form-__prefix__-first_name"></td>
-            <td><input type="text" name="form-__prefix__-title"></td>
+            <td><input type="text" name="form-__prefix__-company_name" list="dl-company" autocomplete="off"></td>
+            <td><input type="text" name="form-__prefix__-last_name" list="dl-last" autocomplete="off"></td>
+            <td><input type="text" name="form-__prefix__-first_name" list="dl-first" autocomplete="off"></td>
+            <td><input type="text" name="form-__prefix__-title" list="dl-title" autocomplete="off"></td>
             <td><input type="text" name="form-__prefix__-purpose"></td>
             <td class="editable location-cell">
                 <input type="hidden" name="form-__prefix__-location" value="">
