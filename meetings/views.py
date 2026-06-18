@@ -121,6 +121,42 @@ def index(request):
     return render(request, "meetings/index.html", {"meetings": meetings})
 
 
+def _contact_candidates():
+    """訪問(Meeting)+来客(Visitor)のキャンセル除外データから入力候補を作る。
+
+    クリーニング済みの相手先表記を候補に出し、表記ゆれ再発を入口で防ぐ。
+    会社→姓→名 が一意に決まれば JS が名・役職を補完する。visitors 側と対。
+    """
+    from visitors.models import Visitor
+
+    seen, contacts = set(), []
+    companies, titles = set(), set()
+    for Model in (Meeting, Visitor):
+        rows = Model.objects.filter(cancelled=False).values(
+            "company_name", "last_name", "first_name", "title")
+        for r in rows:
+            co = (r["company_name"] or "").strip()
+            ln = (r["last_name"] or "").strip()
+            fn = (r["first_name"] or "").strip()
+            ti = (r["title"] or "").strip()
+            if co:
+                companies.add(co)
+            if ti:
+                titles.add(ti)
+            if co or ln or fn:
+                key = (co, ln, fn, ti)
+                if key not in seen:
+                    seen.add(key)
+                    contacts.append({"c": co, "l": ln, "f": fn, "t": ti})
+    return {
+        "cand_companies": sorted(companies),
+        "cand_titles": sorted(titles),
+        "cand_lastnames": sorted({c["l"] for c in contacts if c["l"]}),
+        "cand_firstnames": sorted({c["f"] for c in contacts if c["f"]}),
+        "cand_contacts_json": json.dumps(contacts, ensure_ascii=False),
+    }
+
+
 @login_required
 def add_meeting(request):
     """
@@ -178,6 +214,7 @@ def add_meeting(request):
         "formset": formset,
         "time_choices": time_choices,
         "host_name": host_name,
+        **_contact_candidates(),
     })
 
 
