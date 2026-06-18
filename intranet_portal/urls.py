@@ -28,4 +28,5 @@ urlpatterns = [
     path("billing/", include("billing.urls")),
     path("sales-trend/", include("sales_trend.urls")),
     path("vessel/", include("vessel_tracking.urls")),
+    path("ops/", include("opsbridge.urls")),   # 汎用メンテナンスAPI(opsbridge)
 ]
