@@ -1,0 +1,74 @@
+{# contacts/index.html — これまで会った相手先(来客+訪問 横断) #}
+{% extends "portal/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "相手先名簿" %} - 社内ポータル{% endblock %}
+
+{% block app_name %}
+<h1><svg class="ic"><use href="#ic-users"/></svg> {% trans "相手先名簿" %}</h1>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>{% trans "これまでお会いした相手先" %}</h2>
+    </div>
+    <div class="contacts-toolbar">
+        <input type="text" id="contact-filter" class="contact-filter"
+               placeholder="{% trans '会社名・氏名・役職で絞り込み' %}" autocomplete="off">
+        <span class="contacts-count"><span id="contact-shown">{{ total }}</span> / {{ total }} {% trans "件" %}</span>
+    </div>
+</div>
+
+<div class="table-wrapper">
+    <table class="visit-table visit" id="contacts-table">
+        <thead>
+            <tr>
+                <th>{% trans "正式会社名" %}</th>
+                <th>{% trans "姓" %}</th>
+                <th>{% trans "名" %}</th>
+                <th>{% trans "役職" %}</th>
+                <th>{% trans "種別" %}</th>
+                <th>{% trans "最終面会日" %}</th>
+                <th>{% trans "面会回数" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in contacts %}
+                <tr class="contact-row">
+                    <td>{{ c.company }}</td>
+                    <td>{{ c.last }}</td>
+                    <td>{{ c.first }}</td>
+                    <td>{{ c.title }}</td>
+                    <td style="text-align:center;">{{ c.kind_label }}</td>
+                    <td style="text-align:center;">{{ c.last_date|date:"Y-m-d" }}</td>
+                    <td style="text-align:right; font-variant-numeric:tabular-nums;">{{ c.count }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="7" style="text-align:center; padding:1.5rem;">{% trans "データがありません" %}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // 会社名・氏名・役職での簡易絞り込み(クライアント側)。空白区切りでAND検索。
+    (function () {
+        const input = document.getElementById('contact-filter');
+        const rows = Array.from(document.querySelectorAll('#contacts-table tbody tr.contact-row'));
+        const shown = document.getElementById('contact-shown');
+        if (!input) return;
+        input.addEventListener('input', function () {
+            const terms = input.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+            let n = 0;
+            rows.forEach(function (row) {
+                const text = row.textContent.toLowerCase();
+                const ok = terms.every(t => text.includes(t));
+                row.style.display = ok ? '' : 'none';
+                if (ok) n++;
+            });
+            if (shown) shown.textContent = n;
+        });
+    })();
+</script>
+{% endblock %}
