@@ -28,8 +28,6 @@
                 <th>{% trans "姓" %}</th>
                 <th>{% trans "名" %}</th>
                 <th>{% trans "役職" %}</th>
-                <th class="c">{% trans "種別" %}</th>
-                <th class="c">{% trans "最終面会日" %}</th>
                 <th class="r">{% trans "面会回数" %}</th>
             </tr>
         </thead>
@@ -40,12 +38,10 @@
                     <td>{{ c.last }}</td>
                     <td>{{ c.first }}</td>
                     <td>{{ c.title }}</td>
-                    <td class="c">{{ c.kind_label }}</td>
-                    <td class="c">{{ c.last_date|date:"Y-m-d" }}</td>
                     <td class="r">{{ c.count }}</td>
                 </tr>
             {% empty %}
-                <tr><td colspan="7" class="c" style="padding:1.5rem;">{% trans "データがありません" %}</td></tr>
+                <tr><td colspan="5" class="c" style="padding:1.5rem;">{% trans "データがありません" %}</td></tr>
             {% endfor %}
         </tbody>
     </table>
