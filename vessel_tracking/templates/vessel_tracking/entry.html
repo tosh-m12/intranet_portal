@@ -21,7 +21,7 @@
   <div class="form-grid">
     <label class="req-label">{% trans "荷主" %} <span class="req">{% trans "必須" %}</span>
       {# 荷主の候補は billing(請求書管理台帳)の取引先マスタを参照。 #}
-      <input type="text" name="customer" list="dl-shippers" value="{{ obj.customer|default:'' }}"
+      <input type="text" name="customer" data-ac="ac-shippers" value="{{ obj.customer|default:'' }}"
              autocomplete="off" required placeholder="{% trans '取引先マスタから' %}">
     </label>
     <label>{% trans "担当者" %}
@@ -42,17 +42,18 @@
              autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="{% trans '例: SHANGHAI' %}">
     </label>
     <label>{% trans "仕向地" %}
-      <input type="text" name="dest" class="alnum-up" list="dl-dests" value="{{ obj.dest|default:'' }}"
+      <input type="text" name="dest" class="alnum-up" data-ac="ac-dests" value="{{ obj.dest|default:'' }}"
              autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="{% trans '例: TOKYO' %}">
     </label>
   </div>
-  <datalist id="dl-dests">{% for d in dests %}<option value="{{ d }}">{% endfor %}</datalist>
-  <datalist id="dl-shippers">{% for g in shippers %}<option value="{{ g }}">{% endfor %}</datalist>
+  {# 入力候補(自前サジェスト・請求台帳と同方式)。datalistは使わない。 #}
+  {{ dests|json_script:"ac-dests" }}
+  {{ shippers|json_script:"ac-shippers" }}
 
   <h3 class="sec">{% trans "貨物量" %}</h3>
   <div class="form-grid">
     <label>{% trans "輸送区分" %}
-      <input type="text" name="container_type" class="alnum-up" list="dl-containers" maxlength="16"
+      <input type="text" name="container_type" class="alnum-up" data-ac="ac-containers" maxlength="16"
              value="{{ obj.container_type|default:'' }}" autocomplete="off" autocapitalize="characters"
              spellcheck="false" placeholder="{% trans '例: 20F / LCL' %}">
     </label>
@@ -66,7 +67,7 @@
       <input type="text" inputmode="numeric" class="digits num" name="out_qty" value="{{ obj.out_qty|default_if_none:'' }}" autocomplete="off">
     </label>
   </div>
-  <datalist id="dl-containers">{% for t in container_types %}<option value="{{ t }}">{% endfor %}</datalist>
+  {{ container_types|json_script:"ac-containers" }}
 
   <h3 class="sec">{% trans "本船・スケジュール（ブッキング確定時）" %}</h3>
   <div class="form-grid">
