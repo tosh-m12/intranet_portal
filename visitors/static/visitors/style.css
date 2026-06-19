@@ -986,3 +986,24 @@ tr.is-cancelled td.location-cell {
 .ac-list .ac-item:hover { background: #eef4fc; }
 .ac-list .ac-item .sub { display: block; font-size: 11px; color: #8a93a3; }
 .ac-list .ac-item mark { background: #fff2b0; color: inherit; padding: 0; border-radius: 2px; }
+
+/* ===== 相手先名簿の一覧表（整然データ表。会社名は折り返し可・他は内容幅で詰める） ===== */
+.contacts-table { width: 100%; border-collapse: collapse; background: #fff;
+    border: 1px solid #d9dee7; border-radius: 8px; overflow: hidden; }
+.contacts-table th, .contacts-table td {
+    padding: 8px 12px; border-bottom: 1px solid #eef1f5;
+    text-align: left; vertical-align: middle; font-size: 14px; white-space: nowrap; }
+.contacts-table th { background: #1f3864; color: #fff; font-weight: 600; font-size: 13px; text-align: center; }
+.contacts-table tbody tr:last-child td { border-bottom: none; }
+.contacts-table tbody tr:hover td { background: #f7f9fc; }
+.contacts-table td.c, .contacts-table th.c { text-align: center; }
+.contacts-table td.r, .contacts-table th.r { text-align: right; font-variant-numeric: tabular-nums; }
+/* 会社名は最も長い→折り返し可＋最小幅を確保。余剰幅はこの列が吸収し、他列は内容ぴったり。 */
+.contacts-table td.company { white-space: normal; font-weight: 500; min-width: 16em; }
+/* 上部の検索＋件数ツールバー */
+.contacts-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.contacts-toolbar .contact-filter {
+    width: 240px; max-width: 50vw; padding: 6px 10px;
+    border: 1px solid #c7ccd4; border-radius: 6px; font-size: 13px; font-family: inherit; }
+.contacts-toolbar .contact-filter:focus { outline: none; border-color: #2e5496; box-shadow: 0 0 0 2px rgba(46, 84, 150, .15); }
+.contacts-toolbar .contacts-count { font-size: 13px; color: #667085; white-space: nowrap; font-variant-numeric: tabular-nums; }

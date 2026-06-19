@@ -240,3 +240,60 @@ document.addEventListener('click', function (e) {
     else if (i === list.length - 1) t.blur();
   });
 })();
+
+/* ===== 入力候補: 自前サジェスト(請求台帳と同方式)。datalist の代替。
+   <input data-ac="ac-xxx"> に対し <script id="ac-xxx" type="application/json">[...]</script>
+   の配列から、入力途中で下に候補(.ac-list)を出す。CSS は visitors/style.css 共通。 ===== */
+(function () {
+  function srcOf(id) { var el = document.getElementById(id); try { return el ? JSON.parse(el.textContent) : []; } catch (e) { return []; } }
+  function escHtml(s) { return String(s).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); }
+  function hl(text, q) {
+    var i = q ? text.toLowerCase().indexOf(q.toLowerCase()) : -1;
+    if (i < 0) return escHtml(text);
+    return escHtml(text.slice(0, i)) + '<mark>' + escHtml(text.slice(i, i + q.length)) + '</mark>' + escHtml(text.slice(i + q.length));
+  }
+  function imeEnter(e) { return e.isComposing || e.keyCode === 229; }
+
+  function attach(input) {
+    var SRC = srcOf(input.dataset.ac);
+    var box = null, items = [], active = -1;
+    function close() { if (box) { box.remove(); box = null; } items = []; active = -1; }
+    function position() { var r = input.getBoundingClientRect(); box.style.left = r.left + 'px'; box.style.top = r.bottom + 'px'; box.style.minWidth = r.width + 'px'; }
+    function open() { close(); box = document.createElement('div'); box.className = 'ac-list'; document.body.appendChild(box); position(); document.addEventListener('scroll', close, { once: true, capture: true }); }
+    function render(q) {
+      box.innerHTML = '';
+      items.forEach(function (it, idx) {
+        var d = document.createElement('div');
+        d.className = 'ac-item' + (idx === active ? ' active' : '');
+        d.innerHTML = hl(it, q);
+        d.addEventListener('mousedown', function (ev) { ev.preventDefault(); choose(idx); });
+        box.appendChild(d);
+      });
+    }
+    function choose(idx) { if (items[idx] == null) return; input.value = items[idx]; input.dispatchEvent(new Event('input', { bubbles: true })); close(); }
+    function update() {
+      var q = input.value.trim();
+      if (!q) { close(); return; }
+      var ql = q.toLowerCase();
+      items = SRC.filter(function (s) { return String(s).toLowerCase().indexOf(ql) >= 0; }).slice(0, 8);
+      active = items.length ? 0 : -1;
+      if (!items.length) { close(); return; }
+      if (!box) open(); else position();
+      render(q);
+    }
+    input.addEventListener('input', update);
+    input.addEventListener('keydown', function (e) {
+      if (imeEnter(e)) return;
+      if (!box || !items.length) return;
+      if (e.key === 'ArrowDown') { e.preventDefault(); active = (active + 1) % items.length; render(input.value.trim()); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); active = (active - 1 + items.length) % items.length; render(input.value.trim()); }
+      else if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); choose(active); }
+      else if (e.key === 'Escape') { close(); }
+    });
+    input.addEventListener('blur', function () { setTimeout(close, 150); });
+  }
+  document.addEventListener('focusin', function (e) {
+    var t = e.target;
+    if (t && t.dataset && t.dataset.ac && !t.dataset.acReady) { t.dataset.acReady = '1'; attach(t); }
+  });
+})();
