@@ -34,16 +34,16 @@ class MeetingForm(forms.Form):
     )
     company_name = forms.CharField(
         label=_l('会社名'), required=False,
-        widget=forms.TextInput(attrs={'list': 'dl-company', 'autocomplete': 'off'}))
+        widget=forms.TextInput(attrs={'class': 'ac-field', 'autocomplete': 'off'}))
     last_name = forms.CharField(
         label=_l('姓'), required=False,
-        widget=forms.TextInput(attrs={'list': 'dl-last', 'autocomplete': 'off'}))
+        widget=forms.TextInput(attrs={'class': 'ac-field', 'autocomplete': 'off'}))
     first_name = forms.CharField(
         label=_l('名'), required=False,
-        widget=forms.TextInput(attrs={'list': 'dl-first', 'autocomplete': 'off'}))
+        widget=forms.TextInput(attrs={'class': 'ac-field', 'autocomplete': 'off'}))
     title = forms.CharField(
         label=_l('役職'), required=False,
-        widget=forms.TextInput(attrs={'list': 'dl-title', 'autocomplete': 'off'}))
+        widget=forms.TextInput(attrs={'class': 'ac-field', 'autocomplete': 'off'}))
     purpose = forms.CharField(label=_l('目的'), required=False)
     location = forms.CharField(label=_l('場所'), required=False)
     host_staff = forms.CharField(label=_l('担当者'), required=False)

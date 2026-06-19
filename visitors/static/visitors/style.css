@@ -959,3 +959,30 @@ tr.is-cancelled td.location-cell {
     text-decoration: line-through;
     color: #c00;
 }
+
+/* ===== 入力候補サジェスト（来客/訪問の新規登録。請求台帳と同方式・datalist非使用） =====
+   ボックスは body 直下に position:fixed で出すため、テーブルの overflow に切られない。 */
+.ac-list {
+    position: fixed;
+    z-index: 1000;
+    background: #fff;
+    border: 1px solid #2e5496;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 6px 18px rgba(31, 56, 100, .18);
+    max-height: 240px;
+    overflow: auto;
+    text-align: left;
+}
+.ac-list .ac-item {
+    padding: 6px 10px;
+    font-size: 13px;
+    line-height: 1.35;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f3f8;
+    white-space: nowrap;
+}
+.ac-list .ac-item:last-child { border-bottom: none; }
+.ac-list .ac-item.active,
+.ac-list .ac-item:hover { background: #eef4fc; }
+.ac-list .ac-item .sub { display: block; font-size: 11px; color: #8a93a3; }
+.ac-list .ac-item mark { background: #fff2b0; color: inherit; padding: 0; border-radius: 2px; }

@@ -32,18 +32,16 @@ class AddVisitorCandidatesTests(TestCase):
         r = self.client.get(reverse("visitors:add_visitor"))
         self.assertEqual(r.status_code, 200)
         body = r.content.decode()
-        # datalist 本体が出ている
-        self.assertIn('id="dl-company"', body)
-        self.assertIn('id="dl-title"', body)
-        # 来客・訪問の会社名が候補に含まれる
+        # datalist は廃止し、自前サジェスト用の埋め込みJSON + ac-field 方式
+        self.assertNotIn("datalist", body)
+        self.assertIn('id="contacts-data"', body)
+        self.assertIn('class="company-input ac-field"', body)  # 入力欄に ac-field
+        # 来客・訪問の会社名・役職・姓が候補データ(JSON)に含まれる
         self.assertIn("北陸（上海）国際貿易有限公司", body)
         self.assertIn("朝日電器株式会社", body)
-        # 役職候補
         self.assertIn("部長", body)
         self.assertIn("課長", body)
-        # JS 補完用データが埋め込まれている
-        self.assertIn("const CONTACTS", body)
-        self.assertIn('"l": "山田"', body)  # 補完用データに姓が入っている
+        self.assertIn("山田", body)
 
     def test_cancelled_excluded(self):
         r = self.client.get(reverse("visitors:add_visitor"))
