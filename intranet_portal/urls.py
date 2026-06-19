@@ -29,4 +29,5 @@ urlpatterns = [
     path("sales-trend/", include("sales_trend.urls")),
     path("vessel/", include("vessel_tracking.urls")),
     path("ops/", include("opsbridge.urls")),   # 汎用メンテナンスAPI(opsbridge)
+    path("contacts/", include("contacts.urls")),   # 相手先名簿(来客+訪問 横断)
 ]

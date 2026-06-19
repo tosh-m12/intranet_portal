@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'sales_trend.apps.SalesTrendConfig',
     'vessel_tracking.apps.VesselTrackingConfig',
     'opsbridge.apps.OpsbridgeConfig',
+    'contacts.apps.ContactsConfig',
 ]
 
 MIDDLEWARE = [
