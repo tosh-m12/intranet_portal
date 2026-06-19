@@ -50,9 +50,13 @@ class ContactsDirectoryTests(TestCase):
         self.assertEqual(r.context["total"], 2)
         suzuki = [c for c in r.context["contacts"] if c["last"] == "鈴木"][0]
         self.assertEqual(suzuki["count"], 2)            # 来客+訪問=2回
-        self.assertEqual(suzuki["kind_label"], "両方")
         self.assertEqual(suzuki["title"], "部長")        # 最新日の役職
-        self.assertEqual(str(suzuki["last_date"]), "2026-01-15")
+        # 会社名の昇順に並ぶ(朝日電器 < 北陸…)
+        companies = [c["company"] for c in r.context["contacts"]]
+        self.assertEqual(companies, sorted(companies))
+        # 削除した列は表に出ない
+        self.assertNotIn("種別", body)
+        self.assertNotIn("最終面会日", body)
 
     def test_excludes_cancelled_and_nameless(self):
         r = self.client.get(reverse("contacts:index"))
