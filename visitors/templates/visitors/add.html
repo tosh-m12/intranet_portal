@@ -104,40 +104,109 @@
     </div>
 </form>
 
-{# ★ 入力候補（クリーニング済みの相手先データ）。全行・追加行で共有。 #}
-<datalist id="dl-company">{% for c in cand_companies %}<option value="{{ c }}">{% endfor %}</datalist>
-<datalist id="dl-last">{% for c in cand_lastnames %}<option value="{{ c }}">{% endfor %}</datalist>
-<datalist id="dl-first">{% for c in cand_firstnames %}<option value="{{ c }}">{% endfor %}</datalist>
-<datalist id="dl-title">{% for c in cand_titles %}<option value="{{ c }}">{% endfor %}</datalist>
-
+{# ★ 入力候補: 請求管理台帳と同じ自前サジェスト(入力中に下へ候補)。datalistは使わない。 #}
+<script id="contacts-data" type="application/json">{{ cand_contacts_json|safe }}</script>
 <script>
-    // 既知の相手先（会社・姓・名・役職）。会社/姓/名 が一意に定まれば残りを補完する。
-    const CONTACTS = {{ cand_contacts_json|safe }};
-    function autofillContactRow(row) {
-        const g = s => row.querySelector('input[name$="-' + s + '"]');
-        const co = g('company_name'), ln = g('last_name'),
-              fn = g('first_name'), ti = g('title');
-        if (!co || !ln || !fn || !ti) return;
-        const cv = co.value.trim(), lv = ln.value.trim(), fv = fn.value.trim();
-        if (!cv && !lv && !fv) return;
-        const cand = CONTACTS.filter(x =>
-            (!cv || x.c === cv) && (!lv || x.l === lv) && (!fv || x.f === fv));
-        if (cand.length === 1) {
-            const m = cand[0];
-            if (!co.value.trim()) co.value = m.c;
-            if (!ln.value.trim()) ln.value = m.l;
-            if (!fn.value.trim()) fn.value = m.f;
-            if (!ti.value.trim()) ti.value = m.t;
-        }
+(function () {
+    const CONTACTS = JSON.parse(document.getElementById('contacts-data').textContent);
+    const COMPANIES = [...new Set(CONTACTS.map(c => c.c).filter(Boolean))].sort();
+    const TITLES    = [...new Set(CONTACTS.map(c => c.t).filter(Boolean))].sort();
+    const MAX = 8;
+
+    function escHtml(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+    function hl(text, q){
+        const i = q ? text.toLowerCase().indexOf(q.toLowerCase()) : -1;
+        if (i < 0) return escHtml(text);
+        return escHtml(text.slice(0,i)) + '<mark>' + escHtml(text.slice(i,i+q.length)) + '</mark>' + escHtml(text.slice(i+q.length));
     }
-    // 行追加(JS生成)にも効くようイベント委譲。change(確定/候補選択時)で発火＝IME変換中は動かない。
-    document.addEventListener('change', function (e) {
+    function imeEnter(e){ return e.isComposing || e.keyCode === 229; }  // IME変換確定Enterは無視
+    function kindOf(input){ const m = (input.name||'').match(/-(company_name|last_name|first_name|title)$/); return m ? m[1] : null; }
+    function rowFields(input){
+        const row = input.closest('tr');
+        const g = s => row && row.querySelector('input[name$="-' + s + '"]');
+        return { co:g('company_name'), ln:g('last_name'), fn:g('first_name'), ti:g('title') };
+    }
+    function buildItems(input, kind, q){
+        const ql = q.toLowerCase();
+        if (kind === 'company_name')
+            return COMPANIES.filter(c => c.toLowerCase().includes(ql)).slice(0, MAX).map(c => ({value:c, label:c}));
+        if (kind === 'title')
+            return TITLES.filter(t => t.toLowerCase().includes(ql)).slice(0, MAX).map(t => ({value:t, label:t}));
+        // last_name / first_name は「人」候補。会社が入っていれば絞り、選ぶと一括補完。
+        const f = rowFields(input), co = f.co ? f.co.value.trim() : '', seen = new Set(), out = [];
+        for (const c of CONTACTS){
+            if (!(c.l || c.f)) continue;
+            if (co && c.c !== co) continue;
+            const target = (kind === 'last_name') ? c.l : c.f, full = c.l + c.f;
+            if (ql && !target.toLowerCase().includes(ql) && !full.toLowerCase().includes(ql)) continue;
+            const key = c.c + '|' + c.l + '|' + c.f;
+            if (seen.has(key)) continue; seen.add(key);
+            out.push({ value:target, label:(c.l + ' ' + c.f).trim(), sub:c.c + (c.t ? ' ｜ ' + c.t : ''), contact:c });
+            if (out.length >= MAX) break;
+        }
+        return out;
+    }
+    function applyContact(input, c){
+        const f = rowFields(input);
+        if (f.co && !f.co.value.trim()) f.co.value = c.c;
+        if (f.ln) f.ln.value = c.l;
+        if (f.fn) f.fn.value = c.f;
+        if (f.ti && !f.ti.value.trim()) f.ti.value = c.t;
+    }
+    function attachAC(input){
+        const kind = kindOf(input); if (!kind) return;
+        let box = null, items = [], active = -1;
+        function close(){ if (box){ box.remove(); box = null; } items = []; active = -1; }
+        function position(){ const r = input.getBoundingClientRect(); box.style.left = r.left + 'px'; box.style.top = r.bottom + 'px'; box.style.minWidth = r.width + 'px'; }
+        function open(){ close(); box = document.createElement('div'); box.className = 'ac-list'; document.body.appendChild(box); position();
+            document.addEventListener('scroll', close, { once:true, capture:true }); }
+        function render(q){
+            box.innerHTML = '';
+            items.forEach((it, idx) => {
+                const d = document.createElement('div');
+                d.className = 'ac-item' + (idx === active ? ' active' : '');
+                d.innerHTML = hl(it.label, q) + (it.sub ? '<span class="sub">' + escHtml(it.sub) + '</span>' : '');
+                d.addEventListener('mousedown', ev => { ev.preventDefault(); choose(idx); });
+                box.appendChild(d);
+            });
+        }
+        function choose(idx){
+            const it = items[idx]; if (!it) return;
+            input.value = it.value;
+            if (it.contact) applyContact(input, it.contact);
+            close();
+            const f = rowFields(input), order = [f.co, f.ln, f.fn, f.ti].filter(Boolean), i = order.indexOf(input);
+            if (i > -1 && i < order.length - 1) order[i + 1].focus();
+        }
+        function update(){
+            const q = input.value.trim();
+            if (!q){ close(); return; }
+            items = buildItems(input, kind, q);
+            active = items.length ? 0 : -1;
+            if (!items.length){ close(); return; }
+            if (!box) open(); else position();
+            render(q);
+        }
+        input.addEventListener('input', update);
+        input.addEventListener('keydown', e => {
+            if (imeEnter(e)) return;
+            if (!box || !items.length) return;
+            if (e.key === 'ArrowDown'){ e.preventDefault(); active = (active + 1) % items.length; render(input.value.trim()); }
+            else if (e.key === 'ArrowUp'){ e.preventDefault(); active = (active - 1 + items.length) % items.length; render(input.value.trim()); }
+            else if (e.key === 'Enter'){ e.preventDefault(); e.stopPropagation(); choose(active); }
+            else if (e.key === 'Escape'){ close(); }
+        });
+        input.addEventListener('blur', () => setTimeout(close, 150));
+    }
+    // 既存行＋追加行(JS生成)の両方に効くよう、初回フォーカス時にアタッチ。
+    document.addEventListener('focusin', e => {
         const t = e.target;
-        if (t && t.name && /-(company_name|last_name|first_name)$/.test(t.name)) {
-            const row = t.closest('tr');
-            if (row) autofillContactRow(row);
+        if (t && t.classList && t.classList.contains('ac-field') && !t.dataset.acReady){
+            t.dataset.acReady = '1';
+            attachAC(t);
         }
     });
+})();
 </script>
 
 <script>
@@ -338,10 +407,10 @@
             ${timeChoicesHtml}
         </select>
     </td>
-    <td><input type="text" name="form-__prefix__-company_name" list="dl-company" autocomplete="off"></td>
-    <td><input type="text" name="form-__prefix__-last_name" list="dl-last" autocomplete="off"></td>
-    <td><input type="text" name="form-__prefix__-first_name" list="dl-first" autocomplete="off"></td>
-    <td><input type="text" name="form-__prefix__-title" list="dl-title" autocomplete="off"></td>
+    <td><input type="text" name="form-__prefix__-company_name" class="ac-field" autocomplete="off"></td>
+    <td><input type="text" name="form-__prefix__-last_name" class="ac-field" autocomplete="off"></td>
+    <td><input type="text" name="form-__prefix__-first_name" class="ac-field" autocomplete="off"></td>
+    <td><input type="text" name="form-__prefix__-title" class="ac-field" autocomplete="off"></td>
     <td><input type="text" name="form-__prefix__-purpose"></td>
     <td><input type="text" name="form-__prefix__-location"></td>
 

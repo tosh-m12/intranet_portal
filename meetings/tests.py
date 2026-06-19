@@ -32,9 +32,10 @@ class AddMeetingCandidatesTests(TestCase):
         r = self.client.get(reverse("meetings:add_meeting"))
         self.assertEqual(r.status_code, 200)
         body = r.content.decode()
-        self.assertIn('id="dl-company"', body)
+        self.assertNotIn("datalist", body)
+        self.assertIn('id="contacts-data"', body)        # 自前サジェスト用の埋め込みJSON
+        self.assertIn('class="ac-field"', body)
         self.assertIn("朝日電器株式会社", body)        # 訪問
         self.assertIn("北陸（上海）国際貿易有限公司", body)  # 来客も候補に含む
         self.assertIn("課長", body)
-        self.assertIn("const CONTACTS", body)
         self.assertNotIn("除外株式会社", body)          # キャンセルは除外
