@@ -1,4 +1,4 @@
-{# contacts/index.html — これまで会った相手先(来客+訪問 横断) #}
+{# contacts/index.html — これまで会った相手先(来客+訪問 横断)。staffはセル編集可。 #}
 {% extends "portal/base.html" %}
 {% load i18n %}
 
@@ -16,12 +16,18 @@
     <div class="contacts-toolbar">
         <input type="text" id="contact-filter" class="contact-filter"
                placeholder="{% trans '会社名・氏名・役職で絞り込み' %}" autocomplete="off">
+        <label class="dup-toggle"><input type="checkbox" id="dup-only"> {% trans "重複候補のみ" %}</label>
         <span class="contacts-count"><span id="contact-shown">{{ total }}</span> / {{ total }} {% trans "件" %}</span>
     </div>
 </div>
 
+{% if can_edit %}
+<div class="edit-hint">{% trans "セルをクリックして編集できます（その相手先の来客・訪問の記録すべてに反映されます）。" %}</div>
+{% endif %}
+
 <div class="table-wrapper">
-    <table class="contacts-table" id="contacts-table">
+    <table class="contacts-table{% if can_edit %} can-edit{% endif %}" id="contacts-table"
+           data-update-url="{% url 'contacts:inline_update' %}">
         <thead>
             <tr>
                 <th>{% trans "正式会社名" %}</th>
@@ -33,12 +39,13 @@
         </thead>
         <tbody>
             {% for c in contacts %}
-                <tr class="contact-row">
-                    <td class="company">{{ c.company }}</td>
-                    <td>{{ c.last }}</td>
-                    <td>{{ c.first }}</td>
-                    <td>{{ c.title }}</td>
-                    <td class="r">{{ c.count }}</td>
+                <tr class="contact-row{% if c.dup %} dup{% endif %}"
+                    data-company="{{ c.company }}" data-last="{{ c.last }}" data-first="{{ c.first }}">
+                    <td class="company{% if can_edit %} editable{% endif %}"{% if can_edit %} data-field="company_name"{% endif %}>{{ c.company }}</td>
+                    <td{% if can_edit %} class="editable" data-field="last_name"{% endif %}>{{ c.last }}</td>
+                    <td{% if can_edit %} class="editable" data-field="first_name"{% endif %}>{{ c.first }}</td>
+                    <td{% if can_edit %} class="editable" data-field="title"{% endif %}>{{ c.title }}</td>
+                    <td class="r">{{ c.count }}{% if c.dup %} <span class="dup-flag" title="{% trans '同名の相手先があります（英/日表記違い・別人の両方に注意）' %}">{% trans "同名" %}</span>{% endif %}</td>
                 </tr>
             {% empty %}
                 <tr><td colspan="5" class="c" style="padding:1.5rem;">{% trans "データがありません" %}</td></tr>
@@ -48,23 +55,92 @@
 </div>
 
 <script>
-    // 会社名・氏名・役職での簡易絞り込み(クライアント側)。空白区切りでAND検索。
-    (function () {
-        const input = document.getElementById('contact-filter');
-        const rows = Array.from(document.querySelectorAll('#contacts-table tbody tr.contact-row'));
-        const shown = document.getElementById('contact-shown');
-        if (!input) return;
-        input.addEventListener('input', function () {
-            const terms = input.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
-            let n = 0;
-            rows.forEach(function (row) {
-                const text = row.textContent.toLowerCase();
-                const ok = terms.every(t => text.includes(t));
-                row.style.display = ok ? '' : 'none';
-                if (ok) n++;
-            });
-            if (shown) shown.textContent = n;
+(function () {
+    const table = document.getElementById('contacts-table');
+    const rows = Array.from(table.querySelectorAll('tbody tr.contact-row'));
+    const filter = document.getElementById('contact-filter');
+    const dupOnly = document.getElementById('dup-only');
+    const shown = document.getElementById('contact-shown');
+
+    // ---- 絞り込み(テキストAND + 重複候補のみ) ----
+    function apply() {
+        const terms = filter.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+        const onlyDup = dupOnly.checked;
+        let n = 0;
+        rows.forEach(function (row) {
+            const okText = terms.every(t => row.textContent.toLowerCase().includes(t));
+            const okDup = !onlyDup || row.classList.contains('dup');
+            const ok = okText && okDup;
+            row.style.display = ok ? '' : 'none';
+            if (ok) n++;
         });
-    })();
+        if (shown) shown.textContent = n;
+    }
+    filter.addEventListener('input', apply);
+    dupOnly.addEventListener('change', apply);
+
+    // ---- インライン編集(staffのみ。table.can-edit が付く) ----
+    if (!table.classList.contains('can-edit')) return;
+    const URL = table.dataset.updateUrl;
+
+    function getCookie(name) {
+        const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+        return m ? decodeURIComponent(m.pop()) : '';
+    }
+    // field -> 行の data-* キー名(キー項目だけ。titleはキーでない)
+    const KEYATTR = { company_name: 'company', last_name: 'last', first_name: 'first' };
+    let editing = null;  // {td, old}
+
+    function finish(save) {
+        if (!editing) return;
+        const td = editing.td, old = editing.old;
+        const ed = editing; editing = null;
+        td.removeAttribute('contenteditable');
+        td.classList.remove('is-editing');
+        const val = td.textContent.trim();
+        if (!save || val === old) { td.textContent = old; return; }
+        const row = td.closest('tr');
+        const field = td.dataset.field;
+        fetch(URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+            body: JSON.stringify({
+                company: row.dataset.company, last: row.dataset.last,
+                first: row.dataset.first, field: field, value: val,
+            }),
+        }).then(r => r.json().then(d => ({ status: r.status, d })))
+          .then(({ status, d }) => {
+            if (status === 200 && d.ok) {
+                td.textContent = d.value;
+                // キー項目を変えたら行のdata-*も更新(後続編集が新キーで効く)
+                if (KEYATTR[field]) row.dataset[KEYATTR[field]] = d.value;
+            } else {
+                td.textContent = old;
+                alert((d && d.error) ? d.error : '保存に失敗しました');
+            }
+          }).catch(() => { td.textContent = old; alert('通信に失敗しました'); });
+    }
+
+    table.addEventListener('click', function (e) {
+        const td = e.target.closest('td.editable');
+        if (!td || editing) return;
+        editing = { td: td, old: td.textContent.trim() };
+        td.setAttribute('contenteditable', 'true');
+        td.classList.add('is-editing');
+        td.focus();
+        // テキスト全選択
+        const range = document.createRange(); range.selectNodeContents(td);
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+    });
+    table.addEventListener('keydown', function (e) {
+        if (!editing) return;
+        if (e.key === 'Enter' && !(e.isComposing || e.keyCode === 229)) {
+            e.preventDefault(); finish(true);
+        } else if (e.key === 'Escape') {
+            e.preventDefault(); finish(false);
+        }
+    });
+    table.addEventListener('blur', function () { finish(true); }, true);
+})();
 </script>
 {% endblock %}

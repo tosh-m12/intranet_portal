@@ -63,3 +63,69 @@ class ContactsDirectoryTests(TestCase):
         body = r.content.decode()
         self.assertNotIn("除外株式会社", body)
         self.assertNotIn("社名のみ株式会社", body)
+
+
+class ContactsEditTests(TestCase):
+    """相手先名簿のインライン編集(staffのみ・裏レコードへ一括反映)と同名フラグの検証。"""
+
+    def setUp(self):
+        self.url = reverse("contacts:inline_update")
+        # 同一人物(山田 太郎)が英社名と日本語社名で別々に登録 → 2行・同名でなく同社別表記
+        self.v = Visitor.objects.create(
+            visit_date="2026-01-10", company_name="HORIBA",
+            last_name="山田", first_name="太郎", title="部長",
+            location="本社", host_staff="me", cancelled=False)
+        self.m = Meeting.objects.create(
+            visit_date="2026-01-12", company_name="HORIBA",
+            last_name="山田", first_name="太郎", title="部長",
+            location="WEB", host_staff="me", cancelled=False)
+        # 別会社に同名(山田 太郎) → dup フラグ対象
+        Meeting.objects.create(
+            visit_date="2026-01-20", company_name="堀场（中国）贸易有限公司",
+            last_name="山田", first_name="太郎", title="経理",
+            location="WEB", host_staff="me", cancelled=False)
+
+    def _body(self, **kw):
+        import json
+        base = {"company": "HORIBA", "last": "山田", "first": "太郎"}
+        base.update(kw)
+        return json.dumps(base)
+
+    def test_non_staff_forbidden(self):
+        u = User.objects.create_user(email="user@ngls.sh.cn", password="x")
+        self.client.force_login(u)
+        r = self.client.post(self.url, self._body(field="company_name", value="堀场（中国）贸易有限公司"),
+                             content_type="application/json")
+        self.assertEqual(r.status_code, 403)
+        self.v.refresh_from_db()
+        self.assertEqual(self.v.company_name, "HORIBA")  # 不変
+
+    def test_staff_edit_propagates(self):
+        staff = User.objects.create_user(email="staff@ngls.sh.cn", password="x", is_staff=True)
+        self.client.force_login(staff)
+        r = self.client.post(self.url, self._body(field="company_name", value="堀场（中国）贸易有限公司"),
+                             content_type="application/json")
+        self.assertEqual(r.status_code, 200)
+        d = r.json()
+        self.assertTrue(d["ok"])
+        self.assertEqual(d["updated"], 2)               # Visitor+Meeting の HORIBA 2件
+        self.v.refresh_from_db(); self.m.refresh_from_db()
+        self.assertEqual(self.v.company_name, "堀场（中国）贸易有限公司")
+        self.assertEqual(self.m.company_name, "堀场（中国）贸易有限公司")
+
+    def test_field_whitelist(self):
+        staff = User.objects.create_user(email="s2@ngls.sh.cn", password="x", is_staff=True)
+        self.client.force_login(staff)
+        r = self.client.post(self.url, self._body(field="cancelled", value="True"),
+                             content_type="application/json")
+        self.assertEqual(r.status_code, 400)
+
+    def test_dup_flag_for_same_name(self):
+        staff = User.objects.create_user(email="s3@ngls.sh.cn", password="x", is_staff=True)
+        self.client.force_login(staff)
+        r = self.client.get(reverse("contacts:index"))
+        # 山田 太郎 が2社に出る → どちらの行も dup=True
+        yamadas = [c for c in r.context["contacts"] if c["last"] == "山田"]
+        self.assertTrue(len(yamadas) >= 2)
+        self.assertTrue(all(c["dup"] for c in yamadas))
+        self.assertTrue(r.context["can_edit"])          # staff は編集可

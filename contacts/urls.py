@@ -6,4 +6,5 @@ app_name = "contacts"
 
 urlpatterns = [
     path("", views.index, name="index"),
+    path("inline-update/", views.inline_update, name="inline_update"),
 ]
