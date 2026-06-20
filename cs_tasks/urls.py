@@ -35,6 +35,5 @@ urlpatterns = [
     path("mailing-list/", views.mailing_list, name="mailing_list"),
     path("mine/", views.my_tasks, name="my_tasks"),
     path("report/", views.report, name="report"),
-    path("closed/", views.closed_tasks, name="closed"),
     path("report/settings/", views.report_settings, name="report_settings"),
 ]

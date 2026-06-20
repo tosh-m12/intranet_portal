@@ -249,6 +249,29 @@ class InboundApplyTests(TestCase):
         self.assertTrue(self.task.is_hidden)
         self.assertIsNotNone(self.task.hidden_at)
 
+    def test_purge_task_hard(self):
+        # purge は不可逆の物理削除。Task 行ごと消え、配下の進捗もカスケード削除される。
+        task_id = self.task.id
+        progress_id = self.progress.id
+        res = self._apply(
+            [{"op_id": "op-pt", "action": "purge",
+              "target": "task", "id": task_id}]
+        )
+        self.assertTrue(res["ok"])
+        self.assertEqual(res["applied"], ["op-pt"])
+        self.assertFalse(Task.objects.filter(pk=task_id).exists())
+        self.assertFalse(ProgressUpdate.objects.filter(pk=progress_id).exists())
+
+    def test_purge_task_only(self):
+        # purge の target は task のみ。progress 指定は適用されず、行も残る。
+        res = self._apply(
+            [{"op_id": "op-pp", "action": "purge",
+              "target": "progress", "id": self.progress.id}]
+        )
+        self.assertNotIn("op-pp", res["applied"])
+        self.assertTrue(res["errors"])
+        self.assertTrue(ProgressUpdate.objects.filter(pk=self.progress.id).exists())
+
     def test_delete_progress_hard(self):
         res = self._apply(
             [{"op_id": "op-dp", "action": "delete",

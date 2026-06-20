@@ -90,8 +90,7 @@ def _route_text(text):
     return (text, "")
 
 
-def _build_board(user, assignee_id=None, category=None, for_report=False,
-                 only_closed=False, include_hidden=False):
+def _build_board(user, assignee_id=None, category=None, for_report=False):
     """
     担当者 > 顧客 > 課題 > 進捗 の3階層でグルーピングした
     課題ボード用のデータを組み立てる。
@@ -103,14 +102,10 @@ def _build_board(user, assignee_id=None, category=None, for_report=False,
       各 task には row_count / progress_list / can_edit を付与。
 
     for_report=True … レポート(読み取り専用)用。進捗1件=1行、コメント列・追加行なし。
-    only_closed=True … クローズ済み(完了)の課題のみ（アーカイブ一覧用）。
-    include_hidden=True … 責任者が「終了として非表示」にした課題(is_hidden=True)も含める。
-        通常の一覧は非表示分を除外するが、クローズ済みアーカイブは非表示分も全件出す。
     """
-    # 非表示(is_hidden=True)は通常の一覧から除外。クローズ済みアーカイブのみ含める。
-    base_qs = Task.objects.all() if include_hidden else Task.objects.filter(is_hidden=False)
+    # 非表示(is_hidden=True)は一覧から除外（責任者が Mac 側で終了として消した案件）。
     tasks_qs = (
-        base_qs
+        Task.objects.filter(is_hidden=False)
         .select_related("owner", "assignee")
         .prefetch_related(
             "progress_updates__author",
@@ -118,9 +113,6 @@ def _build_board(user, assignee_id=None, category=None, for_report=False,
         )
         .order_by("created_at", "id")
     )
-
-    if only_closed:
-        tasks_qs = tasks_qs.filter(is_closed=True)
 
     if category:
         tasks_qs = tasks_qs.filter(category=category)
@@ -278,30 +270,6 @@ def report(request):
     return render(request, "cs_tasks/report.html", {
         "sections": build_report_sections(request.user),
         "active_tab": "report",
-    })
-
-
-# =========================================================
-# クローズ済み案件の一覧（区分別・読み取り専用アーカイブ）
-# レポートと同じ区分の並びで、完了した課題だけを縦に並べる。
-# =========================================================
-@login_required
-def closed_tasks(request):
-    sections = []
-    for cat in _REPORT_CATEGORY_ORDER:
-        groups, _ = _build_board(
-            request.user, category=cat, for_report=True, only_closed=True,
-            include_hidden=True,   # Mac で「終了として非表示」にした完了案件も含める
-        )
-        sections.append({
-            "key": cat,
-            "label": _CATEGORY_TITLE[cat],
-            "hide_client": cat == Task.CATEGORY_INTERNAL,
-            "groups": groups,
-        })
-    return render(request, "cs_tasks/closed.html", {
-        "sections": sections,
-        "active_tab": "closed",
     })
 
 

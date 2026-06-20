@@ -92,7 +92,8 @@ class Task(models.Model):
     )
 
     # 非表示（論理削除）: 課題管理表の責任者が「本当に終わった案件」と確認し、一覧から
-    # 消した状態。物理削除ではなく DB 行は保持し、クローズ済みアーカイブには残す。
+    # 消した状態。物理削除ではなく DB 行は保持する（社内の一覧からは消えるが、責任者の
+    # Mac 管理コンソールから完全削除＝物理削除する場合は bridge の purge op で行う）。
     is_hidden = models.BooleanField(verbose_name=_l("非表示"), default=False)
     hidden_at = models.DateTimeField(verbose_name=_l("非表示日時"), null=True, blank=True)
 
