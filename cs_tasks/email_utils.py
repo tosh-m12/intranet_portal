@@ -41,7 +41,7 @@ def build_weekly_report_context(today: date):
     week_start = today - timedelta(days=today.weekday())  # 月曜
     week_end = week_start + timedelta(days=6)             # 日曜
 
-    active = Task.objects.filter(is_cancelled=False).select_related(
+    active = Task.objects.filter(is_hidden=False).select_related(
         "owner", "assignee"
     )
 
@@ -75,10 +75,10 @@ def build_weekly_report_context(today: date):
     # ⑤ サマリー
     summary = {
         "in_progress": Task.objects.filter(
-            is_closed=False, is_cancelled=False
+            is_closed=False, is_hidden=False
         ).count(),
         "closed": Task.objects.filter(is_closed=True).count(),
-        "cancelled": Task.objects.filter(is_cancelled=True).count(),
+        "hidden": Task.objects.filter(is_hidden=True).count(),
     }
 
     return {

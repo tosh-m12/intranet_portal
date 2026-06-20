@@ -23,7 +23,7 @@ from .forms import TaskForm
 from .permissions import (
     is_admin,
     can_edit_task,
-    can_cancel_task,
+    can_hide_task,
     can_close_task,
     can_comment,
 )
@@ -90,7 +90,8 @@ def _route_text(text):
     return (text, "")
 
 
-def _build_board(user, assignee_id=None, category=None, for_report=False):
+def _build_board(user, assignee_id=None, category=None, for_report=False,
+                 only_closed=False, include_hidden=False):
     """
     担当者 > 顧客 > 課題 > 進捗 の3階層でグルーピングした
     課題ボード用のデータを組み立てる。
@@ -102,9 +103,14 @@ def _build_board(user, assignee_id=None, category=None, for_report=False):
       各 task には row_count / progress_list / can_edit を付与。
 
     for_report=True … レポート(読み取り専用)用。進捗1件=1行、コメント列・追加行なし。
+    only_closed=True … クローズ済み(完了)の課題のみ（アーカイブ一覧用）。
+    include_hidden=True … 責任者が「終了として非表示」にした課題(is_hidden=True)も含める。
+        通常の一覧は非表示分を除外するが、クローズ済みアーカイブは非表示分も全件出す。
     """
+    # 非表示(is_hidden=True)は通常の一覧から除外。クローズ済みアーカイブのみ含める。
+    base_qs = Task.objects.all() if include_hidden else Task.objects.filter(is_hidden=False)
     tasks_qs = (
-        Task.objects.filter(is_cancelled=False)
+        base_qs
         .select_related("owner", "assignee")
         .prefetch_related(
             "progress_updates__author",
@@ -112,6 +118,9 @@ def _build_board(user, assignee_id=None, category=None, for_report=False):
         )
         .order_by("created_at", "id")
     )
+
+    if only_closed:
+        tasks_qs = tasks_qs.filter(is_closed=True)
 
     if category:
         tasks_qs = tasks_qs.filter(category=category)
@@ -269,6 +278,30 @@ def report(request):
     return render(request, "cs_tasks/report.html", {
         "sections": build_report_sections(request.user),
         "active_tab": "report",
+    })
+
+
+# =========================================================
+# クローズ済み案件の一覧（区分別・読み取り専用アーカイブ）
+# レポートと同じ区分の並びで、完了した課題だけを縦に並べる。
+# =========================================================
+@login_required
+def closed_tasks(request):
+    sections = []
+    for cat in _REPORT_CATEGORY_ORDER:
+        groups, _ = _build_board(
+            request.user, category=cat, for_report=True, only_closed=True,
+            include_hidden=True,   # Mac で「終了として非表示」にした完了案件も含める
+        )
+        sections.append({
+            "key": cat,
+            "label": _CATEGORY_TITLE[cat],
+            "hide_client": cat == Task.CATEGORY_INTERNAL,
+            "groups": groups,
+        })
+    return render(request, "cs_tasks/closed.html", {
+        "sections": sections,
+        "active_tab": "closed",
     })
 
 
@@ -734,29 +767,30 @@ def toggle_progress_close(request, progress_id):
 
 
 # =========================================================
-# 中止 ⇔ 復活トグル（POST, 論理削除。上長 or 登録者）
+# 非表示 ⇔ 復帰トグル（POST, 論理削除。上長 or 登録者）
+# 責任者が「本当に終わった案件」と確認して一覧から消す/戻す操作。
 # =========================================================
 @login_required
 @require_POST
-def toggle_cancel(request, task_id):
+def toggle_hidden(request, task_id):
     task = get_object_or_404(Task, pk=task_id)
-    if not can_cancel_task(request.user, task):
+    if not can_hide_task(request.user, task):
         if _is_ajax(request):
             return JsonResponse(
-                {"ok": False, "error": _("中止操作の権限がありません。")}, status=403
+                {"ok": False, "error": _("非表示操作の権限がありません。")}, status=403
             )
-        return HttpResponseForbidden(_("中止操作の権限がありません。"))
+        return HttpResponseForbidden(_("非表示操作の権限がありません。"))
 
-    if task.is_cancelled:
-        task.is_cancelled = False
-        task.cancelled_at = None
+    if task.is_hidden:
+        task.is_hidden = False
+        task.hidden_at = None
     else:
-        task.is_cancelled = True
-        task.cancelled_at = timezone.now()
-    task.save(update_fields=["is_cancelled", "cancelled_at", "updated_at"])
+        task.is_hidden = True
+        task.hidden_at = timezone.now()
+    task.save(update_fields=["is_hidden", "hidden_at", "updated_at"])
 
     if _is_ajax(request):
-        return JsonResponse({"ok": True, "is_cancelled": task.is_cancelled})
+        return JsonResponse({"ok": True, "is_hidden": task.is_hidden})
     return redirect(request.POST.get("next") or "cs_tasks:index")
 
 

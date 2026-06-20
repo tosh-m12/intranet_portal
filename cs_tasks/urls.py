@@ -23,7 +23,7 @@ urlpatterns = [
     path("<int:task_id>/progress/", views.add_progress, name="add_progress"),
     path("progress/<int:progress_id>/date/", views.edit_progress_date, name="edit_progress_date"),
     path("<int:task_id>/complete/", views.toggle_complete, name="toggle_complete"),
-    path("<int:task_id>/cancel/", views.toggle_cancel, name="toggle_cancel"),
+    path("<int:task_id>/hidden/", views.toggle_hidden, name="toggle_hidden"),
     path("progress/<int:progress_id>/edit/", views.edit_progress, name="edit_progress"),
     path("progress/<int:progress_id>/comment/", views.add_comment, name="add_comment"),
     path("comment/<int:comment_id>/edit/", views.edit_comment, name="edit_comment"),
@@ -35,5 +35,6 @@ urlpatterns = [
     path("mailing-list/", views.mailing_list, name="mailing_list"),
     path("mine/", views.my_tasks, name="my_tasks"),
     path("report/", views.report, name="report"),
+    path("closed/", views.closed_tasks, name="closed"),
     path("report/settings/", views.report_settings, name="report_settings"),
 ]

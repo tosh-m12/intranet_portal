@@ -23,8 +23,8 @@ def can_edit_task(user, task):
     return task.owner_id == user.id or task.assignee_id == user.id
 
 
-def can_cancel_task(user, task):
-    """中止（論理削除）可否。上長 または 登録者本人。"""
+def can_hide_task(user, task):
+    """非表示（論理削除）可否。上長 または 登録者本人。"""
     if not user.is_authenticated:
         return False
     if is_admin(user):

@@ -238,7 +238,7 @@ class InboundApplyTests(TestCase):
         self.assertEqual(c.content_ja, "翻訳のみ追加")
 
     def test_delete_task_soft(self):
-        # task は既存の論理削除運用に合わせて is_cancelled=True 化
+        # task は既存の論理削除運用に合わせて is_hidden=True 化
         res = self._apply(
             [{"op_id": "op-dt", "action": "delete",
               "target": "task", "id": self.task.id}]
@@ -246,8 +246,8 @@ class InboundApplyTests(TestCase):
         self.assertTrue(res["ok"])
         self.assertEqual(res["applied"], ["op-dt"])
         self.task.refresh_from_db()
-        self.assertTrue(self.task.is_cancelled)
-        self.assertIsNotNone(self.task.cancelled_at)
+        self.assertTrue(self.task.is_hidden)
+        self.assertIsNotNone(self.task.hidden_at)
 
     def test_delete_progress_hard(self):
         res = self._apply(
@@ -610,16 +610,16 @@ class OutboundSnapshotTests(TestCase):
         p = snap["tasks"][0]["progress_updates"][0]
         self.assertEqual(p["execution_date"], "2026-05-20")
 
-    def test_cancelled_task_excluded(self):
-        Task.objects.create(title="取消", is_cancelled=True)
+    def test_hidden_task_excluded(self):
+        Task.objects.create(title="非表示", is_hidden=True)
         snap = outbound.build_snapshot()
         self.assertEqual(len(snap["tasks"]), 0)
 
     def test_meta_active_task_ids_lists_all_active_even_in_diff(self):
-        # 課題まるごとの中止を差分でも Mac に伝えるための全件IDリスト。
+        # 課題まるごとの非表示を差分でも Mac に伝えるための全件IDリスト。
         # since で tasks を空に絞っても active_task_ids には現存課題が全件入る。
         keep = Task.objects.create(title="存続")
-        cancelled = Task.objects.create(title="中止", is_cancelled=True)
+        hidden = Task.objects.create(title="非表示", is_hidden=True)
         from django.utils import timezone as _tz
         from datetime import timedelta
         future = _tz.now() + timedelta(hours=1)  # 差分で tasks は空になる since
@@ -627,7 +627,7 @@ class OutboundSnapshotTests(TestCase):
         self.assertEqual(len(snap["tasks"]), 0)               # 差分: 詳細は空
         ids = snap["meta"]["active_task_ids"]
         self.assertIn(keep.id, ids)                           # 現存は全件入る
-        self.assertNotIn(cancelled.id, ids)                   # 中止は入らない
+        self.assertNotIn(hidden.id, ids)                      # 非表示は入らない
 
     def test_schema_version_is_v2(self):
         """v2 への昇格を明示的に確認。"""
