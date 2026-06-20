@@ -26,7 +26,7 @@ User = get_user_model()
 
 VALID_ACTIONS = {
     "add_comment", "edit_progress", "edit_task", "add_task", "edit_comment",
-    "add_progress", "delete", "set_closed",
+    "add_progress", "delete", "set_closed", "purge",
 }
 
 # delete action の target → 削除方式
@@ -250,6 +250,18 @@ def _apply_op(op, author, created_map=None):
             progress.closed_by = author if closed else None
             progress.save(update_fields=["is_closed", "closed_at", "closed_by"])
             progress.task.save(update_fields=["updated_at"])
+
+    elif action == "purge":
+        # 物理削除（不可逆）。責任者が Mac 管理コンソールから「削除」した課題を
+        # DB から行ごと消す（進捗・コメントは FK CASCADE で連鎖削除）。
+        # 論理削除＝非表示(delete → is_hidden=True)とは異なり復元不可。
+        if op.get("target") != "task":
+            raise ValueError(f"purge の target が不正: {op.get('target')!r}")
+        target_id = op.get("id")
+        if not isinstance(target_id, int):
+            raise ValueError("purge には id(int) が必要です。")
+        # 対象が無くても no-op（op_id 冪等で重複適用は安全）。
+        m.Task.objects.filter(pk=target_id).delete()
 
 
 def apply_writeback(payload, signature, sender=None, raw_text=None, enforce_sender=True):

@@ -435,19 +435,6 @@ textarea.add-input {
     border-bottom: 2px solid #e5e9f0;
 }
 .report-cat-title.incident { color: #c0392b; border-bottom-color: #f3c6c0; }
-/* クローズ済み一覧: 課題名の右に完了日を薄く添える（装飾でなく完了の事実を示すデータ） */
-.cs-board .closed-date { margin-left: 10px; font-size: 13px; font-weight: normal; color: #999; }
-/* 責任者が「終了として非表示」にした案件の目印（一覧から消し済み＝確認済みの区別） */
-.cs-board .closed-hidden {
-    margin-left: 8px;
-    padding: 0 7px;
-    border-radius: 10px;
-    background: #eceff3;
-    font-size: 12px;
-    font-weight: normal;
-    color: #7a8699;
-    vertical-align: 1px;
-}
 /* レポートの実施日: 16px の「2026/06/05」に余裕を持たせた幅・左寄せ・読み取り専用テキスト */
 .cs-board.report-board .cg-date { width: 116px; }
 .cs-board.report-board .col-date {
