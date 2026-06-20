@@ -35,10 +35,10 @@ class TaskAdmin(admin.ModelAdmin):
         "assignee",
         "due_date",
         "is_closed",
-        "is_cancelled",
+        "is_hidden",
         "created_at",
     )
-    list_filter = ("is_closed", "is_cancelled", "assignee")
+    list_filter = ("is_closed", "is_hidden", "assignee")
     search_fields = ("title", "client_name", "description")
     raw_id_fields = ("owner", "assignee", "completed_by")
     readonly_fields = ("created_at", "updated_at", "completed_at", "completed_by")

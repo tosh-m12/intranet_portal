@@ -238,7 +238,7 @@ class InboundApplyTests(TestCase):
         self.assertEqual(c.content_ja, "翻訳のみ追加")
 
     def test_delete_task_soft(self):
-        # task は既存の論理削除運用に合わせて is_cancelled=True 化
+        # task は既存の論理削除運用に合わせて is_hidden=True 化
         res = self._apply(
             [{"op_id": "op-dt", "action": "delete",
               "target": "task", "id": self.task.id}]
@@ -246,8 +246,8 @@ class InboundApplyTests(TestCase):
         self.assertTrue(res["ok"])
         self.assertEqual(res["applied"], ["op-dt"])
         self.task.refresh_from_db()
-        self.assertTrue(self.task.is_cancelled)
-        self.assertIsNotNone(self.task.cancelled_at)
+        self.assertTrue(self.task.is_hidden)
+        self.assertIsNotNone(self.task.hidden_at)
 
     def test_delete_progress_hard(self):
         res = self._apply(
@@ -610,16 +610,16 @@ class OutboundSnapshotTests(TestCase):
         p = snap["tasks"][0]["progress_updates"][0]
         self.assertEqual(p["execution_date"], "2026-05-20")
 
-    def test_cancelled_task_excluded(self):
-        Task.objects.create(title="取消", is_cancelled=True)
+    def test_hidden_task_excluded(self):
+        Task.objects.create(title="非表示", is_hidden=True)
         snap = outbound.build_snapshot()
         self.assertEqual(len(snap["tasks"]), 0)
 
     def test_meta_active_task_ids_lists_all_active_even_in_diff(self):
-        # 課題まるごとの中止を差分でも Mac に伝えるための全件IDリスト。
+        # 課題まるごとの非表示を差分でも Mac に伝えるための全件IDリスト。
         # since で tasks を空に絞っても active_task_ids には現存課題が全件入る。
         keep = Task.objects.create(title="存続")
-        cancelled = Task.objects.create(title="中止", is_cancelled=True)
+        hidden = Task.objects.create(title="非表示", is_hidden=True)
         from django.utils import timezone as _tz
         from datetime import timedelta
         future = _tz.now() + timedelta(hours=1)  # 差分で tasks は空になる since
@@ -627,7 +627,7 @@ class OutboundSnapshotTests(TestCase):
         self.assertEqual(len(snap["tasks"]), 0)               # 差分: 詳細は空
         ids = snap["meta"]["active_task_ids"]
         self.assertIn(keep.id, ids)                           # 現存は全件入る
-        self.assertNotIn(cancelled.id, ids)                   # 中止は入らない
+        self.assertNotIn(hidden.id, ids)                      # 非表示は入らない
 
     def test_schema_version_is_v2(self):
         """v2 への昇格を明示的に確認。"""
@@ -935,3 +935,29 @@ class BridgeApiTests(TestCase):
         self.assertEqual(r1.status_code, 200)
         self.assertEqual(r2.status_code, 200)
         self.assertEqual(SupervisorComment.objects.count(), 1)  # 二重適用しない
+
+    # --- 請求台帳エクスポート(財務照合用・読み取り専用) ---
+    def test_billing_export_requires_token(self):
+        url = reverse("cs_tasks:bridge_api_billing_export")
+        self.assertEqual(self.client.get(url).status_code, 401)
+        self.assertEqual(self.client.get(url, **self._auth("wrong")).status_code, 401)
+
+    def test_billing_export_returns_rows_including_cancelled(self):
+        from billing.models import InvoiceLine
+        InvoiceLine.objects.create(
+            customer_gc="ACME", bill_to="ACME CO.", currency="CNY",
+            bill_year=2026, bill_month=3, storage=100.0, storage_rate=6.0,
+        )
+        InvoiceLine.objects.create(
+            customer_gc="ACME", bill_to="ACME CO.", currency="CNY",
+            bill_year=2026, bill_month=3, service=50.0, is_cancelled=True,
+        )
+        r = self.client.get(reverse("cs_tasks:bridge_api_billing_export"), **self._auth())
+        self.assertEqual(r.status_code, 200)
+        d = r.json()
+        self.assertTrue(d["ok"])
+        self.assertEqual(d["count"], len(d["rows"]))
+        mine = [row for row in d["rows"] if row["customer_gc"] == "ACME"]
+        self.assertEqual({row["is_cancelled"] for row in mine}, {True, False})
+        live = next(row for row in mine if not row["is_cancelled"])
+        self.assertAlmostEqual(live["total_after_tax"], 106.0)  # 100 * 1.06

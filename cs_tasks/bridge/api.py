@@ -42,6 +42,30 @@ def _token_ok(request):
 
 
 @require_GET
+def bridge_billing_export(request):
+    """請求台帳の読み取り専用エクスポート。財務(売上推移)データとの照合用。
+
+    全 InvoiceLine を JSON で返す(中止行も is_cancelled フラグ付きで含め、照合側で判断)。
+    cs_tasks の連携APIに相乗りして既存トンネル/トークンをそのまま使う(新パス・新認証なし)。"""
+    if not _token_ok(request):
+        return JsonResponse({"ok": False, "reason": "unauthorized"}, status=401)
+    from billing.models import FEE_KEYS, InvoiceLine
+    fields = [
+        "id", "serial", "customer_gc", "bill_to", "bill_cat", "currency",
+        "bill_year", "bill_month", "assignee",
+        "total_before_tax", "total_after_tax",
+        "exrate", "exrate_multiply", "fx_currency", "converted_amount",
+        "source", "is_approved", "is_cancelled",
+    ]
+    cols = fields + FEE_KEYS + [f"{k}_rate" for k in FEE_KEYS]
+    rows = list(InvoiceLine.objects.values(*cols))
+    return JsonResponse(
+        {"ok": True, "schema": cols, "count": len(rows), "rows": rows},
+        json_dumps_params={"ensure_ascii": False},
+    )
+
+
+@require_GET
 def bridge_sync(request):
     """往路: 非中止課題のスナップショットを JSON で返す。?since=<ISO8601> で差分。"""
     if not _token_ok(request):

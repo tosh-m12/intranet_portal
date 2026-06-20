@@ -30,7 +30,7 @@ VALID_ACTIONS = {
 }
 
 # delete action の target → 削除方式
-# Task は既存運用に合わせて論理削除(is_cancelled=True)。
+# Task は既存運用に合わせて論理削除＝非表示(is_hidden=True)。
 # ProgressUpdate / SupervisorComment は物理削除。
 _DELETE_TARGETS = {"task", "progress", "comment"}
 
@@ -194,10 +194,10 @@ def _apply_op(op, author, created_map=None):
 
         if target == "task":
             # 既存の論理削除運用に合わせる。往路スナップショットは
-            # is_cancelled=False のみ送るため、以後 Mac からも消える。
+            # is_hidden=False のみ送るため、以後 Mac からも消える。
             m.Task.objects.filter(pk=target_id).update(
-                is_cancelled=True,
-                cancelled_at=timezone.now(),
+                is_hidden=True,
+                hidden_at=timezone.now(),
             )
         elif target == "progress":
             # 削除前に親課題を控え、削除後に touch（差分スナップショットに

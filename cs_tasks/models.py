@@ -91,9 +91,10 @@ class Task(models.Model):
         verbose_name=_l("完了操作者"),
     )
 
-    # 中止（論理削除）
-    is_cancelled = models.BooleanField(verbose_name=_l("中止"), default=False)
-    cancelled_at = models.DateTimeField(verbose_name=_l("中止日時"), null=True, blank=True)
+    # 非表示（論理削除）: 課題管理表の責任者が「本当に終わった案件」と確認し、一覧から
+    # 消した状態。物理削除ではなく DB 行は保持し、クローズ済みアーカイブには残す。
+    is_hidden = models.BooleanField(verbose_name=_l("非表示"), default=False)
+    hidden_at = models.DateTimeField(verbose_name=_l("非表示日時"), null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_l("作成日時"))
     updated_at = models.DateTimeField(auto_now=True, verbose_name=_l("更新日時"))

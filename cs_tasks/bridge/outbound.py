@@ -53,13 +53,13 @@ def _build_assignees():
 
 
 def build_snapshot(since=None):
-    """非中止(active)の課題スナップショットを dict で返す。
+    """非表示でない(active)課題スナップショットを dict で返す。
 
     since(datetime)を渡すと、since 以降に更新があった課題のみに絞る
     (課題自体の更新 or 進捗/コメントの新規記入)。None なら全件。
     """
     qs = (
-        m.Task.objects.filter(is_cancelled=False)
+        m.Task.objects.filter(is_hidden=False)
         .select_related("owner", "assignee")
         .prefetch_related("progress_updates__author", "progress_updates__comments")
         .order_by("created_at", "id")
@@ -127,11 +127,11 @@ def build_snapshot(since=None):
         "meta": {
             # Mac 側で add_task / edit_task の担当者ドロップダウンに使う
             "assignees": _build_assignees(),
-            # 現存(非中止)課題IDの“全件”。since で tasks を差分に絞っても、これは
+            # 現存(非表示でない)課題IDの“全件”。since で tasks を差分に絞っても、これは
             # 常に全件入れる。Mac はこのリストに無い課題を state から除去することで、
-            # 中止/削除された課題が差分スナップショットだけでも消える（追従）。
+            # 非表示/削除された課題が差分スナップショットだけでも消える（追従）。
             "active_task_ids": list(
-                m.Task.objects.filter(is_cancelled=False)
+                m.Task.objects.filter(is_hidden=False)
                 .order_by("id")
                 .values_list("id", flat=True)
             ),

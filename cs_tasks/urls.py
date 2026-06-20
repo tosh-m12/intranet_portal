@@ -8,6 +8,7 @@ app_name = "cs_tasks"
 urlpatterns = [
     # リアルタイム連携API(Mac cs_bridge がトンネル越しに叩く。メール往復の置換)
     path("bridge/api/sync", bridge_api.bridge_sync, name="bridge_api_sync"),
+    path("bridge/api/billing-export", bridge_api.bridge_billing_export, name="bridge_api_billing_export"),
     path("bridge/api/weekly-report", bridge_api.bridge_weekly, name="bridge_api_weekly"),
     path("bridge/api/writeback", bridge_api.bridge_writeback, name="bridge_api_writeback"),
     path("bridge/api/report-settings", bridge_api.bridge_report_settings, name="bridge_api_report_settings"),
@@ -22,7 +23,7 @@ urlpatterns = [
     path("<int:task_id>/progress/", views.add_progress, name="add_progress"),
     path("progress/<int:progress_id>/date/", views.edit_progress_date, name="edit_progress_date"),
     path("<int:task_id>/complete/", views.toggle_complete, name="toggle_complete"),
-    path("<int:task_id>/cancel/", views.toggle_cancel, name="toggle_cancel"),
+    path("<int:task_id>/hidden/", views.toggle_hidden, name="toggle_hidden"),
     path("progress/<int:progress_id>/edit/", views.edit_progress, name="edit_progress"),
     path("progress/<int:progress_id>/comment/", views.add_comment, name="add_comment"),
     path("comment/<int:comment_id>/edit/", views.edit_comment, name="edit_comment"),
@@ -34,5 +35,6 @@ urlpatterns = [
     path("mailing-list/", views.mailing_list, name="mailing_list"),
     path("mine/", views.my_tasks, name="my_tasks"),
     path("report/", views.report, name="report"),
+    path("closed/", views.closed_tasks, name="closed"),
     path("report/settings/", views.report_settings, name="report_settings"),
 ]
