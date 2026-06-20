@@ -193,11 +193,14 @@ def _apply_op(op, author, created_map=None):
             raise ValueError("delete には id(int) が必要です。")
 
         if target == "task":
-            # 既存の論理削除運用に合わせる。往路スナップショットは
-            # is_hidden=False のみ送るため、以後 Mac からも消える。
+            # 論理削除＝非表示。スナップショットは非表示も送るが Mac は通常タブで除外し、
+            # 終了案件一覧でのみ表示する。updated_at も更新して非表示化を差分スナップショット
+            # に載せ、Mac を即追従させる（.update は auto_now を発火しないため明示）。
+            now = timezone.now()
             m.Task.objects.filter(pk=target_id).update(
                 is_hidden=True,
-                hidden_at=timezone.now(),
+                hidden_at=now,
+                updated_at=now,
             )
         elif target == "progress":
             # 削除前に親課題を控え、削除後に touch（差分スナップショットに
