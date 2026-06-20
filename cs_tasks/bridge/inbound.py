@@ -26,7 +26,7 @@ User = get_user_model()
 
 VALID_ACTIONS = {
     "add_comment", "edit_progress", "edit_task", "add_task", "edit_comment",
-    "add_progress", "delete", "set_closed", "purge",
+    "add_progress", "delete", "set_closed", "purge", "unhide",
 }
 
 # delete action の target → 削除方式
@@ -265,6 +265,19 @@ def _apply_op(op, author, created_map=None):
             raise ValueError("purge には id(int) が必要です。")
         # 対象が無くても no-op（op_id 冪等で重複適用は安全）。
         m.Task.objects.filter(pk=target_id).delete()
+
+    elif action == "unhide":
+        # 非表示の解除（再表示）。is_hidden=False に戻す。updated_at も更新して
+        # 差分スナップショットで Mac の通常タブへ即復帰させる。
+        if op.get("target") != "task":
+            raise ValueError(f"unhide の target が不正: {op.get('target')!r}")
+        target_id = op.get("id")
+        if not isinstance(target_id, int):
+            raise ValueError("unhide には id(int) が必要です。")
+        now = timezone.now()
+        m.Task.objects.filter(pk=target_id).update(
+            is_hidden=False, hidden_at=None, updated_at=now,
+        )
 
 
 def apply_writeback(payload, signature, sender=None, raw_text=None, enforce_sender=True):
