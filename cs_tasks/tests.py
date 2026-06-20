@@ -272,6 +272,21 @@ class InboundApplyTests(TestCase):
         self.assertTrue(res["errors"])
         self.assertTrue(ProgressUpdate.objects.filter(pk=self.progress.id).exists())
 
+    def test_unhide_task(self):
+        # unhide は非表示(is_hidden=True)を解除して再表示する。
+        self.task.is_hidden = True
+        self.task.hidden_at = timezone.now()
+        self.task.save(update_fields=["is_hidden", "hidden_at"])
+        res = self._apply(
+            [{"op_id": "op-uh", "action": "unhide",
+              "target": "task", "id": self.task.id}]
+        )
+        self.assertTrue(res["ok"])
+        self.assertEqual(res["applied"], ["op-uh"])
+        self.task.refresh_from_db()
+        self.assertFalse(self.task.is_hidden)
+        self.assertIsNone(self.task.hidden_at)
+
     def test_delete_progress_hard(self):
         res = self._apply(
             [{"op_id": "op-dp", "action": "delete",
