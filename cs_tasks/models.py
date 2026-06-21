@@ -158,8 +158,8 @@ class Task(models.Model):
     # ===== ビジネス概要の表示用ヘルパ =====
     @property
     def revenue_unit(self):
-        """予想売上の単位。継続=/月、スポット=/次。未選択は空。"""
-        return {"recurring": "/月", "spot": "/次"}.get(self.revenue_type, "")
+        """予想売上の単位。スポット=/次、それ以外(継続・未選択)は既定で /月。"""
+        return "/次" if self.revenue_type == "spot" else "/月"
 
     @property
     def expected_revenue_display(self):
