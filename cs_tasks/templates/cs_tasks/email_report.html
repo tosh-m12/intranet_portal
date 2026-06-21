@@ -17,7 +17,8 @@
     <ul>
         {% for t in new_tasks %}
         <li>{{ t.title }}（{{ t.client_name|default:"客先未設定" }} / 担当:
-            {{ t.assignee.last_name }} {{ t.assignee.first_name|default:"未割当" }}）</li>
+            {{ t.assignee.last_name }} {{ t.assignee.first_name|default:"未割当" }}）
+            {% include "cs_tasks/_email_biz.html" %}</li>
         {% endfor %}
     </ul>
     {% else %}<p>なし</p>{% endif %}
@@ -26,7 +27,8 @@
     {% if progressed_tasks %}
     <ul>
         {% for t in progressed_tasks %}
-        <li>{{ t.title }}（{{ t.client_name|default:"客先未設定" }}）</li>
+        <li>{{ t.title }}（{{ t.client_name|default:"客先未設定" }}）
+            {% include "cs_tasks/_email_biz.html" %}</li>
         {% endfor %}
     </ul>
     {% else %}<p>なし</p>{% endif %}
@@ -35,7 +37,8 @@
     {% if completed_tasks %}
     <ul>
         {% for t in completed_tasks %}
-        <li>{{ t.title }}（{{ t.client_name|default:"客先未設定" }}）</li>
+        <li>{{ t.title }}（{{ t.client_name|default:"客先未設定" }}）
+            {% include "cs_tasks/_email_biz.html" %}</li>
         {% endfor %}
     </ul>
     {% else %}<p>なし</p>{% endif %}
@@ -46,7 +49,8 @@
     <ul>
         {% for t in overdue_tasks %}
         <li>{{ t.title }}（期限: {{ t.due_date|date:"Y/m/d" }} / 担当:
-            {{ t.assignee.last_name }} {{ t.assignee.first_name|default:"未割当" }}）</li>
+            {{ t.assignee.last_name }} {{ t.assignee.first_name|default:"未割当" }}）
+            {% include "cs_tasks/_email_biz.html" %}</li>
         {% endfor %}
     </ul>
     {% endif %}
@@ -54,7 +58,8 @@
     <p style="margin:4px 0;"><strong>期限間近</strong></p>
     <ul>
         {% for t in due_soon_tasks %}
-        <li>{{ t.title }}（期限: {{ t.due_date|date:"Y/m/d" }}）</li>
+        <li>{{ t.title }}（期限: {{ t.due_date|date:"Y/m/d" }}）
+            {% include "cs_tasks/_email_biz.html" %}</li>
         {% endfor %}
     </ul>
     {% endif %}
