@@ -4,7 +4,7 @@ from datetime import time as dtime
 from django.conf import settings
 from django.db import models
 from django.utils.translation import get_language
-from django.utils.translation import gettext_lazy as _l
+from django.utils.translation import gettext_lazy as _
 
 
 def active_lang():
@@ -48,57 +48,57 @@ class Task(models.Model):
         (CATEGORY_INCIDENT, "クレーム・インシデント (Bad News First)"),
     ]
     category = models.CharField(
-        verbose_name=_l("区分"), max_length=16,
+        verbose_name=_("区分"), max_length=16,
         choices=CATEGORY_CHOICES, default=CATEGORY_EXISTING,
     )
 
-    title = models.CharField(verbose_name=_l("課題名"), max_length=255)
+    title = models.CharField(verbose_name=_("課題名"), max_length=255)
     title_ja = models.CharField(
-        verbose_name=_l("課題名(日本語)"), max_length=255, blank=True
+        verbose_name=_("課題名(日本語)"), max_length=255, blank=True
     )
-    description = models.TextField(verbose_name=_l("詳細"), blank=True)
-    description_ja = models.TextField(verbose_name=_l("詳細(日本語)"), blank=True)
-    client_name = models.CharField(verbose_name=_l("客先名"), max_length=255, blank=True)
+    description = models.TextField(verbose_name=_("詳細"), blank=True)
+    description_ja = models.TextField(verbose_name=_("詳細(日本語)"), blank=True)
+    client_name = models.CharField(verbose_name=_("客先名"), max_length=255, blank=True)
 
     # ===== ビジネス概要（新規顧客課題のみ。タイトルと詳細の間に表示・編集） =====
     # 翻訳対象外の構造化データ（単一値）。空＝未入力。
     BIZ_STATUS_CHOICES = [
-        ("negotiating", _l("交渉中")),
-        ("won", _l("受注")),
-        ("lost", _l("失注")),
+        ("negotiating", _("交渉中")),
+        ("won", _("受注")),
+        ("lost", _("失注")),
     ]
     REVENUE_TYPE_CHOICES = [
-        ("recurring", _l("継続")),
-        ("spot", _l("スポット")),
+        ("recurring", _("継続")),
+        ("spot", _("スポット")),
     ]
     BIZ_TYPE_CHOICES = [
-        ("import", _l("輸入型")),
-        ("export", _l("輸出型")),
-        ("zone", _l("園区遊")),
-        ("triangle", _l("3国間")),
-        ("other", _l("その他")),
+        ("import", _("輸入型")),
+        ("export", _("輸出型")),
+        ("zone", _("園区遊")),
+        ("triangle", _("3国間")),
+        ("other", _("その他")),
     ]
     biz_status = models.CharField(
-        verbose_name=_l("状態"), max_length=16, choices=BIZ_STATUS_CHOICES, blank=True
+        verbose_name=_("状態"), max_length=16, choices=BIZ_STATUS_CHOICES, blank=True
     )
     # スタート時期: 月初日で保持（年月のみ使用）。未定は start_undecided=True。
-    start_month = models.DateField(verbose_name=_l("スタート時期"), null=True, blank=True)
-    start_undecided = models.BooleanField(verbose_name=_l("スタート時期未定"), default=False)
+    start_month = models.DateField(verbose_name=_("スタート時期"), null=True, blank=True)
+    start_undecided = models.BooleanField(verbose_name=_("スタート時期未定"), default=False)
     revenue_type = models.CharField(
-        verbose_name=_l("継続・スポット"), max_length=16, choices=REVENUE_TYPE_CHOICES, blank=True
+        verbose_name=_("継続・スポット"), max_length=16, choices=REVENUE_TYPE_CHOICES, blank=True
     )
     # 予想売上(人民元CNY)。単位(/月 or /次)は revenue_type から導出する。
     expected_revenue = models.DecimalField(
-        verbose_name=_l("予想売上(CNY)"), max_digits=14, decimal_places=2, null=True, blank=True
+        verbose_name=_("予想売上(CNY)"), max_digits=14, decimal_places=2, null=True, blank=True
     )
     biz_type = models.CharField(
-        verbose_name=_l("ビジネス形態"), max_length=16, choices=BIZ_TYPE_CHOICES, blank=True
+        verbose_name=_("ビジネス形態"), max_length=16, choices=BIZ_TYPE_CHOICES, blank=True
     )
     biz_type_other = models.CharField(
-        verbose_name=_l("ビジネス形態(その他)"), max_length=100, blank=True
+        verbose_name=_("ビジネス形態(その他)"), max_length=100, blank=True
     )
     group_contact = models.CharField(
-        verbose_name=_l("グループ内客先窓口"), max_length=255, blank=True
+        verbose_name=_("グループ内客先窓口"), max_length=255, blank=True
     )
 
     owner = models.ForeignKey(
@@ -107,7 +107,7 @@ class Task(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         related_name="owned_tasks",
-        verbose_name=_l("登録者"),
+        verbose_name=_("登録者"),
     )
     assignee = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -115,36 +115,36 @@ class Task(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         related_name="assigned_tasks",
-        verbose_name=_l("担当者"),
+        verbose_name=_("担当者"),
     )
 
-    due_date = models.DateField(verbose_name=_l("期限"), null=True, blank=True)
+    due_date = models.DateField(verbose_name=_("期限"), null=True, blank=True)
 
     # 完了（クローズ）: 上長のみが操作
-    is_closed = models.BooleanField(verbose_name=_l("完了"), default=False)
-    completed_at = models.DateTimeField(verbose_name=_l("完了日時"), null=True, blank=True)
+    is_closed = models.BooleanField(verbose_name=_("完了"), default=False)
+    completed_at = models.DateTimeField(verbose_name=_("完了日時"), null=True, blank=True)
     completed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
         related_name="completed_tasks",
-        verbose_name=_l("完了操作者"),
+        verbose_name=_("完了操作者"),
     )
 
     # 非表示（論理削除）: 課題管理表の責任者が「本当に終わった案件」と確認し、一覧から
     # 消した状態。物理削除ではなく DB 行は保持する（社内の一覧からは消えるが、責任者の
     # Mac 管理コンソールから完全削除＝物理削除する場合は bridge の purge op で行う）。
-    is_hidden = models.BooleanField(verbose_name=_l("非表示"), default=False)
-    hidden_at = models.DateTimeField(verbose_name=_l("非表示日時"), null=True, blank=True)
+    is_hidden = models.BooleanField(verbose_name=_("非表示"), default=False)
+    hidden_at = models.DateTimeField(verbose_name=_("非表示日時"), null=True, blank=True)
 
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_l("作成日時"))
-    updated_at = models.DateTimeField(auto_now=True, verbose_name=_l("更新日時"))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("作成日時"))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=_("更新日時"))
 
     class Meta:
         ordering = ["-created_at", "id"]
-        verbose_name = _l("CS課題")
-        verbose_name_plural = _l("CS課題")
+        verbose_name = _("CS課題")
+        verbose_name_plural = _("CS課題")
 
     def __str__(self):
         return f"{self.title}（{self.client_name}）" if self.client_name else self.title
