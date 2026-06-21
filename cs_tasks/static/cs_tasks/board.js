@@ -207,7 +207,7 @@
     function bizUnit(form) {
         var rt = form.querySelector('select[name="revenue_type"]');
         var unit = form.querySelector(".biz-unit");
-        if (rt && unit) unit.textContent = rt.value === "recurring" ? "/月" : (rt.value === "spot" ? "/次" : "");
+        if (rt && unit) unit.textContent = rt.value === "spot" ? "/次" : "/月";   // 既定は /月
     }
     function bizOther(form) {
         var bt = form.querySelector('select[name="biz_type"]');
