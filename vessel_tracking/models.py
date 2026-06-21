@@ -267,12 +267,15 @@ class Shipment(models.Model):
             return ('ok', _('定刻'))
         if not self.etd:
             return ('muted', _('監視中')) if self.live_updated_at else ('none', _('未取得'))
-        # 未出港: 本便の積込寄港とみなせる仕出地到着見込みがあれば 出発見込み=到着+1日 として遅延を予測
+        # 未出港: 仕出地(上海)到着見込みから 出発見込み=到着+1日 を推定し、遅延のみ警告する。
+        # 早着して積地で待機していても、積込はETDまで続くため出航はETD前にはならない。
+        # よって予測は0でクランプし「早期出発」としては出さない(誤解防止)。実際に早く出た場合は
+        # 上の atd 分岐が実績ベースで負値(前倒し)を表示する。
         # (予定より大幅に早い到着=前航海の寄港は live_origin_arrival_cst が除外する)
         delay = None
         arr = self.live_origin_arrival_cst
         if arr:
-            delay = (arr.date() - self.etd).days + 1
+            delay = max((arr.date() - self.etd).days + 1, 0)
         # 予定ETDを既に過ぎている → 確定遅延(到着未取得でも警告)
         if self.etd < datetime.date.today():
             elapsed = (datetime.date.today() - self.etd).days
