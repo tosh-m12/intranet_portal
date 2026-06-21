@@ -8,11 +8,13 @@ import json
 
 # 現行スキーマ。送信(往路スナップショット/復路書き戻し)はこの値で発行する。
 # v1 → v2: 往路スナップショットに meta.assignees(担当者候補リスト)を追加。
-SCHEMA_VERSION = 2
+# v2 → v3: 新規顧客課題のビジネス概要項目(状態/スタート時期/継続スポット/予想売上/
+#          ビジネス形態/グループ内客先窓口)を Task に追加。往路・復路とも対応。
+SCHEMA_VERSION = 3
 
 # 復路(書き戻し)で受け入れ可能な schema 集合。Mac/サーバが段階的に
 # アップグレードしても無停止で繋がるよう、後方互換を残す。
-SUPPORTED_INBOUND_SCHEMAS = {1, 2}
+SUPPORTED_INBOUND_SCHEMAS = {1, 2, 3}
 
 # 往路(社内→Mac): スナップショット
 SYNC_BEGIN = "-----CS-SYNC-BEGIN-----"

@@ -384,6 +384,35 @@ class InboundApplyTests(TestCase):
         self.assertEqual(self.task.due_date.isoformat(), "2026-06-15")
         self.assertEqual(self.task.assignee, self.member)
 
+    def test_edit_task_business_fields(self):
+        # ビジネス概要(v3) の書き戻し: 文字列/選択/日付/真偽/数値が適用される。
+        res = self._apply(
+            [{
+                "op_id": "op-biz", "action": "edit_task",
+                "task_id": self.task.id,
+                "fields": {
+                    "biz_status": "won",
+                    "start_month": "2027-04-01",
+                    "start_undecided": False,
+                    "revenue_type": "recurring",
+                    "expected_revenue": "12345.60",
+                    "biz_type": "other",
+                    "biz_type_other": "委託加工",
+                    "group_contact": "山田(東京)",
+                },
+            }]
+        )
+        self.assertTrue(res["ok"])
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.biz_status, "won")
+        self.assertEqual(self.task.start_month.isoformat(), "2027-04-01")
+        self.assertFalse(self.task.start_undecided)
+        self.assertEqual(self.task.revenue_type, "recurring")
+        self.assertEqual(str(self.task.expected_revenue), "12345.60")
+        self.assertEqual(self.task.biz_type, "other")
+        self.assertEqual(self.task.biz_type_other, "委託加工")
+        self.assertEqual(self.task.group_contact, "山田(東京)")
+
     def test_add_task(self):
         res = self._apply(
             [{
@@ -671,11 +700,30 @@ class OutboundSnapshotTests(TestCase):
         self.assertIn(keep.id, ids)                           # 現存は全件入る
         self.assertIn(hidden.id, ids)                         # 非表示も行が残る＝含む
 
-    def test_schema_version_is_v2(self):
-        """v2 への昇格を明示的に確認。"""
-        self.assertEqual(payload.SCHEMA_VERSION, 2)
+    def test_schema_version_is_v3(self):
+        """v3 への昇格を明示的に確認（ビジネス概要項目の追加）。"""
+        self.assertEqual(payload.SCHEMA_VERSION, 3)
         snap = outbound.build_snapshot()
-        self.assertEqual(snap["schema"], 2)
+        self.assertEqual(snap["schema"], 3)
+
+    def test_snapshot_includes_business_fields(self):
+        """新規顧客課題のビジネス概要項目が往路スナップショットに載る。"""
+        from decimal import Decimal
+        from datetime import date as _date
+        t = Task.objects.create(
+            title="新規", category=Task.CATEGORY_NEW,
+            biz_status="negotiating", start_month=_date(2027, 4, 1),
+            revenue_type="spot", expected_revenue=Decimal("9999.99"),
+            biz_type="export", group_contact="窓口A",
+        )
+        snap = outbound.build_snapshot()
+        row = next(x for x in snap["tasks"] if x["id"] == t.id)
+        self.assertEqual(row["biz_status"], "negotiating")
+        self.assertEqual(row["start_month"], "2027-04-01")
+        self.assertEqual(row["revenue_type"], "spot")
+        self.assertEqual(row["expected_revenue"], "9999.99")
+        self.assertEqual(row["biz_type"], "export")
+        self.assertEqual(row["group_contact"], "窓口A")
 
     def test_snapshot_includes_assignee_candidates(self):
         """Mac 側の担当者ドロップダウン用に meta.assignees が含まれる。

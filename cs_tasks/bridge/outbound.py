@@ -117,6 +117,16 @@ def build_snapshot(since=None):
                 "is_closed": t.is_closed,
                 # 非表示(責任者が終了として消した)状態。Mac は通常タブで除外、終了案件一覧で表示。
                 "is_hidden": t.is_hidden,
+                # ビジネス概要(新規顧客課題向け。翻訳対象外の構造化データ)
+                "biz_status": t.biz_status,
+                "start_month": t.start_month.isoformat() if t.start_month else None,
+                "start_undecided": t.start_undecided,
+                "revenue_type": t.revenue_type,
+                "expected_revenue": (str(t.expected_revenue)
+                                     if t.expected_revenue is not None else None),
+                "biz_type": t.biz_type,
+                "biz_type_other": t.biz_type_other,
+                "group_contact": t.group_contact,
                 "created_at": _iso(t.created_at),
                 "updated_at": _iso(t.updated_at),
                 "progress_updates": progress_list,

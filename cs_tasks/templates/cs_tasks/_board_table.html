@@ -66,10 +66,83 @@ show_add=true のとき「＋課題追加」行を出す（呼び出し側に id
                             <textarea name="description" class="add-input task-desc-input" rows="1"
                                       placeholder="＋{% trans "詳細を入力" %}">{{ task.display_description }}</textarea>
                         </form>
+                        {# ビジネス概要（新規顧客課題のみ。詳細の下に罫線を挟んで配置） #}
+                        {% if task.category == 'new' %}
+                        <hr class="biz-sep">
+                        <form method="post" action="{% url 'cs_tasks:edit_business' task.id %}" class="biz-form add-inline" data-ajax="1">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <div class="biz-grid">
+                                <div class="biz-field"><label>{% trans "状態" %}</label>
+                                    <div class="biz-control">
+                                        <select name="biz_status">
+                                            <option value="">—</option>
+                                            {% for v, l in biz_status_choices %}<option value="{{ v }}" {% if task.biz_status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="biz-field"><label>{% trans "スタート" %}</label>
+                                    <div class="biz-control">
+                                        <select name="start_year" class="biz-start" {% if task.start_undecided %}disabled{% endif %}>
+                                            <option value="">—</option>
+                                            {% for y in biz_years %}<option value="{{ y }}" {% if task.start_month and task.start_month.year == y %}selected{% endif %}>{{ y }}</option>{% endfor %}
+                                        </select>
+                                        <select name="start_month_num" class="biz-start" {% if task.start_undecided %}disabled{% endif %}>
+                                            <option value="">—</option>
+                                            {% for m in biz_months %}<option value="{{ m }}" {% if task.start_month and task.start_month.month == m %}selected{% endif %}>{{ m }}{% trans "月" %}</option>{% endfor %}
+                                        </select>
+                                        <label class="biz-cb"><input type="checkbox" name="start_undecided" {% if task.start_undecided %}checked{% endif %}>{% trans "未定" %}</label>
+                                    </div>
+                                </div>
+                                <div class="biz-field"><label>{% trans "区分" %}</label>
+                                    <div class="biz-control">
+                                        <select name="revenue_type" class="biz-revtype">
+                                            <option value="">—</option>
+                                            {% for v, l in revenue_type_choices %}<option value="{{ v }}" {% if task.revenue_type == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="biz-field"><label>{% trans "予想売上" %}</label>
+                                    <div class="biz-control">
+                                        <input type="text" name="expected_revenue" class="biz-revenue" inputmode="decimal"
+                                               value="{{ task.expected_revenue_display }}" autocomplete="off">
+                                        <span class="biz-revunit">{% trans "元" %}<span class="biz-unit">{{ task.revenue_unit }}</span></span>
+                                    </div>
+                                </div>
+                                <div class="biz-field"><label>{% trans "形態" %}</label>
+                                    <div class="biz-control">
+                                        <select name="biz_type" class="biz-type">
+                                            <option value="">—</option>
+                                            {% for v, l in biz_type_choices %}<option value="{{ v }}" {% if task.biz_type == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+                                        </select>
+                                        <input type="text" name="biz_type_other" class="biz-type-other" value="{{ task.biz_type_other }}"
+                                               placeholder="{% trans "その他" %}" autocomplete="off" {% if task.biz_type != 'other' %}hidden{% endif %}>
+                                    </div>
+                                </div>
+                                <div class="biz-field"><label>{% trans "窓口" %}</label>
+                                    <div class="biz-control">
+                                        <input type="text" name="group_contact" value="{{ task.group_contact }}"
+                                               placeholder="{% trans "グループ内客先窓口" %}" autocomplete="off">
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        {% endif %}
                         {% else %}
                             <span class="task-title">{{ task.display_title }}</span>
                             {% if task.display_description %}
                             <div class="task-desc-text">{{ task.display_description|linebreaksbr }}</div>
+                            {% endif %}
+                            {% if task.category == 'new' %}
+                            <hr class="biz-sep">
+                            <div class="biz-readonly">
+                                {% if task.biz_status %}<span class="biz-ro"><b>{% trans "状態" %}</b> {{ task.get_biz_status_display }}</span>{% endif %}
+                                {% if task.start_undecided %}<span class="biz-ro"><b>{% trans "スタート" %}</b> {% trans "未定" %}</span>{% elif task.start_month %}<span class="biz-ro"><b>{% trans "スタート" %}</b> {{ task.start_month|date:"Y/n" }}</span>{% endif %}
+                                {% if task.revenue_type %}<span class="biz-ro"><b>{% trans "区分" %}</b> {{ task.get_revenue_type_display }}</span>{% endif %}
+                                {% if task.expected_revenue_display %}<span class="biz-ro"><b>{% trans "予想売上" %}</b> {{ task.expected_revenue_display }} {% trans "元" %}{{ task.revenue_unit }}</span>{% endif %}
+                                {% if task.biz_type_label %}<span class="biz-ro"><b>{% trans "形態" %}</b> {{ task.biz_type_label }}</span>{% endif %}
+                                {% if task.group_contact %}<span class="biz-ro"><b>{% trans "窓口" %}</b> {{ task.group_contact }}</span>{% endif %}
+                            </div>
                             {% endif %}
                         {% endif %}
                     </td>
