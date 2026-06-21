@@ -71,10 +71,11 @@
 .vessel-app .badge.st-arrived{background:var(--ok-b);color:var(--ok-t)}
 .vessel-app .badge.st-cancelled{background:var(--bad-b);color:var(--bad-t)}
 .vessel-app .badge.bad{background:var(--bad-b);color:var(--bad-t)}
-.vessel-app .badge.ok{background:var(--ok-b);color:var(--ok-t)}
+/* 実績の定刻/早着: 薄い青背景・青文字。出発前の予想(定刻予想)の青文字に合わせる。 */
+.vessel-app .badge.ok{background:var(--info-b);color:var(--blue)}
 /* 出発前のライブ予測遅延: グレー背景・赤文字「+X予想」(サイズは他バッジと共通) */
 .vessel-app .badge.predict{background:#eceff3;color:var(--bad-t)}
-/* 出発前の定刻は「予想」: グレー背景・青文字で実績の定刻(緑背景)と区別する。 */
+/* 出発前の定刻は「予想」: グレー背景・青文字で実績の定刻(薄青背景)と区別する。 */
 .vessel-app .badge.okpred{background:#eceff3;color:var(--blue)}
 
 /* filters (ライブ絞り込み) */
