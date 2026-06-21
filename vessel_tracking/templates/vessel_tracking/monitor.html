@@ -46,11 +46,11 @@
       <td class="nowrap">{{ r.live_dest_name|default:'—' }}{% if r.live_dest_unlocode %} <span class="muted">({{ r.live_dest_unlocode }})</span>{% endif %}</td>
       <td class="c nowrap">{% if r.live_map_url %}<a href="{{ r.live_map_url }}" target="_blank" rel="noopener" title="{{ r.live_pos_str }}">📍{% trans "地図" %}</a>{% else %}—{% endif %}</td>
       <td class="r">{{ r.live_speed|default_if_none:'—' }}</td>
-      <td class="r stack2{% if r.live_departure_predict.0 == 'bad' %} danger{% endif %}">{% if r.origin_arrival_date_str %}<span>{{ r.origin_arrival_date_str }}</span><span>{{ r.origin_arrival_time_str }}</span>{% else %}<span class="muted">{% trans "船社情報待ち" %}</span>{% endif %}</td>
+      <td class="r stack2{% if 'bad' in r.live_departure_predict.0 %} danger{% endif %}">{% if r.origin_arrival_date_str %}<span>{{ r.origin_arrival_date_str }}</span><span>{{ r.origin_arrival_time_str }}</span>{% else %}<span class="muted">{% trans "船社情報待ち" %}</span>{% endif %}</td>
       <td class="r nowrap">{{ r.etd|date:'y/n/j'|default:'—' }}</td>
       <td class="c nowrap">
         {% with a=r.live_departure_predict %}
-        <span class="badge mbadge {% if a.0 == 'bad' %}bad{% elif a.0 == 'ok' %}ok{% elif a.0 == 'okpred' %}okpred{% elif a.0 == 'info' %}st-booked{% else %}st-received{% endif %}">{{ a.1 }}</span>
+        <span class="badge mbadge {% if a.0 == 'bad' %}bad{% elif a.0 == 'badpred' %}predict{% elif a.0 == 'ok' %}ok{% elif a.0 == 'okpred' %}okpred{% elif a.0 == 'info' %}st-booked{% else %}st-received{% endif %}">{{ a.1 }}</span>
         {% endwith %}
       </td>
       <td class="r nowrap muted">{{ r.live_updated_jst_str|default:'—' }}</td>
