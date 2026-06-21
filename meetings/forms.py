@@ -1,6 +1,6 @@
 # meetings/forms.py
 from django import forms
-from django.utils.translation import gettext_lazy as _l
+from django.utils.translation import gettext_lazy as _
 
 TIME_CHOICES = [('', '---------')] + [
     (f'{h:02}:{m:02}', f'{h:02}:{m:02}') for h in range(0, 24) for m in (0, 15, 30, 45)
@@ -8,7 +8,7 @@ TIME_CHOICES = [('', '---------')] + [
 
 class MeetingForm(forms.Form):
     visit_date = forms.DateField(
-        label=_l('訪問日'),
+        label=_('訪問日'),
         required=False,
         widget=forms.DateInput(
             attrs={
@@ -19,7 +19,7 @@ class MeetingForm(forms.Form):
         )
     )
     visit_time = forms.TimeField(
-        label=_l('訪問時間'),
+        label=_('訪問時間'),
         required=False,
         widget=forms.Select(
             choices=TIME_CHOICES,
@@ -30,23 +30,23 @@ class MeetingForm(forms.Form):
         )
     )
     time_undecided = forms.BooleanField(
-        label=_l('時間未定'), required=False
+        label=_('時間未定'), required=False
     )
     company_name = forms.CharField(
-        label=_l('会社名'), required=False,
+        label=_('会社名'), required=False,
         widget=forms.TextInput(attrs={'class': 'ac-field', 'autocomplete': 'off'}))
     last_name = forms.CharField(
-        label=_l('姓'), required=False,
+        label=_('姓'), required=False,
         widget=forms.TextInput(attrs={'class': 'ac-field', 'autocomplete': 'off'}))
     first_name = forms.CharField(
-        label=_l('名'), required=False,
+        label=_('名'), required=False,
         widget=forms.TextInput(attrs={'class': 'ac-field', 'autocomplete': 'off'}))
     title = forms.CharField(
-        label=_l('役職'), required=False,
+        label=_('役職'), required=False,
         widget=forms.TextInput(attrs={'class': 'ac-field', 'autocomplete': 'off'}))
-    purpose = forms.CharField(label=_l('目的'), required=False)
-    location = forms.CharField(label=_l('場所'), required=False)
-    host_staff = forms.CharField(label=_l('担当者'), required=False)
+    purpose = forms.CharField(label=_('目的'), required=False)
+    location = forms.CharField(label=_('場所'), required=False)
+    host_staff = forms.CharField(label=_('担当者'), required=False)
 
     def clean(self):
         cleaned = super().clean()

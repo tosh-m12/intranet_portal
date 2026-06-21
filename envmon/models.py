@@ -1,6 +1,6 @@
 # envmon/models.py
 from django.db import models
-from django.utils.translation import gettext_lazy as _l
+from django.utils.translation import gettext_lazy as _
 from datetime import time
 
 
@@ -11,16 +11,16 @@ class Location(models.Model):
       code: "loc01", "loc02", "external_loc02" など
       name: "B倉庫FMC", "B倉庫湿度管理室前方 外気" など
     """
-    code = models.CharField(_l("ロケーションID"), max_length=50, unique=True)
-    name = models.CharField(_l("倉庫名"), max_length=255)
-    is_external = models.BooleanField(_l("外気測定用か"), default=False)
+    code = models.CharField(_("ロケーションID"), max_length=50, unique=True)
+    name = models.CharField(_("倉庫名"), max_length=255)
+    is_external = models.BooleanField(_("外気測定用か"), default=False)
 
-    created_at = models.DateTimeField(_l("作成日時"), auto_now_add=True)
-    updated_at = models.DateTimeField(_l("更新日時"), auto_now=True)
+    created_at = models.DateTimeField(_("作成日時"), auto_now_add=True)
+    updated_at = models.DateTimeField(_("更新日時"), auto_now=True)
 
     class Meta:
-        verbose_name = _l("ロケーション")
-        verbose_name_plural = _l("ロケーション")
+        verbose_name = _("ロケーション")
+        verbose_name_plural = _("ロケーション")
 
     def __str__(self) -> str:
         return f"{self.code} / {self.name}"
@@ -30,19 +30,19 @@ class DeviceAssignment(models.Model):
     """
     デバイスID → 現在割当ロケーション
     """
-    device_id = models.CharField(_l("デバイスID（シリアル）"), max_length=100, unique=True)
+    device_id = models.CharField(_("デバイスID（シリアル）"), max_length=100, unique=True)
     location = models.ForeignKey(
         Location,
-        verbose_name=_l("割当ロケーション"),
+        verbose_name=_("割当ロケーション"),
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
     )
-    updated_at = models.DateTimeField(_l("更新日時"), auto_now=True)
+    updated_at = models.DateTimeField(_("更新日時"), auto_now=True)
 
     class Meta:
-        verbose_name = _l("デバイス割当")
-        verbose_name_plural = _l("デバイス割当")
+        verbose_name = _("デバイス割当")
+        verbose_name_plural = _("デバイス割当")
 
     def __str__(self) -> str:
         return f"{self.device_id} -> {self.location}"
@@ -52,19 +52,19 @@ class AssignmentHistory(models.Model):
     """
     デバイス割当履歴（device_assignments.json を書き換えるたびに記録していたもの）
     """
-    device_id = models.CharField(_l("デバイスID（シリアル）"), max_length=100)
+    device_id = models.CharField(_("デバイスID（シリアル）"), max_length=100)
     location = models.ForeignKey(
         Location,
-        verbose_name=_l("割当ロケーション"),
+        verbose_name=_("割当ロケーション"),
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
     )
-    changed_at = models.DateTimeField(_l("割当変更日時"))
+    changed_at = models.DateTimeField(_("割当変更日時"))
 
     class Meta:
-        verbose_name = _l("割当履歴")
-        verbose_name_plural = _l("割当履歴")
+        verbose_name = _("割当履歴")
+        verbose_name_plural = _("割当履歴")
         indexes = [
             models.Index(fields=["device_id", "changed_at"]),
         ]
@@ -81,29 +81,29 @@ class EnvSettings(models.Model):
     interval = models.PositiveIntegerField(default=300)
     cache_interval = models.PositiveIntegerField(default=300)
     cache_expire_hours = models.PositiveIntegerField(default=720)
-    log_directory = models.CharField(_l("ログ保存先ディレクトリ"), max_length=255, default="logs")
+    log_directory = models.CharField(_("ログ保存先ディレクトリ"), max_length=255, default="logs")
 
     # Django 5.2 + MySQL 8 であれば JSONField 使用可
-    log_times = models.JSONField(_l("ログ取得時刻リスト"), default=list)
+    log_times = models.JSONField(_("ログ取得時刻リスト"), default=list)
 
     # 履歴取得の時刻（1日1回）
     history_fetch_time = models.TimeField(
-        _l("履歴データ取得時刻（1日1回）"),
+        _("履歴データ取得時刻（1日1回）"),
         default=time(1, 0),  # 初期値 01:00
     )
 
     # 追加：履歴自動取得の実行中フラグ
     is_fetching_history = models.BooleanField(
-        _l("履歴データ取得中フラグ"),
+        _("履歴データ取得中フラグ"),
         default=False,
     )
 
-    created_at = models.DateTimeField(_l("作成日時"), auto_now_add=True)
-    updated_at = models.DateTimeField(_l("更新日時"), auto_now=True)
+    created_at = models.DateTimeField(_("作成日時"), auto_now_add=True)
+    updated_at = models.DateTimeField(_("更新日時"), auto_now=True)
 
     class Meta:
-        verbose_name = _l("温湿度設定")
-        verbose_name_plural = _l("温湿度設定")
+        verbose_name = _("温湿度設定")
+        verbose_name_plural = _("温湿度設定")
 
     def __str__(self) -> str:
         return "EnvSettings"
@@ -113,7 +113,7 @@ class EnvSettings(models.Model):
         """
         常に1件だけ存在する前提で、それを取得 or 作成するヘルパー。
         """
-        obj, _ = cls.objects.get_or_create(id=1)
+        obj, _created = cls.objects.get_or_create(id=1)
         return obj
 
 
@@ -122,11 +122,11 @@ class DeviceHistory(models.Model):
     1weilian から取得した温湿度履歴の保存用テーブル。
     同じ (sn, recorded_at) のデータは重複しないよう UniqueConstraint で制御。
     """
-    sn = models.CharField(_l("シリアルナンバー"), max_length=64, db_index=True)
-    recorded_at = models.DateTimeField(_l("計測日時"), db_index=True)
-    temperature = models.FloatField(_l("温度"), null=True, blank=True)
-    humidity = models.FloatField(_l("湿度"), null=True, blank=True)
-    raw = models.JSONField(_l("生データ(JSON)"), null=True, blank=True)
+    sn = models.CharField(_("シリアルナンバー"), max_length=64, db_index=True)
+    recorded_at = models.DateTimeField(_("計測日時"), db_index=True)
+    temperature = models.FloatField(_("温度"), null=True, blank=True)
+    humidity = models.FloatField(_("湿度"), null=True, blank=True)
+    raw = models.JSONField(_("生データ(JSON)"), null=True, blank=True)
 
     class Meta:
         ordering = ["sn", "recorded_at"]

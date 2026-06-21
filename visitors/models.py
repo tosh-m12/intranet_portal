@@ -1,22 +1,22 @@
 from django.conf import settings
 from django.db import models
-from django.utils.translation import gettext_lazy as _l
+from django.utils.translation import gettext_lazy as _
 
 
 class Visitor(models.Model):
-    visit_date = models.DateField(verbose_name=_l("訪問日"))
-    visit_time = models.TimeField(verbose_name=_l("時間"), null=True, blank=True)
-    time_undecided = models.BooleanField(verbose_name=_l("時間未定"), default=False)
+    visit_date = models.DateField(verbose_name=_("訪問日"))
+    visit_time = models.TimeField(verbose_name=_("時間"), null=True, blank=True)
+    time_undecided = models.BooleanField(verbose_name=_("時間未定"), default=False)
 
-    company_name = models.CharField(verbose_name=_l("正式会社名"), max_length=255)
-    last_name = models.CharField(verbose_name=_l("姓"), max_length=100)
-    first_name = models.CharField(verbose_name=_l("名"), max_length=100)
-    title = models.CharField(verbose_name=_l("役職"), max_length=100, blank=True)
-    purpose = models.CharField(verbose_name=_l("目的"), max_length=255, blank=True)
-    location = models.CharField(verbose_name=_l("訪問場所"), max_length=255)
-    host_staff = models.CharField(verbose_name=_l("入力者"), max_length=255)
+    company_name = models.CharField(verbose_name=_("正式会社名"), max_length=255)
+    last_name = models.CharField(verbose_name=_("姓"), max_length=100)
+    first_name = models.CharField(verbose_name=_("名"), max_length=100)
+    title = models.CharField(verbose_name=_("役職"), max_length=100, blank=True)
+    purpose = models.CharField(verbose_name=_("目的"), max_length=255, blank=True)
+    location = models.CharField(verbose_name=_("訪問場所"), max_length=255)
+    host_staff = models.CharField(verbose_name=_("入力者"), max_length=255)
 
-    cancelled = models.BooleanField(verbose_name=_l("キャンセル"), default=False)
+    cancelled = models.BooleanField(verbose_name=_("キャンセル"), default=False)
 
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -24,7 +24,7 @@ class Visitor(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         related_name="created_visitors",
-        verbose_name=_l("入力者ユーザー"),
+        verbose_name=_("入力者ユーザー"),
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -58,54 +58,54 @@ class VisitMailConfig(models.Model):
     MODE_NONE = 'none'
 
     MODE_CHOICES = [
-        (MODE_WINDOWS, _l('Windows タスクスケジューラで送信')),
-        (MODE_DJANGO, _l('Django 内部スケジューラで送信')),
-        (MODE_NONE, _l('自動送信なし（手動のみ）')),
+        (MODE_WINDOWS, _('Windows タスクスケジューラで送信')),
+        (MODE_DJANGO, _('Django 内部スケジューラで送信')),
+        (MODE_NONE, _('自動送信なし（手動のみ）')),
     ]
 
-    send_time = models.TimeField(verbose_name=_l("送信時刻（毎日）"), default="09:00")
+    send_time = models.TimeField(verbose_name=_("送信時刻（毎日）"), default="09:00")
     mode = models.CharField(
         max_length=20,
         choices=MODE_CHOICES,
         default=MODE_WINDOWS,
-        verbose_name=_l("スケジューラ方式"),
+        verbose_name=_("スケジューラ方式"),
     )
 
     last_sent_date = models.DateField(
         null=True,
         blank=True,
-        verbose_name=_l("最終送信日"),
+        verbose_name=_("最終送信日"),
     )
 
     # ↓↓↓ SMTP 設定（現在は mailcenter 側に移管済み・未使用） ↓↓↓
     smtp_host = models.CharField(
         max_length=255,
-        verbose_name=_l("SMTPサーバー"),
+        verbose_name=_("SMTPサーバー"),
         default="smtp.qiye.aliyun.com",
     )
     smtp_port = models.IntegerField(
-        verbose_name=_l("ポート番号"),
+        verbose_name=_("ポート番号"),
         default=587,
     )
     use_tls = models.BooleanField(
-        verbose_name=_l("TLS を使用"),
+        verbose_name=_("TLS を使用"),
         default=True,
     )
     use_ssl = models.BooleanField(
-        verbose_name=_l("SSL を使用"),
+        verbose_name=_("SSL を使用"),
         default=False,
     )
     smtp_user = models.EmailField(
-        verbose_name=_l("SMTPユーザー（ログインID / From）"),
+        verbose_name=_("SMTPユーザー（ログインID / From）"),
         blank=True,
     )
     smtp_password = models.CharField(
-        verbose_name=_l("SMTPパスワード"),
+        verbose_name=_("SMTPパスワード"),
         max_length=255,
         blank=True,
     )
     from_name = models.CharField(
-        verbose_name=_l("送信者名（表示名）"),
+        verbose_name=_("送信者名（表示名）"),
         max_length=255,
         blank=True,
         default="NGLS-CS-INFO",

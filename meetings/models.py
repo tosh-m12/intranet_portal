@@ -1,28 +1,28 @@
 # meetings/models.py
 from django.db import models
 from django.conf import settings
-from django.utils.translation import gettext_lazy as _l
+from django.utils.translation import gettext_lazy as _
 
 
 class Meeting(models.Model):
-    visit_date = models.DateField(verbose_name=_l("訪問日"))
-    visit_time = models.TimeField(verbose_name=_l("時間"), null=True, blank=True)
-    time_undecided = models.BooleanField(verbose_name=_l("時間未定"), default=False)
+    visit_date = models.DateField(verbose_name=_("訪問日"))
+    visit_time = models.TimeField(verbose_name=_("時間"), null=True, blank=True)
+    time_undecided = models.BooleanField(verbose_name=_("時間未定"), default=False)
 
-    company_name = models.CharField(verbose_name=_l("正式会社名"), max_length=255)
-    last_name = models.CharField(verbose_name=_l("姓"), max_length=100)
-    first_name = models.CharField(verbose_name=_l("名"), max_length=100)
-    title = models.CharField(verbose_name=_l("役職"), max_length=100, blank=True)
-    purpose = models.CharField(verbose_name=_l("目的"), max_length=255, blank=True)
+    company_name = models.CharField(verbose_name=_("正式会社名"), max_length=255)
+    last_name = models.CharField(verbose_name=_("姓"), max_length=100)
+    first_name = models.CharField(verbose_name=_("名"), max_length=100)
+    title = models.CharField(verbose_name=_("役職"), max_length=100, blank=True)
+    purpose = models.CharField(verbose_name=_("目的"), max_length=255, blank=True)
 
     # 「訪問」「WEB会議」などを入れる
-    location = models.CharField(verbose_name=_l("訪問・WEB"), max_length=255)
+    location = models.CharField(verbose_name=_("訪問・WEB"), max_length=255)
 
     # 画面表示用の入力者名（姓 名 or メールアドレスなど）
-    host_staff = models.CharField(verbose_name=_l("入力者"), max_length=255)
+    host_staff = models.CharField(verbose_name=_("入力者"), max_length=255)
 
     # 将来 WEB 会議用の URL 等を足しても良い
-    cancelled = models.BooleanField(verbose_name=_l("キャンセル"), default=False)
+    cancelled = models.BooleanField(verbose_name=_("キャンセル"), default=False)
 
     # visitors と同じ思想：権限判定用のユーザー
     created_by = models.ForeignKey(
@@ -31,11 +31,11 @@ class Meeting(models.Model):
         blank=True,     # admin画面で空でも保存可能
         on_delete=models.SET_NULL,   # ユーザー削除時も Meeting は残す
         related_name="created_meetings",
-        verbose_name=_l("入力者ユーザー"),
+        verbose_name=_("入力者ユーザー"),
     )
 
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_l("作成日時"))
-    updated_at = models.DateTimeField(auto_now=True, verbose_name=_l("更新日時"))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("作成日時"))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=_("更新日時"))
 
     class Meta:
         ordering = ["visit_date", "visit_time", "id"]
@@ -68,12 +68,12 @@ class MeetingMailConfig(models.Model):
     MODE_NONE = "none"
 
     MODE_CHOICES = [
-        (MODE_DJANGO, _l("Django 内部スケジューラで送信")),
-        (MODE_NONE, _l("自動送信なし（手動のみ）")),
+        (MODE_DJANGO, _("Django 内部スケジューラで送信")),
+        (MODE_NONE, _("自動送信なし（手動のみ）")),
     ]
 
     send_time = models.TimeField(
-        verbose_name=_l("送信時刻（毎日）"),
+        verbose_name=_("送信時刻（毎日）"),
         default="09:00",
     )
 
@@ -81,13 +81,13 @@ class MeetingMailConfig(models.Model):
         max_length=20,
         choices=MODE_CHOICES,
         default=MODE_DJANGO,
-        verbose_name=_l("スケジューラ方式"),
+        verbose_name=_("スケジューラ方式"),
     )
 
     last_sent_date = models.DateField(
         null=True,
         blank=True,
-        verbose_name=_l("最終送信日"),
+        verbose_name=_("最終送信日"),
     )
 
     def __str__(self):
