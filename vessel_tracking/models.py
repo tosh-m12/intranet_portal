@@ -282,6 +282,12 @@ class Shipment(models.Model):
             delay = elapsed if delay is None else max(delay, elapsed)
         if delay is not None:
             return self._delay_badge(delay)
+        # 遅延の兆候なし。仕出地(上海)へ向かっている/着岸済みなら、出発予測が立たなくても
+        # 予定通り出航見込み=定刻とする(早着・着岸後で見込みが空になるだけのため)。
+        # 上海と無関係な位置で手掛かりが無い便は誠実に「監視中」のまま(根拠なく楽観表示しない)。
+        on_track = (self.live_dest_unlocode or '').upper() == 'CNSHG' or self.shanghai_ata is not None
+        if on_track:
+            return ('ok', _('定刻'))
         if self.live_updated_at:
             return ('muted', _('監視中'))
         return ('none', _('未取得'))
@@ -376,6 +382,33 @@ class Shipment(models.Model):
     def shanghai_eta_live_cst_time(self):
         d = self.live_origin_arrival_cst
         return d.strftime('%H:%M') if d else ''
+
+    @property
+    def origin_arrival(self):
+        """仕出地(上海)到達の最良データ (値, 種別)。あるものを優先して返す:
+        実績(着岸 shanghai_ata) > ライブ到着見込み(申告ETA) > 手入力予定(shanghai_eta)。
+        種別 kind = 'ata'(実績) / 'live'(見込み) / 'eta'(予定) / ''(無)。
+        値は date(ata/eta) または datetime(live, 上海現地時間)。"""
+        if self.shanghai_ata:
+            return (self.shanghai_ata, 'ata')
+        live = self.live_origin_arrival_cst
+        if live:
+            return (live, 'live')
+        if self.shanghai_eta:
+            return (self.shanghai_eta, 'eta')
+        return (None, '')
+
+    @property
+    def origin_arrival_date_str(self):
+        """仕出地到達(実績/見込み/予定)の表示日付。データが無ければ空。"""
+        v, _kind = self.origin_arrival
+        return f'{v.year % 100:02d}/{v.month}/{v.day}' if v else ''
+
+    @property
+    def origin_arrival_time_str(self):
+        """時刻はライブ見込み(申告ETA)のみ。実績/予定は日付だけなので空。"""
+        v, kind = self.origin_arrival
+        return v.strftime('%H:%M') if kind == 'live' else ''
 
     def save(self, *args, **kwargs):
         self.origin = (self.origin or '').strip().upper()
