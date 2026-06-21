@@ -121,29 +121,33 @@
 }
 
 /* ===== ビジネス概要（新規顧客課題: タイトル→詳細→罫線→概要） ===== */
-/* セル(td: padding 6px 8px)の端まで広げ、表の罫線と連続させて「表の一部」に見せる。
-   負マージンで左右/下の padding を打ち消し、グリッドの外枠はセル罫線(#ddd)に委ねる。 */
+/* メールクライアントでも崩れないよう全サーフェスを <table> で統一。画面側(板/レポート)は
+   負マージンでセル(td: padding 6px 8px)端まで bleed させ「表の一部」に見せる(従来の見栄えを維持)。
+   内側の罫線は表と同色(#ddd)、外周はセル罫線に委ねる。 */
 /* 詳細の下の区切り罫線。両端をセル端まで伸ばして途切れさせない。 */
 .cs-board .biz-sep { border: none; border-top: 1px solid #ddd; margin: 6px -8px 0; }
 .cs-board .biz-form { margin: 0; }
-/* 3列×2行のグリッド。独立した箱(角丸/外枠)にせず、セル端へ flush。 */
-.cs-board .biz-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    margin: 0 -8px -6px;            /* 左右/下の padding を打ち消してセル端まで */
+/* 3対×2行の table(列: ラベル 値 ×3)。独立した箱にせず、セル端へ flush。 */
+.cs-board table.biz-grid {
+    width: calc(100% + 16px);      /* 左右 8px ずつ bleed */
+    margin: 0 -8px -6px;           /* 左右/下の padding を打ち消してセル端まで */
+    border-collapse: collapse;
+    table-layout: fixed;
     font-size: 13px;
 }
-/* 各項目＝[ラベル | 値]。内側の罫線は表と同色(#ddd)。外周はセル罫線が担う。 */
-.cs-board .biz-field { display: grid; grid-template-columns: 5em 1fr; align-items: stretch;
-    border-top: 1px solid #ddd; border-left: 1px solid #ddd; min-width: 0; }
-.cs-board .biz-field:nth-child(-n+3) { border-top: none; }   /* 上段は上罫線なし(区切りhrが担う) */
-.cs-board .biz-field:nth-child(3n+1) { border-left: none; }  /* 左列は左罫線なし(セル左罫線が担う) */
-/* 項目名は薄いグレー背景で揃える。 */
-.cs-board .biz-field > label {
+/* 内側の罫線は上・左のみ(.cs-board td の四辺罫線を打ち消す)。右・下の外周はセル罫線が担う。
+   上段の上罫線は区切りhrが、左列の左罫線はセル左罫線が担うので消す。 */
+.cs-board table.biz-grid td { border: none; border-top: 1px solid #ddd; border-left: 1px solid #ddd;
+    vertical-align: middle; min-width: 0; }
+.cs-board table.biz-grid tr:first-child td { border-top: none; }
+.cs-board table.biz-grid td:first-child { border-left: none; }
+/* 項目名セル: 薄いグレー背景・固定幅 5em。 */
+.cs-board table.biz-grid td.biz-l {
     background: #f2f2f2; color: #666; font-weight: normal;
-    display: flex; align-items: center; padding: 4px 8px;
-    border-right: 1px solid #ddd; white-space: nowrap;
+    padding: 4px 8px; white-space: nowrap; width: 5em; box-sizing: border-box;
 }
+/* 値セル。padding は内側の .biz-control が担う(セル自身は 0)。 */
+.cs-board table.biz-grid td.biz-c { padding: 0; }
 /* 値の領域。枠なしの入力を並べる。 */
 .cs-board .biz-control { display: flex; align-items: center; flex-wrap: wrap; gap: 3px 6px;
     padding: 2px 6px; min-width: 0; }
@@ -169,10 +173,6 @@
 .cs-board .biz-cb { display: inline-flex; align-items: center; gap: 3px; color: #555; white-space: nowrap; }
 /* 未定で無効化した年月は薄く。 */
 .cs-board .biz-start:disabled { color: #bbb; cursor: not-allowed; }
-/* 読み取り専用表示（編集権限なし）。 */
-.cs-board .biz-readonly { margin: 3px 0; font-size: 13px; color: #555;
-    display: flex; flex-wrap: wrap; gap: 2px 14px; }
-.cs-board .biz-ro b { color: #8a8a8a; font-weight: normal; margin-right: 3px; }
 /* レポート等の読み取りグリッド: フォーム(編集)と完全に同じ見た目にする。
    .biz-control は編集と同じ padding を使い、値は入力欄と同じ padding の素テキストに
    して、セル高・配置を編集フォームとピクセル一致させる。 */

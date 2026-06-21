@@ -30,10 +30,13 @@
           {% if not sec.hide_client and forloop.first %}
           <td rowspan="{{ client.client_rows }}" style="border:1px solid #ddd; padding:6px 8px; vertical-align:top; font-weight:bold; width:150px; word-break:break-all;">{{ client.client_name }}</td>
           {% endif %}
-          <td colspan="2" style="border:1px solid #ddd; padding:6px 8px; vertical-align:top; background:#fafbfc;">
-            <span style="font-weight:bold;">{{ task.display_title }}</span>
-            {% if task.display_description %}<div style="color:#5a6470; font-size:12px; margin-top:3px; white-space:pre-wrap;">{{ task.display_description }}</div>{% endif %}
-            {# 新規顧客課題は詳細の下にビジネス概要 #}
+          <td colspan="2" style="border:1px solid #ddd; padding:0; vertical-align:top; background:#fafbfc;">
+            {# タイトル・詳細は内側の padding 付き div に。ビジネス概要表はセル端まで flush させる #}
+            <div style="padding:6px 8px;">
+              <span style="font-weight:bold;">{{ task.display_title }}</span>
+              {% if task.display_description %}<div style="color:#5a6470; font-size:12px; margin-top:3px; white-space:pre-wrap;">{{ task.display_description }}</div>{% endif %}
+            </div>
+            {# 新規顧客課題は詳細の下にビジネス概要（セル罫線を外枠に使い、内側のみ罫線） #}
             {% if sec.key == 'new' %}{% include "cs_tasks/_email_biz.html" with t=task %}{% endif %}
           </td>
         </tr>
