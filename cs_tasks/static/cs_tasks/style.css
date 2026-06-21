@@ -120,6 +120,60 @@
     white-space: pre-wrap;
 }
 
+/* ===== ビジネス概要（新規顧客課題: タイトル→詳細→罫線→概要） ===== */
+/* セル(td: padding 6px 8px)の端まで広げ、表の罫線と連続させて「表の一部」に見せる。
+   負マージンで左右/下の padding を打ち消し、グリッドの外枠はセル罫線(#ddd)に委ねる。 */
+/* 詳細の下の区切り罫線。両端をセル端まで伸ばして途切れさせない。 */
+.cs-board .biz-sep { border: none; border-top: 1px solid #ddd; margin: 6px -8px 0; }
+.cs-board .biz-form { margin: 0; }
+/* 3列×2行のグリッド。独立した箱(角丸/外枠)にせず、セル端へ flush。 */
+.cs-board .biz-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0 -8px -6px;            /* 左右/下の padding を打ち消してセル端まで */
+    font-size: 13px;
+}
+/* 各項目＝[ラベル | 値]。内側の罫線は表と同色(#ddd)。外周はセル罫線が担う。 */
+.cs-board .biz-field { display: grid; grid-template-columns: 5em 1fr; align-items: stretch;
+    border-top: 1px solid #ddd; border-left: 1px solid #ddd; min-width: 0; }
+.cs-board .biz-field:nth-child(-n+3) { border-top: none; }   /* 上段は上罫線なし(区切りhrが担う) */
+.cs-board .biz-field:nth-child(3n+1) { border-left: none; }  /* 左列は左罫線なし(セル左罫線が担う) */
+/* 項目名は薄いグレー背景で揃える。 */
+.cs-board .biz-field > label {
+    background: #f2f2f2; color: #666; font-weight: normal;
+    display: flex; align-items: center; padding: 4px 8px;
+    border-right: 1px solid #ddd; white-space: nowrap;
+}
+/* 値の領域。枠なしの入力を並べる。 */
+.cs-board .biz-control { display: flex; align-items: center; flex-wrap: wrap; gap: 3px 6px;
+    padding: 2px 6px; min-width: 0; }
+/* ドロップダウン・テキスト欄は枠なし＋上下矢印を消す。flex:1 でセル内いっぱいに広げる。 */
+.cs-board .biz-control select,
+.cs-board .biz-control input[type="text"] {
+    border: none; background: transparent; font: inherit; font-size: 13px;
+    color: #333; padding: 3px 4px; outline: none; border-radius: 3px;
+    flex: 1 1 0; width: auto; min-width: 0; max-width: 100%;
+    -webkit-appearance: none; -moz-appearance: none; appearance: none;
+}
+.cs-board .biz-control select { cursor: pointer; }
+.cs-board .biz-control select::-ms-expand { display: none; }
+/* ホバーで背景色を変え、クリック・選択できることを示す。 */
+.cs-board .biz-control select:hover,
+.cs-board .biz-control input[type="text"]:hover { background: #eaf0fa; }
+.cs-board .biz-control select:focus,
+.cs-board .biz-control input[type="text"]:focus { background: #fff9e6; }
+/* 金額は右寄せ・等幅。単位/チェックは自然幅（入力欄が広がる）。 */
+.cs-board .biz-revenue { text-align: right; font-variant-numeric: tabular-nums; }
+.cs-board .biz-revunit, .cs-board .biz-cb { flex: 0 0 auto; }
+.cs-board .biz-revunit { color: #8a8a8a; white-space: nowrap; }
+.cs-board .biz-cb { display: inline-flex; align-items: center; gap: 3px; color: #555; white-space: nowrap; }
+/* 未定で無効化した年月は薄く。 */
+.cs-board .biz-start:disabled { color: #bbb; cursor: not-allowed; }
+/* 読み取り専用表示（編集権限なし）。 */
+.cs-board .biz-readonly { margin: 3px 0; font-size: 13px; color: #555;
+    display: flex; flex-wrap: wrap; gap: 2px 14px; }
+.cs-board .biz-ro b { color: #8a8a8a; font-weight: normal; margin-right: 3px; }
+
 /* 実施日: ネイティブ日付入力の表示はブラウザのロケール依存で並び順を強制できず、
    空欄でもプレースホルダ(例「06/14/2026」)が出る。そこで入力は opacity:0 で
    日付セル全面に重ねてカレンダー専用にし、見える日付は .date-disp(YYYY/MM/DD・

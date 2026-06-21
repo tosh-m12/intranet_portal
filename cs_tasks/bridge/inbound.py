@@ -45,6 +45,12 @@ _TASK_FIELD_MAP = {
     "description_ja": "description_ja",
     "client_name": "client_name",
     "category": "category",
+    # ビジネス概要(翻訳対象外の単一値・文字列項目)。日付/数値/真偽は下で個別処理。
+    "biz_status": "biz_status",
+    "revenue_type": "revenue_type",
+    "biz_type": "biz_type",
+    "biz_type_other": "biz_type_other",
+    "group_contact": "group_contact",
 }
 
 
@@ -69,6 +75,17 @@ def _parse_date(value):
     return datetime.strptime(value, "%Y-%m-%d").date()
 
 
+def _parse_decimal(value):
+    """予想売上などの数値。空/None/不正は None（未入力扱い）。"""
+    if value is None or value == "":
+        return None
+    try:
+        from decimal import Decimal
+        return Decimal(str(value))
+    except (ArithmeticError, ValueError, TypeError):
+        return None
+
+
 def _sender_allowed(sender):
     allow = [a.lower() for a in getattr(settings, "CS_BRIDGE_ALLOWED_SENDERS", []) if a]
     if not allow:
@@ -86,6 +103,13 @@ def _apply_task_fields(task, fields):
         task.due_date = _parse_date(fields.get("due_date"))
     if "assignee_email" in fields:
         task.assignee = _resolve_user(fields.get("assignee_email"))
+    # ビジネス概要の特殊型(日付/真偽/数値)。null/空はクリアとして扱う。
+    if "start_month" in fields:
+        task.start_month = _parse_date(fields.get("start_month"))
+    if "start_undecided" in fields:
+        task.start_undecided = bool(fields.get("start_undecided"))
+    if "expected_revenue" in fields:
+        task.expected_revenue = _parse_decimal(fields.get("expected_revenue"))
 
 
 def _resolve_task_id(op, created_map):

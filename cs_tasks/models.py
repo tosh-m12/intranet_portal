@@ -60,6 +60,47 @@ class Task(models.Model):
     description_ja = models.TextField(verbose_name=_l("詳細(日本語)"), blank=True)
     client_name = models.CharField(verbose_name=_l("客先名"), max_length=255, blank=True)
 
+    # ===== ビジネス概要（新規顧客課題のみ。タイトルと詳細の間に表示・編集） =====
+    # 翻訳対象外の構造化データ（単一値）。空＝未入力。
+    BIZ_STATUS_CHOICES = [
+        ("negotiating", _l("交渉中")),
+        ("won", _l("受注")),
+        ("lost", _l("失注")),
+    ]
+    REVENUE_TYPE_CHOICES = [
+        ("recurring", _l("継続")),
+        ("spot", _l("スポット")),
+    ]
+    BIZ_TYPE_CHOICES = [
+        ("import", _l("輸入型")),
+        ("export", _l("輸出型")),
+        ("zone", _l("園区遊")),
+        ("triangle", _l("3国間")),
+        ("other", _l("その他")),
+    ]
+    biz_status = models.CharField(
+        verbose_name=_l("状態"), max_length=16, choices=BIZ_STATUS_CHOICES, blank=True
+    )
+    # スタート時期: 月初日で保持（年月のみ使用）。未定は start_undecided=True。
+    start_month = models.DateField(verbose_name=_l("スタート時期"), null=True, blank=True)
+    start_undecided = models.BooleanField(verbose_name=_l("スタート時期未定"), default=False)
+    revenue_type = models.CharField(
+        verbose_name=_l("継続・スポット"), max_length=16, choices=REVENUE_TYPE_CHOICES, blank=True
+    )
+    # 予想売上(人民元CNY)。単位(/月 or /次)は revenue_type から導出する。
+    expected_revenue = models.DecimalField(
+        verbose_name=_l("予想売上(CNY)"), max_digits=14, decimal_places=2, null=True, blank=True
+    )
+    biz_type = models.CharField(
+        verbose_name=_l("ビジネス形態"), max_length=16, choices=BIZ_TYPE_CHOICES, blank=True
+    )
+    biz_type_other = models.CharField(
+        verbose_name=_l("ビジネス形態(その他)"), max_length=100, blank=True
+    )
+    group_contact = models.CharField(
+        verbose_name=_l("グループ内客先窓口"), max_length=255, blank=True
+    )
+
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
@@ -113,6 +154,26 @@ class Task(models.Model):
 
     def display_description(self, lang=None):
         return pick_lang(self.description, self.description_ja, lang or active_lang())
+
+    # ===== ビジネス概要の表示用ヘルパ =====
+    @property
+    def revenue_unit(self):
+        """予想売上の単位。継続=/月、スポット=/次。未選択は空。"""
+        return {"recurring": "/月", "spot": "/次"}.get(self.revenue_type, "")
+
+    @property
+    def expected_revenue_display(self):
+        """カンマ区切り・小数2位。未入力は空。"""
+        if self.expected_revenue is None:
+            return ""
+        return f"{self.expected_revenue:,.2f}"
+
+    @property
+    def biz_type_label(self):
+        """ビジネス形態の表示名。その他は記入テキストを優先。"""
+        if self.biz_type == "other":
+            return self.biz_type_other or self.get_biz_type_display()
+        return self.get_biz_type_display() if self.biz_type else ""
 
 
 class ProgressUpdate(models.Model):

@@ -1,5 +1,7 @@
 # cs_tasks/views.py
 import re
+from datetime import date
+from decimal import Decimal, InvalidOperation
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
@@ -226,7 +228,7 @@ def index(request):
     if cat not in _CATEGORY_TITLE:
         cat = Task.CATEGORY_EXISTING
     groups, filtered_user = _build_board(request.user, assignee_id, category=cat)
-    return render(request, "cs_tasks/board.html", {
+    ctx = {
         "groups": groups,
         "filtered_user": filtered_user,
         "filtered_user_name": _display_name(filtered_user) if filtered_user else "",
@@ -235,7 +237,22 @@ def index(request):
         "active_tab": cat,
         "current_category": cat,            # 新規追加時に引き継ぐ区分
         "hide_client": cat == Task.CATEGORY_INTERNAL,
-    })
+    }
+    ctx.update(_biz_context())
+    return render(request, "cs_tasks/board.html", ctx)
+
+
+def _biz_context():
+    """ビジネス概要(新規顧客課題)の編集UIで使う選択肢・年月リスト。
+    _board_table.html を編集モードで描く画面(index / my_tasks)で共有する。"""
+    this_year = timezone.localdate().year
+    return {
+        "biz_status_choices": Task.BIZ_STATUS_CHOICES,
+        "revenue_type_choices": Task.REVENUE_TYPE_CHOICES,
+        "biz_type_choices": Task.BIZ_TYPE_CHOICES,
+        "biz_years": list(range(this_year, this_year + 4)),   # 当年〜+3年
+        "biz_months": list(range(1, 13)),
+    }
 
 
 # =========================================================
@@ -293,11 +310,13 @@ def build_my_sections(user):
 
 @login_required
 def my_tasks(request):
-    return render(request, "cs_tasks/my_tasks.html", {
+    ctx = {
         "sections": build_my_sections(request.user),
         "is_admin": is_admin(request.user),
         "active_tab": "mine",
-    })
+    }
+    ctx.update(_biz_context())
+    return render(request, "cs_tasks/my_tasks.html", ctx)
 
 
 # =========================================================
@@ -562,6 +581,54 @@ def edit_description(request, task_id):
     task.description = d_zh
     task.description_ja = d_ja
     task.save(update_fields=["description", "description_ja", "updated_at"])
+    return redirect(request.POST.get("next") or "cs_tasks:index")
+
+
+# =========================================================
+# ビジネス概要のその場編集（新規顧客課題。状態/スタート時期/継続スポット/
+# 予想売上/ビジネス形態/グループ内客先窓口を1フォームで保存）。翻訳対象外。
+# =========================================================
+@login_required
+@require_POST
+def edit_business(request, task_id):
+    task = get_object_or_404(Task, pk=task_id)
+    if not can_edit_task(request.user, task):
+        return HttpResponseForbidden(_("この課題を編集する権限がありません。"))
+    P = request.POST
+
+    bs = (P.get("biz_status") or "").strip()
+    task.biz_status = bs if bs in dict(Task.BIZ_STATUS_CHOICES) else ""
+
+    # スタート時期: 未定 or 年+月。未定なら日付はクリア。
+    task.start_undecided = bool(P.get("start_undecided"))
+    if task.start_undecided:
+        task.start_month = None
+    else:
+        y, m = P.get("start_year"), P.get("start_month_num")
+        try:
+            task.start_month = date(int(y), int(m), 1) if y and m else None
+        except (TypeError, ValueError):
+            task.start_month = None
+
+    rt = (P.get("revenue_type") or "").strip()
+    task.revenue_type = rt if rt in dict(Task.REVENUE_TYPE_CHOICES) else ""
+
+    rev = (P.get("expected_revenue") or "").replace(",", "").strip()
+    try:
+        task.expected_revenue = Decimal(rev) if rev else None
+    except InvalidOperation:
+        task.expected_revenue = None
+
+    bt = (P.get("biz_type") or "").strip()
+    task.biz_type = bt if bt in dict(Task.BIZ_TYPE_CHOICES) else ""
+    task.biz_type_other = (P.get("biz_type_other") or "").strip()[:100] if bt == "other" else ""
+
+    task.group_contact = (P.get("group_contact") or "").strip()[:255]
+
+    task.save(update_fields=[
+        "biz_status", "start_month", "start_undecided", "revenue_type",
+        "expected_revenue", "biz_type", "biz_type_other", "group_contact", "updated_at",
+    ])
     return redirect(request.POST.get("next") or "cs_tasks:index")
 
 

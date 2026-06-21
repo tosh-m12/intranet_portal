@@ -19,6 +19,7 @@ urlpatterns = [
     path("<int:task_id>/edit/", views.task_edit, name="edit"),
     path("<int:task_id>/title/", views.edit_title, name="edit_title"),
     path("<int:task_id>/description/", views.edit_description, name="edit_description"),
+    path("<int:task_id>/business/", views.edit_business, name="edit_business"),
     path("client/", views.edit_client, name="edit_client"),
     path("<int:task_id>/progress/", views.add_progress, name="add_progress"),
     path("progress/<int:progress_id>/date/", views.edit_progress_date, name="edit_progress_date"),

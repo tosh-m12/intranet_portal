@@ -203,6 +203,50 @@
         }
     });
 
+    // ===== ビジネス概要（新規顧客課題）: 条件付きUI ＋ 変更で即AJAX保存 =====
+    function bizUnit(form) {
+        var rt = form.querySelector('select[name="revenue_type"]');
+        var unit = form.querySelector(".biz-unit");
+        if (rt && unit) unit.textContent = rt.value === "recurring" ? "/月" : (rt.value === "spot" ? "/次" : "");
+    }
+    function bizOther(form) {
+        var bt = form.querySelector('select[name="biz_type"]');
+        var other = form.querySelector(".biz-type-other");
+        if (bt && other) other.hidden = (bt.value !== "other");
+    }
+    function bizUndecided(form) {
+        var cb = form.querySelector('input[name="start_undecided"]');
+        var off = !!(cb && cb.checked);
+        form.querySelectorAll(".biz-start").forEach(function (s) { s.disabled = off; if (off) s.value = ""; });
+    }
+    function fmtRevenue(el) {
+        var raw = (el.value || "").replace(/,/g, "").trim();
+        if (raw === "") { el.value = ""; return; }
+        var n = Number(raw);
+        if (!isFinite(n)) return;
+        el.value = n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    document.addEventListener("change", function (e) {
+        var el = e.target;
+        var form = el.closest ? el.closest(".biz-form") : null;
+        if (!form) return;
+        if (el.name === "revenue_type") bizUnit(form);
+        if (el.name === "biz_type") bizOther(form);
+        if (el.name === "start_undecided") bizUndecided(form);
+        if (el.name === "expected_revenue") fmtRevenue(el);
+        ajaxSubmit(form, el);   // 即保存（ページ遷移なし）
+    });
+    // ビジネス概要フォームは AJAX 保存のみ。ネイティブ送信はさせない。
+    document.addEventListener("submit", function (e) {
+        if (e.target.classList && e.target.classList.contains("biz-form")) e.preventDefault();
+    });
+    // テキスト欄の Enter は改行ではなく確定（blur→change で保存）。
+    document.addEventListener("keydown", function (e) {
+        var el = e.target;
+        if (el.closest && el.closest(".biz-form") && e.key === "Enter") { e.preventDefault(); el.blur(); }
+    });
+
     function submitForm(el) {
         if (!el || !el.form) return;
         if (el.form.dataset.ajax) {          // 編集：その場確定（リロードしない）
