@@ -281,13 +281,14 @@ class Shipment(models.Model):
             elapsed = (datetime.date.today() - self.etd).days
             delay = elapsed if delay is None else max(delay, elapsed)
         if delay is not None:
-            return self._delay_badge(delay)
+            # 出発前はあくまで予想。定刻見込み(0)は実績の「定刻」と区別し「定刻予想」で示す。
+            return ('okpred', _('定刻予想')) if delay == 0 else self._delay_badge(delay)
         # 遅延の兆候なし。仕出地(上海)へ向かっている/着岸済みなら、出発予測が立たなくても
-        # 予定通り出航見込み=定刻とする(早着・着岸後で見込みが空になるだけのため)。
+        # 予定通り出航見込み=定刻予想とする(早着・着岸後で見込みが空になるだけのため)。
         # 上海と無関係な位置で手掛かりが無い便は誠実に「監視中」のまま(根拠なく楽観表示しない)。
         on_track = (self.live_dest_unlocode or '').upper() == 'CNSHG' or self.shanghai_ata is not None
         if on_track:
-            return ('ok', _('定刻'))
+            return ('okpred', _('定刻予想'))
         if self.live_updated_at:
             return ('muted', _('監視中'))
         return ('none', _('未取得'))

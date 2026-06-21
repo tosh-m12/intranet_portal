@@ -50,7 +50,7 @@
       <td class="r nowrap">{{ r.etd|date:'y/n/j'|default:'—' }}</td>
       <td class="c nowrap">
         {% with a=r.live_departure_predict %}
-        <span class="badge mbadge {% if a.0 == 'bad' %}bad{% elif a.0 == 'ok' %}ok{% elif a.0 == 'info' %}st-booked{% else %}st-received{% endif %}">{{ a.1 }}</span>
+        <span class="badge mbadge {% if a.0 == 'bad' %}bad{% elif a.0 == 'ok' %}ok{% elif a.0 == 'okpred' %}okpred{% elif a.0 == 'info' %}st-booked{% else %}st-received{% endif %}">{{ a.1 }}</span>
         {% endwith %}
       </td>
       <td class="r nowrap muted">{{ r.live_updated_jst_str|default:'—' }}</td>

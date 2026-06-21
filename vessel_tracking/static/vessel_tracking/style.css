@@ -74,6 +74,8 @@
 .vessel-app .badge.ok{background:var(--ok-b);color:var(--ok-t)}
 /* 出発前のライブ予測遅延: グレー背景・赤文字「+X予想」(サイズは他バッジと共通) */
 .vessel-app .badge.predict{background:#eceff3;color:var(--bad-t)}
+/* 出発前の定刻は「予想」: グレー背景・緑文字で実績の定刻(緑背景)と区別する。 */
+.vessel-app .badge.okpred{background:#eceff3;color:var(--ok-t)}
 
 /* filters (ライブ絞り込み) */
 .vessel-app .filters{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:14px;

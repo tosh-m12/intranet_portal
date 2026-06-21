@@ -185,7 +185,7 @@ def monitor(request):
     qs = (Shipment.objects.filter(is_cancelled=False, atd__isnull=True)
           .exclude(vessel=''))
     rows = list(qs)
-    order = {'bad': 0, 'info': 1, 'ok': 2, 'muted': 3, 'none': 4}
+    order = {'bad': 0, 'info': 1, 'ok': 2, 'okpred': 2, 'muted': 3, 'none': 4}
     rows.sort(key=lambda s: (order.get(s.live_departure_predict[0], 9), s.etd or _dt.date.max))
     last = max((s.live_updated_at for s in rows if s.live_updated_at), default=None)
     # 最終更新は JST(+9) で表示(TIME_ZONE は Asia/Shanghai のため明示変換)。
