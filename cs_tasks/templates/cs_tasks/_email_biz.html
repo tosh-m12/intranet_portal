@@ -1,14 +1,24 @@
 {% load i18n %}{% comment %}
-週次メール用: 新規顧客課題のビジネス概要（インラインスタイル）。コンテキストに t=Task。
-メールクライアントは CSS grid 非対応のため、画面のグリッドではなく簡潔な1行で出す。
+週次メール用: 新規顧客課題のビジネス概要。コンテキストに t=Task。
+メールクライアントは CSS grid 非対応のため table+インラインで2行×3項目のグリッド風に出す。
 ※ 予想売上・状態・窓口などは内部の営業情報。宛先が社内に限られていることを前提とする。
 {% endcomment %}{% if t.category == 'new' %}
-<div style="font-size:12px; color:#555; margin:3px 0 6px 14px;">
-  <span style="color:#999;">{% trans "状態" %}</span> {{ t.get_biz_status_display|default:"—" }}&nbsp;&nbsp;
-  <span style="color:#999;">{% trans "スタート" %}</span> {% if t.start_undecided %}{% trans "未定" %}{% elif t.start_month %}{{ t.start_month|date:"Y/n" }}{% else %}—{% endif %}&nbsp;&nbsp;
-  <span style="color:#999;">{% trans "区分" %}</span> {{ t.get_revenue_type_display|default:"—" }}&nbsp;&nbsp;
-  <span style="color:#999;">{% trans "予想売上" %}</span> {% if t.expected_revenue_display %}{{ t.expected_revenue_display }} {% trans "元" %}{{ t.revenue_unit }}{% else %}—{% endif %}&nbsp;&nbsp;
-  <span style="color:#999;">{% trans "形態" %}</span> {{ t.biz_type_label|default:"—" }}&nbsp;&nbsp;
-  <span style="color:#999;">{% trans "窓口" %}</span> {{ t.group_contact|default:"—" }}
-</div>
+<table cellpadding="0" cellspacing="0" style="border-collapse:collapse; margin:4px 0 2px; font-size:12px; max-width:560px;">
+  <tr>
+    <td style="background:#f2f2f2; color:#666; padding:3px 8px; border:1px solid #ddd; white-space:nowrap;">{% trans "状態" %}</td>
+    <td style="padding:3px 8px; border:1px solid #ddd; color:#333;">{{ t.get_biz_status_display|default:"—" }}</td>
+    <td style="background:#f2f2f2; color:#666; padding:3px 8px; border:1px solid #ddd; white-space:nowrap;">{% trans "スタート" %}</td>
+    <td style="padding:3px 8px; border:1px solid #ddd; color:#333;">{% if t.start_undecided %}{% trans "未定" %}{% elif t.start_month %}{{ t.start_month|date:"Y/n" }}{% else %}—{% endif %}</td>
+    <td style="background:#f2f2f2; color:#666; padding:3px 8px; border:1px solid #ddd; white-space:nowrap;">{% trans "区分" %}</td>
+    <td style="padding:3px 8px; border:1px solid #ddd; color:#333;">{{ t.get_revenue_type_display|default:"—" }}</td>
+  </tr>
+  <tr>
+    <td style="background:#f2f2f2; color:#666; padding:3px 8px; border:1px solid #ddd; white-space:nowrap;">{% trans "予想売上" %}</td>
+    <td style="padding:3px 8px; border:1px solid #ddd; color:#333;">{% if t.expected_revenue_display %}{{ t.expected_revenue_display }} {% trans "元" %}{{ t.revenue_unit }}{% else %}—{% endif %}</td>
+    <td style="background:#f2f2f2; color:#666; padding:3px 8px; border:1px solid #ddd; white-space:nowrap;">{% trans "形態" %}</td>
+    <td style="padding:3px 8px; border:1px solid #ddd; color:#333;">{{ t.biz_type_label|default:"—" }}</td>
+    <td style="background:#f2f2f2; color:#666; padding:3px 8px; border:1px solid #ddd; white-space:nowrap;">{% trans "窓口" %}</td>
+    <td style="padding:3px 8px; border:1px solid #ddd; color:#333;">{{ t.group_contact|default:"—" }}</td>
+  </tr>
+</table>
 {% endif %}
