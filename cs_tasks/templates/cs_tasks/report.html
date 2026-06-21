@@ -48,8 +48,12 @@
                         {% endif %}
                         <td class="col-task" colspan="2">
                             <span class="task-title">{{ task.display_title }}</span>
-                            {# 新規顧客課題はビジネス概要を読み取りグリッドで常に全項目表示（未入力は—） #}
+                            {% if task.display_description %}
+                            <div class="task-desc-text">{{ task.display_description|linebreaksbr }}</div>
+                            {% endif %}
+                            {# 新規顧客課題は詳細の下に罫線→ビジネス概要（読み取りグリッド・常に全項目） #}
                             {% if sec.key == 'new' %}
+                            <hr class="biz-sep">
                             <div class="biz-grid biz-grid-ro">
                                 <div class="biz-field"><label>{% trans "状態" %}</label><div class="biz-control"><span class="biz-ro-val">{{ task.get_biz_status_display|default:"—" }}</span></div></div>
                                 <div class="biz-field"><label>{% trans "スタート" %}</label><div class="biz-control"><span class="biz-ro-val">{% if task.start_undecided %}{% trans "未定" %}{% elif task.start_month %}{{ task.start_month|date:"Y/n" }}{% else %}—{% endif %}</span></div></div>
@@ -58,9 +62,6 @@
                                 <div class="biz-field"><label>{% trans "形態" %}</label><div class="biz-control"><span class="biz-ro-val">{{ task.biz_type_label|default:"—" }}</span></div></div>
                                 <div class="biz-field"><label>{% trans "窓口" %}</label><div class="biz-control"><span class="biz-ro-val">{{ task.group_contact|default:"—" }}</span></div></div>
                             </div>
-                            {% endif %}
-                            {% if task.display_description %}
-                            <div class="task-desc-text">{{ task.display_description|linebreaksbr }}</div>
                             {% endif %}
                         </td>
                     </tr>

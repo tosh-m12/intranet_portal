@@ -33,6 +33,8 @@
           <td colspan="2" style="border:1px solid #ddd; padding:6px 8px; vertical-align:top; background:#fafbfc;">
             <span style="font-weight:bold;">{{ task.display_title }}</span>
             {% if task.display_description %}<div style="color:#5a6470; font-size:12px; margin-top:3px; white-space:pre-wrap;">{{ task.display_description }}</div>{% endif %}
+            {# 新規顧客課題は詳細の下にビジネス概要 #}
+            {% if sec.key == 'new' %}{% include "cs_tasks/_email_biz.html" with t=task %}{% endif %}
           </td>
         </tr>
         {% for p in task.progress_list %}
