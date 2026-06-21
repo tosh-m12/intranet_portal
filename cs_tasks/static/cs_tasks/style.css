@@ -173,6 +173,9 @@
 .cs-board .biz-readonly { margin: 3px 0; font-size: 13px; color: #555;
     display: flex; flex-wrap: wrap; gap: 2px 14px; }
 .cs-board .biz-ro b { color: #8a8a8a; font-weight: normal; margin-right: 3px; }
+/* レポート等の読み取りグリッド: フォームと同じ3×2＋グレーラベルで、値は素テキスト。 */
+.cs-board .biz-grid-ro .biz-control { padding: 4px 8px; }
+.cs-board .biz-ro-val { color: #333; }
 
 /* 実施日: ネイティブ日付入力の表示はブラウザのロケール依存で並び順を強制できず、
    空欄でもプレースホルダ(例「06/14/2026」)が出る。そこで入力は opacity:0 で

@@ -48,15 +48,15 @@
                         {% endif %}
                         <td class="col-task" colspan="2">
                             <span class="task-title">{{ task.display_title }}</span>
-                            {# 新規顧客課題はビジネス概要も表示（読み取り専用） #}
+                            {# 新規顧客課題はビジネス概要を読み取りグリッドで常に全項目表示（未入力は—） #}
                             {% if sec.key == 'new' %}
-                            <div class="biz-readonly">
-                                {% if task.biz_status %}<span class="biz-ro"><b>{% trans "状態" %}</b> {{ task.get_biz_status_display }}</span>{% endif %}
-                                {% if task.start_undecided %}<span class="biz-ro"><b>{% trans "スタート" %}</b> {% trans "未定" %}</span>{% elif task.start_month %}<span class="biz-ro"><b>{% trans "スタート" %}</b> {{ task.start_month|date:"Y/n" }}</span>{% endif %}
-                                {% if task.revenue_type %}<span class="biz-ro"><b>{% trans "区分" %}</b> {{ task.get_revenue_type_display }}</span>{% endif %}
-                                {% if task.expected_revenue_display %}<span class="biz-ro"><b>{% trans "予想売上" %}</b> {{ task.expected_revenue_display }} {% trans "元" %}{{ task.revenue_unit }}</span>{% endif %}
-                                {% if task.biz_type_label %}<span class="biz-ro"><b>{% trans "形態" %}</b> {{ task.biz_type_label }}</span>{% endif %}
-                                {% if task.group_contact %}<span class="biz-ro"><b>{% trans "窓口" %}</b> {{ task.group_contact }}</span>{% endif %}
+                            <div class="biz-grid biz-grid-ro">
+                                <div class="biz-field"><label>{% trans "状態" %}</label><div class="biz-control"><span class="biz-ro-val">{{ task.get_biz_status_display|default:"—" }}</span></div></div>
+                                <div class="biz-field"><label>{% trans "スタート" %}</label><div class="biz-control"><span class="biz-ro-val">{% if task.start_undecided %}{% trans "未定" %}{% elif task.start_month %}{{ task.start_month|date:"Y/n" }}{% else %}—{% endif %}</span></div></div>
+                                <div class="biz-field"><label>{% trans "区分" %}</label><div class="biz-control"><span class="biz-ro-val">{{ task.get_revenue_type_display|default:"—" }}</span></div></div>
+                                <div class="biz-field"><label>{% trans "予想売上" %}</label><div class="biz-control"><span class="biz-ro-val">{% if task.expected_revenue_display %}{{ task.expected_revenue_display }} {% trans "元" %}{{ task.revenue_unit }}{% else %}—{% endif %}</span></div></div>
+                                <div class="biz-field"><label>{% trans "形態" %}</label><div class="biz-control"><span class="biz-ro-val">{{ task.biz_type_label|default:"—" }}</span></div></div>
+                                <div class="biz-field"><label>{% trans "窓口" %}</label><div class="biz-control"><span class="biz-ro-val">{{ task.group_contact|default:"—" }}</span></div></div>
                             </div>
                             {% endif %}
                             {% if task.display_description %}
