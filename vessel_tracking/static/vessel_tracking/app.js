@@ -14,7 +14,7 @@ document.addEventListener('click', function (e) {
   var RULES = [
     { cls: 'alnum-up', bad: /[^A-Za-z0-9]/, clean: function (v) { return v.replace(/[^A-Za-z0-9]/g, '').toUpperCase(); }, msg: '英数字のみ' },
     { cls: 'alpha-up', bad: /[^A-Za-z]/, clean: function (v) { return v.replace(/[^A-Za-z]/g, '').toUpperCase(); }, msg: '英字のみ' },
-    { cls: 'vessel-up', bad: /[^A-Za-z ]/, clean: function (v) { return v.replace(/[^A-Za-z ]/g, '').toUpperCase(); }, msg: '英字のみ' },
+    { cls: 'vessel-up', bad: /[^A-Za-z0-9 .\-]/, clean: function (v) { return v.replace(/[^A-Za-z0-9 .\-]/g, '').toUpperCase(); }, msg: '英数字と記号 . -' },
     { cls: 'decimal', bad: /[^0-9.]/, clean: function (v) { return v.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1'); }, msg: '数字のみ' },
     { cls: 'digits', bad: /[^0-9]/, clean: function (v) { return v.replace(/[^0-9]/g, ''); }, msg: '数字のみ' }
   ];
